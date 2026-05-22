@@ -28,8 +28,13 @@ connectDB(); // Connect to MongoDB
 // --------middlewares------
 app.use(express.json()); // any request it will pass by using json
 app.use(cookieParser());
+const normalizeOrigin = (value = "") => String(value).replace(/\/+$/, "");
+const envAllowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGINS || "")
+  .split(",")
+  .map((origin) => normalizeOrigin(origin.trim()))
+  .filter(Boolean);
+
 const allowedOrigins = [
-  'https://levon-fja4.onrender.com/',
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5175',
@@ -41,21 +46,26 @@ const allowedOrigins = [
   'http://127.0.0.1:5176',
   'http://127.0.0.1:5177',
   'http://[::1]:5173',
-  'http://[::1]:5174'
-];
+  'http://[::1]:5174',
+  'https://levon-fja4.onrender.com',
+  'https://levon-omega.vercel.app',
+  ...envAllowedOrigins,
+].map(normalizeOrigin);
 
-app.use(cors({
+const corsOptions = {
   origin: (origin, cb) => {
     if (!origin) return cb(null, true);
-    if (allowedOrigins.includes(origin)) return cb(null, true);
+    if (allowedOrigins.includes(normalizeOrigin(origin))) return cb(null, true);
     return cb(null, false);
   },
   methods: 'GET,POST,PUT,DELETE,OPTIONS',
   allowedHeaders: 'Content-Type, Authorization, X-Requested-With, token',
   credentials: true
-}));
+};
 
-app.options('*', cors()); // ensure preflight handled
+app.use(cors(corsOptions));
+
+app.options('*', cors(corsOptions)); // ensure preflight handled
 
 // then body parsers, routes, etc.
 app.use(express.json({ limit: '20mb' }));

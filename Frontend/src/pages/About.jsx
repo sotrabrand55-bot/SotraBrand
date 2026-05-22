@@ -45,7 +45,8 @@ const About = () => {
     let cancelled = false;
     const loadPageImages = async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_BACKEND_URL}/api/page-images`);
+        const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "");
+        const res = await fetch(`${backendUrl}/api/page-images`);
         const data = await res.json();
         if (!cancelled && data?.success) {
           setAboutImage(data.pageImages?.aboutImage || assests.About_us);

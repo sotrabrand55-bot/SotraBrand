@@ -21,7 +21,7 @@ import "react-toastify/dist/ReactToastify.css";
 import { useEffect, useState } from 'react';
 
 // backend URL
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "");
 
 const App = () => {
   const location = useLocation();

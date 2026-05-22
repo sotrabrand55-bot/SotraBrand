@@ -5,7 +5,7 @@ import { ShopContext } from "../context/ShopContext";
 import { ShimmerImage } from "../componens/Skeletons";
 import { buildGiftSetPanels } from "../utils/giftSetDisplay";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "");
 
 const GiftSets = () => {
   const { products } = useContext(ShopContext);

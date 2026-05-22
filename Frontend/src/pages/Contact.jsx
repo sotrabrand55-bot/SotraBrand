@@ -16,7 +16,8 @@ const Contact = () => {
     let cancelled = false;
     const loadPageImages = async () => {
       try {
-        const res = await axios.get(`${import.meta.env.VITE_BACKEND_URL}/api/page-images`);
+        const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "");
+        const res = await axios.get(`${backendUrl}/api/page-images`);
         if (!cancelled && res.data?.success) {
           setContactImage(res.data.pageImages?.contactImage || contactPanelImage);
           setContactImageAlt(
@@ -45,7 +46,8 @@ const Contact = () => {
     e.preventDefault();
     setStatus("sending...");
     try {
-      await axios.post(`${import.meta.env.VITE_BACKEND_URL}/api/contact`, form);
+      const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "");
+      await axios.post(`${backendUrl}/api/contact`, form);
       setStatus("sent");
       setForm({ name: "", email: "", message: "" });
       // eslint-disable-next-line no-unused-vars

@@ -33,7 +33,7 @@ const ShopContextProvider = (props) => {
       return [];
     }
   });
-  const backendUrl = import.meta.env.VITE_BACKEND_URL;
+  const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "");
   const [products, setProducts] = useState([]); // instand of the assets products to store the new products from data base we just replace it
   const [productsLoading, setProductsLoading] = useState(true);
   const [scentFamilies, setScentFamilies] = useState(defaultScentFamilies);

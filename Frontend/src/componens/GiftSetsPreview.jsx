@@ -5,7 +5,7 @@ import { GiftSetsSectionSkeleton, ShimmerImage } from "./Skeletons";
 import { ShopContext } from "../context/ShopContext";
 import { buildGiftSetPanels } from "../utils/giftSetDisplay";
 
-const backendUrl = import.meta.env.VITE_BACKEND_URL;
+const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "");
 
 const GiftSetsPreview = () => {
   const { products, productsLoading } = useContext(ShopContext);

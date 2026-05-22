@@ -19,7 +19,7 @@ import ScentWardrobeManager from './pages/ScentWardrobeManager';
 import BrandStatementManager from './pages/BrandStatementManager';
 import PageImagesManager from './pages/PageImagesManager';
 
-export const backendUrl = import.meta.env.VITE_BACKEND_URL // this how we get the env var
+export const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "") // this how we get the env var
 export const currency = '$';
 const App = () => {
 
