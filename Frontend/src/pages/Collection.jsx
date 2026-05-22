@@ -454,6 +454,32 @@ const Collection = () => {
             Explore Levon perfumes, scent families, and gift-ready edits with
             quiet filters made for finding the right trail.
           </p>
+          {showSearch && (
+            <div className="mx-auto mt-5 flex w-full max-w-3xl flex-col gap-3 sm:flex-row lg:hidden">
+              <button
+                onClick={openPanel}
+                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8c8b5] bg-[#fffdf9] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#1f1b17] shadow-[0_10px_24px_rgba(43,32,22,0.06)] transition hover:border-[#c49a5e]"
+                aria-label="Open filters"
+              >
+                <FiFilter className="h-4 w-4" />
+                Filters
+              </button>
+
+              <label className="relative sm:min-w-[210px]">
+                <span className="sr-only">Sort By</span>
+                <select
+                  onChange={(e) => setSortType(e.target.value)}
+                  className="w-full appearance-none rounded-full border border-[#d8c8b5] bg-[#fffdf9] px-4 py-2.5 pr-10 text-sm text-[#1f1b17] shadow-[0_10px_24px_rgba(43,32,22,0.06)] outline-none transition hover:border-[#c49a5e] focus:border-[#c49a5e]"
+                  value={sortType}
+                >
+                  <option value="relevent">Sort By: Relevant</option>
+                  <option value="low-high">Sort By: Low to High</option>
+                  <option value="high-low">Sort By: High to Low</option>
+                </select>
+                <FiChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#c49a5e]" />
+              </label>
+            </div>
+          )}
           <SearchBar />
         </div>
       </section>
@@ -679,7 +705,7 @@ const Collection = () => {
                   </p>
                 </div>
 
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end">
+                <div className={`${showSearch ? "hidden lg:flex" : "flex"} flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end`}>
                   <button
                     onClick={openPanel}
                     className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8c8b5] bg-[#fffaf4] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#1f1b17] transition hover:border-[#c49a5e] lg:hidden"
