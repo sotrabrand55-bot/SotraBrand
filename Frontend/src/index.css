@@ -1,1 +1,244 @@
-@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Prata&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+
+/* Global font */
+@layer base {
+  html, body { @apply font-sans; }
+}
+
+
+
+a.active hr { display: block; }
+
+.prata-regular {
+  font-family: "Prata", serif;
+  font-weight: 600; /* Prata is 400 */
+  font-style: normal;
+}
+
+/* Optional: bind your custom color key if you named it in Tailwind (e.g., 'brand') */
+/* .text-brand { @apply text-brand; } */
+
+@media (max-width: 640px){
+  a.active { background-color: black; color: white; }
+}
+
+html { scroll-behavior: smooth; }
+
+html, body {
+  overflow-x: hidden;
+  overscroll-behavior-x: none;
+}
+
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: #eadfd2;
+  isolation: isolate;
+}
+
+.skeleton-shimmer::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(234, 223, 210, 0) 0%,
+    rgba(255, 250, 244, 0.32) 36%,
+    rgba(255, 255, 255, 0.72) 50%,
+    rgba(216, 194, 165, 0.28) 64%,
+    rgba(234, 223, 210, 0) 100%
+  );
+  animation: skeleton-shimmer 1.25s ease-in-out infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.image-loading-shimmer {
+  background-color: #eadfd2 !important;
+}
+
+.image-loading-shimmer::after {
+  background: linear-gradient(
+    100deg,
+    rgba(234, 223, 210, 0) 0%,
+    rgba(255, 250, 244, 0.28) 30%,
+    rgba(255, 255, 255, 0.82) 48%,
+    rgba(196, 154, 94, 0.2) 60%,
+    rgba(234, 223, 210, 0) 100%
+  );
+  animation-duration: 1.05s;
+}
+
+@keyframes skeleton-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.levon-loader-bar {
+  height: 1.4rem;
+  animation: levon-loader-bars 0.9s ease-in-out infinite;
+  transform-origin: bottom;
+}
+
+.levon-loader-dot {
+  animation: levon-loader-dots 0.9s ease-in-out infinite;
+}
+
+.levon-ornament {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.7rem;
+  color: #c49a5e;
+}
+
+.levon-ornament-line {
+  height: 1px;
+  width: clamp(4rem, 14vw, 10rem);
+  background: linear-gradient(90deg, transparent, currentColor, transparent);
+}
+
+.levon-ornament-dot {
+  width: 0.35rem;
+  height: 0.35rem;
+  transform: rotate(45deg);
+  background: currentColor;
+}
+
+.levon-ornament-center {
+  position: relative;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: grid;
+  place-items: center;
+}
+
+.levon-ornament-center::before,
+.levon-ornament-center::after {
+  content: "";
+  position: absolute;
+  inset: 0.45rem;
+  border: 1px solid currentColor;
+  transform: rotate(45deg);
+}
+
+.levon-ornament-center::after {
+  inset: 0.72rem;
+}
+
+.levon-ornament-center span {
+  position: absolute;
+  width: 0.55rem;
+  height: 0.55rem;
+  border: 1px solid currentColor;
+  border-radius: 999px 999px 0 999px;
+}
+
+.levon-ornament-center span:nth-child(1) {
+  top: 0;
+  transform: rotate(45deg);
+}
+
+.levon-ornament-center span:nth-child(2) {
+  right: 0;
+  transform: rotate(135deg);
+}
+
+.levon-ornament-center span:nth-child(3) {
+  bottom: 0;
+  transform: rotate(225deg);
+}
+
+.levon-ornament-center span:nth-child(4) {
+  left: 0;
+  transform: rotate(315deg);
+}
+
+.checkout-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 410px;
+  gap: 1.75rem;
+  align-items: start;
+}
+
+.cart-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 400px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.cart-line {
+  display: grid;
+  grid-template-columns: 128px minmax(0, 1fr) 132px;
+  gap: 1rem;
+  align-items: center;
+}
+
+.cart-line-image {
+  width: 128px;
+  height: 160px;
+}
+
+.cart-line-total {
+  min-width: 0;
+}
+
+@media (max-width: 1023px) {
+  .checkout-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .cart-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 767px) {
+  .cart-line {
+    grid-template-columns: 96px minmax(0, 1fr);
+  }
+
+  .cart-line-image {
+    width: 96px;
+    height: 120px;
+  }
+
+  .cart-line-total {
+    grid-column: 1 / -1;
+  }
+}
+
+@keyframes levon-loader-bars {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: scaleY(0.45);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scaleY(1.45);
+  }
+}
+
+@keyframes levon-loader-dots {
+  0%,
+  100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+
+  50% {
+    opacity: 1;
+    transform: translateY(-0.25rem);
+  }
+}

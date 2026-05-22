@@ -1,0 +1,34 @@
+// controllers/contactController.js
+import { sendMail } from '../services/mailService.js';
+import { logError } from '../utils/logger.js';
+
+export const submitContact = async (req, res) => {
+  const { name, email, message } = req.body || {};
+
+  if (!name || !email || !message) {
+    return res.status(400).json({ success: false, error: 'Missing fields' });
+  }
+
+  try {
+    await sendMail({
+      to: 'Levonclothinglb@gmail.com',
+      subject: 'New LEVON contact form message',
+      html: `
+        <div style="font-family:Arial,sans-serif;line-height:1.5">
+          <h2 style="margin:0 0 8px;color:#2D2D2D">LEVON — Contact Form</h2>
+          <hr style="border:none;border-top:1px solid #eee;margin:10px 0"/>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> ${email}</p>
+          <p><strong>Message:</strong><br>${message.replace(/\n/g,'<br/>')}</p>
+        </div>
+      `,
+    });
+
+    res.json({ success: true });
+    
+  } catch (err) {
+    logError('CONTACT_SUBMIT_FAIL', err);
+    res.status(500).json({ success: false, error: 'Email failed' });
+  }
+};
+
