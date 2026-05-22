@@ -29,7 +29,7 @@ connectDB(); // Connect to MongoDB
 app.use(express.json()); // any request it will pass by using json
 app.use(cookieParser());
 const allowedOrigins = [
-  
+  https://levon-fja4.onrender.com/,
   'http://localhost:5173',
   'http://localhost:5174',
   'http://localhost:5175',
