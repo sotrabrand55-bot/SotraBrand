@@ -59,6 +59,7 @@ const Navbar = () => {
 
   const iconButton =
     'grid h-9 w-9 place-items-center rounded-full border border-[#ded3c6] bg-white/85 text-[#2d2924] shadow-sm shadow-black/5 transition hover:border-[#b9945d] hover:bg-[#f8f2eb] hover:text-[#191714] sm:h-10 sm:w-10'
+  const desktopIconButton = iconButton.replace('grid ', 'hidden sm:grid ')
 
   return (
     <>
@@ -96,7 +97,7 @@ const Navbar = () => {
                 type="button"
                 aria-label="Profile"
                 onClick={() => (token ? setProfileOpen((p) => !p) : navigate('/login'))}
-                className={iconButton}
+                className={desktopIconButton}
               >
                 <FiUser className="h-[18px] w-[18px]" />
               </button>
@@ -126,7 +127,7 @@ const Navbar = () => {
               type="button"
               onClick={handleFavorites}
               aria-label="Favorites"
-              className={`relative ${iconButton}`}
+              className={`relative ${desktopIconButton}`}
             >
               <FiHeart className="h-[18px] w-[18px]" />
               {getFavoriteCount() > 0 && (
