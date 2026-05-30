@@ -34,7 +34,7 @@ export const ShimmerImage = ({
 
   useEffect(() => {
     setMinimumShown(false);
-    const timer = window.setTimeout(() => setMinimumShown(true), 520);
+    const timer = window.setTimeout(() => setMinimumShown(true), 950);
     return () => window.clearTimeout(timer);
   }, [imageSrc]);
 
@@ -94,7 +94,7 @@ export const ShimmerImage = ({
     <div className={`relative overflow-hidden ${wrapperClassName}`} onClick={onClick}>
       {showSkeleton && (
         <SkeletonBlock
-          className={`image-loading-shimmer absolute inset-0 h-full w-full rounded-none ${skeletonClassName}`}
+          className={`image-loading-shimmer pointer-events-none absolute inset-0 z-10 h-full w-full rounded-none ${skeletonClassName}`}
         />
       )}
       <img
