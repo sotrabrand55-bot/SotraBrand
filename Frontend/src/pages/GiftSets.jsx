@@ -12,6 +12,10 @@ const GiftSets = () => {
   const [displaySlots, setDisplaySlots] = useState([]);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+  }, []);
+
+  useEffect(() => {
     let cancelled = false;
 
     fetch(`${backendUrl}/api/gift-set-display`)

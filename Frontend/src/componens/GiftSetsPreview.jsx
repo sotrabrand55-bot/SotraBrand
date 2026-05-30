@@ -62,7 +62,7 @@ const GiftSetsPreview = () => {
           {panels.map((panel) => (
             <Link
               key={`${panel.slot}-${panel.title}`}
-              to={panel.linkTo}
+              to="/gift-sets"
               className={`group relative overflow-hidden rounded-md bg-[#eadfd2] shadow-[0_14px_34px_rgba(62,45,28,0.11)] sm:shadow-[0_18px_45px_rgba(62,45,28,0.12)] ${
                 panel.slot === 1
                   ? "col-span-2 min-h-[270px] sm:min-h-[440px] lg:col-span-1"

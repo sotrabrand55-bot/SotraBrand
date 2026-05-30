@@ -127,7 +127,7 @@ const Navbar = () => {
               type="button"
               onClick={handleFavorites}
               aria-label="Favorites"
-              className={`relative ${desktopIconButton}`}
+              className={`relative ${iconButton}`}
             >
               <FiHeart className="h-[18px] w-[18px]" />
               {getFavoriteCount() > 0 && (
@@ -215,9 +215,21 @@ const Navbar = () => {
               type="button"
               onClick={() => {
                 setOpen(false)
-                handleSearch()
+                navigate(token ? '/orders' : '/login')
               }}
               className="flex w-full items-center justify-between rounded-md border border-[#eadfd2] bg-white/65 px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#1f1b17] transition hover:border-[#c49a5e]"
+            >
+              {token ? 'Account' : 'Login'}
+              <FiUser className="h-4 w-4" />
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                setOpen(false)
+                handleSearch()
+              }}
+              className="mt-3 flex w-full items-center justify-between rounded-md border border-[#eadfd2] bg-white/65 px-4 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-[#1f1b17] transition hover:border-[#c49a5e]"
             >
               Search Collection
               <FiSearch className="h-4 w-4" />
