@@ -49,6 +49,8 @@ const allowedOrigins = [
   'http://[::1]:5174',
   'https://levon-fja4.onrender.com',
   'https://levon-delta.vercel.app',
+  'https://levon-lb.online',
+  'https://www.levon-lb.online',
   ...envAllowedOrigins,
 ].map(normalizeOrigin);
 
