@@ -1,12 +1,17 @@
-import imagekit from "../config/ImageKit.js";
 import pageImagesModel from "../models/pageImagesModel.js";
+import {
+  deleteImageKitAssets,
+  uploadImageKitAsset,
+} from "../utils/imagekitCleanup.js";
 
 const defaultImages = {
   key: "main",
   aboutImage: "",
-  aboutImageAlt: "LEVON fragrance collection",
+  aboutImageFileId: "",
+  aboutImageAlt: "Be Radiant by Nancy collection",
   contactImage: "",
-  contactImageAlt: "Levon perfume contact",
+  contactImageFileId: "",
+  contactImageAlt: "Be Radiant by Nancy contact",
 };
 
 const getOrCreatePageImages = async () => {
@@ -37,18 +42,19 @@ export const updatePageImages = async (req, res) => {
     if (req.body.contactImageAlt !== undefined) payload.contactImageAlt = req.body.contactImageAlt;
 
     const uploads = [
-      { field: "aboutImage", target: "aboutImage" },
-      { field: "contactImage", target: "contactImage" },
+      { field: "aboutImage", target: "aboutImage", fileIdTarget: "aboutImageFileId" },
+      { field: "contactImage", target: "contactImage", fileIdTarget: "contactImageFileId" },
     ];
 
     for (const item of uploads) {
       const file = req.files?.[item.field]?.[0];
       if (file) {
-        const uploaded = await imagekit.upload({
-          file: file.buffer,
-          fileName: file.originalname,
-        });
+        const uploaded = await uploadImageKitAsset(file, item.field);
+        await deleteImageKitAssets([
+          { url: pageImages[item.target], fileId: pageImages[item.fileIdTarget] },
+        ]);
         payload[item.target] = uploaded.url;
+        payload[item.fileIdTarget] = uploaded.fileId;
       }
     }
 

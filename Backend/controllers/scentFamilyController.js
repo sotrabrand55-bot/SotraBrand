@@ -2,14 +2,15 @@ import scentFamilyModel from "../models/scentFamilyModel.js";
 import { logError } from "../utils/logger.js";
 
 const defaultScentFamilies = [
-  "Amber",
-  "Floral",
-  "Fresh",
-  "Woods",
-  "Oud",
-  "Musk",
-  "Citrus",
-  "Gift Sets",
+  "Pheromone Touch",
+  "Body lotion pheromone",
+  "Body oil pheromone",
+  "Body splash pheromone",
+  "Body scrub pheromone",
+  "Mystique parfum",
+  "Body lotion mystique",
+  "Body splash mystique",
+  "Radiant charm",
 ];
 
 const slugify = (value = "") =>

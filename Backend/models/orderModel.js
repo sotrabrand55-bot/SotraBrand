@@ -12,6 +12,7 @@ const orderSchema = new mongoose.Schema({
   amount: { type: Number, required: true },
 
   coupon: { type: String, default: null },   // ✅ Add this
+  customerNote: { type: String, default: '', maxlength: 1200 },
   address: {
     firstName:     { type: String, default: '' },
     lastName:      { type: String, default: '' },

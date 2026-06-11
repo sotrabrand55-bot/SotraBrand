@@ -16,7 +16,7 @@ const statusOptions = [
 ];
 
 const statClass =
-  "rounded-md border border-[#eadfd2] bg-[#fffaf4] p-4 shadow-[0_14px_34px_rgba(62,45,28,0.06)]";
+  "rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4 shadow-[0_14px_34px_rgba(62,45,28,0.06)]";
 
 const formatPrice = (value) => {
   const amount = Number(value);
@@ -25,7 +25,7 @@ const formatPrice = (value) => {
 
 const shortOrderId = (id = "") => {
   const text = String(id);
-  return text ? `LV-${text.slice(-6).toUpperCase()}` : "LV-ORDER";
+  return text ? `BR-${text.slice(-6).toUpperCase()}` : "BR-ORDER";
 };
 
 const formatDate = (value) => {
@@ -74,6 +74,11 @@ const normalizeItems = (order) => {
         item.name ||
         item.product?.name ||
         "Product",
+      perfumeType:
+        item.perfumeType ??
+        item.selectedPerfumeType ??
+        item.concentration ??
+        null,
       size: item.size ?? item.selectedSize ?? item.variantSize ?? null,
       color: item.color ?? item.selectedColor ?? item.variantColor ?? null,
       quantity,
@@ -109,7 +114,7 @@ const statusTone = (status = "") => {
   if (key.includes("cancel") || key.includes("stock")) return "border-[#7b2d2d]/25 bg-rose-50 text-[#7b2d2d]";
   if (key.includes("ship") || key.includes("out for")) return "border-blue-200 bg-blue-50 text-blue-700";
   if (key.includes("processing") || key.includes("pack")) return "border-amber-200 bg-amber-50 text-amber-700";
-  return "border-[#dfd1c1] bg-[#fffdf9] text-[#6f5844]";
+  return "border-[#d4d4d4] bg-[#ffffff] text-[#374151]";
 };
 
 const Orders = ({ token }) => {
@@ -248,7 +253,7 @@ const Orders = ({ token }) => {
   };
 
   const exportOrders = () => {
-    const header = ["order", "date", "customer", "status", "payment", "method", "items", "total"];
+    const header = ["order", "date", "customer", "status", "payment", "method", "items", "total", "note"];
     const rows = orders.map((order) => [
       shortOrderId(order._id),
       formatDateTime(order.date),
@@ -258,6 +263,7 @@ const Orders = ({ token }) => {
       order.paymentMethod || "-",
       normalizeItems(order).reduce((sum, item) => sum + item.quantity, 0),
       Number(order.amount || 0).toFixed(2),
+      order.customerNote || "",
     ]);
 
     const csv = [header, ...rows]
@@ -272,7 +278,7 @@ const Orders = ({ token }) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "levon-orders.csv";
+    link.download = "be-radiant-nancy-orders.csv";
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -287,16 +293,16 @@ const Orders = ({ token }) => {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1480px] text-[#1f1b17]">
-      <div className="mb-5 flex flex-col gap-3 border-b border-[#eadfd2] pb-5 lg:flex-row lg:items-end lg:justify-between">
+    <main className="mx-auto w-full max-w-[1480px] text-[#000000]">
+      <div className="mb-5 flex flex-col gap-3 border-b border-[#e5e5e5] pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#b9945d]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#c47b92]">
             Order Manager
           </p>
-          <h1 className="mt-1 font-serif text-4xl leading-none text-[#1f1b17]">
+          <h1 className="mt-1 font-serif text-4xl leading-none text-[#000000]">
             Orders
           </h1>
-          <p className="mt-2 text-sm text-[#7d6756]">
+          <p className="mt-2 text-sm text-[#4b5563]">
             Track customer orders, payment status, and fulfillment.
           </p>
         </div>
@@ -304,7 +310,7 @@ const Orders = ({ token }) => {
           <button
             type="button"
             onClick={fetchAllOrders}
-            className="rounded-full border border-[#d8c2a5] px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#6f5844] transition hover:border-[#1f1b17] hover:text-[#1f1b17]"
+            className="rounded-full border border-[#d4d4d4] px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#374151] transition hover:border-[#000000] hover:text-[#000000]"
           >
             Refresh
           </button>
@@ -312,7 +318,7 @@ const Orders = ({ token }) => {
             type="button"
             onClick={exportOrders}
             disabled={!orders.length}
-            className="rounded-full bg-[#1f1b17] px-6 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[#c49a5e] disabled:cursor-not-allowed disabled:bg-[#7d6756]"
+            className="rounded-full bg-[#000000] px-6 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[#000000] disabled:cursor-not-allowed disabled:bg-[#4b5563]"
           >
             Export
           </button>
@@ -322,10 +328,10 @@ const Orders = ({ token }) => {
       <section className="mb-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6">
         {stats.map((stat) => (
           <div key={stat.label} className={statClass}>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9a8068]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
               {stat.label}
             </p>
-            <p className="mt-2 font-serif text-3xl leading-none text-[#1f1b17]">
+            <p className="mt-2 font-serif text-3xl leading-none text-[#000000]">
               {stat.value}
             </p>
           </div>
@@ -333,9 +339,9 @@ const Orders = ({ token }) => {
       </section>
 
       {!orders.length ? (
-        <section className="rounded-md border border-[#eadfd2] bg-[#fffaf4] p-10 text-center shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
-          <p className="font-serif text-3xl text-[#1f1b17]">No orders yet</p>
-          <p className="mt-3 text-sm text-[#7d6756]">
+        <section className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-10 text-center shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
+          <p className="font-serif text-3xl text-[#000000]">No orders yet</p>
+          <p className="mt-3 text-sm text-[#4b5563]">
             New customer checkout activity will appear here.
           </p>
         </section>
@@ -352,8 +358,8 @@ const Orders = ({ token }) => {
               return (
                 <article
                   key={order._id}
-                  className={`rounded-md border bg-[#fffaf4] p-4 shadow-[0_18px_45px_rgba(62,45,28,0.08)] transition ${
-                    selected ? "border-[#c49a5e]" : "border-[#eadfd2]"
+                  className={`rounded-md border bg-[#ffffff] p-4 shadow-[0_18px_45px_rgba(62,45,28,0.08)] transition ${
+                    selected ? "border-[#000000]" : "border-[#e5e5e5]"
                   }`}
                 >
                   <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
@@ -362,13 +368,13 @@ const Orders = ({ token }) => {
                       onClick={() => setSelectedId(order._id)}
                       className="min-w-0 text-left"
                     >
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#b9945d]">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#c47b92]">
                         Order {shortOrderId(order._id)}
                       </p>
-                      <h2 className="mt-1 truncate font-serif text-2xl leading-tight text-[#1f1b17]">
+                      <h2 className="mt-1 truncate font-serif text-2xl leading-tight text-[#000000]">
                         {getCustomerName(order)}
                       </h2>
-                      <p className="mt-1 text-xs text-[#7d6756]">
+                      <p className="mt-1 text-xs text-[#4b5563]">
                         {formatDate(order.date)} / {itemCount} {itemCount === 1 ? "item" : "items"}
                       </p>
                     </button>
@@ -384,7 +390,7 @@ const Orders = ({ token }) => {
                       }`}>
                         {order.payment ? "Paid" : "Payment Pending"}
                       </span>
-                      <span className="rounded-full border border-[#dfd1c1] bg-[#fffdf9] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#6f5844]">
+                      <span className="rounded-full border border-[#d4d4d4] bg-[#ffffff] px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#374151]">
                         {order.paymentMethod || "COD"}
                       </span>
                     </div>
@@ -396,9 +402,9 @@ const Orders = ({ token }) => {
                         {firstItems.map((item) => (
                           <div
                             key={item.key}
-                            className="flex min-w-[210px] items-center gap-3 rounded-md border border-[#eadfd2] bg-[#fffdf9] p-2"
+                            className="flex min-w-[210px] items-center gap-3 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-2"
                           >
-                            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-[#eee4d9]">
+                            <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-[#EAEAEA]">
                               {item.thumb ? (
                                 <img
                                   src={item.thumb}
@@ -406,17 +412,17 @@ const Orders = ({ token }) => {
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <div className="grid h-full w-full place-items-center text-[9px] uppercase tracking-[0.12em] text-[#a49181]">
+                                <div className="grid h-full w-full place-items-center text-[9px] uppercase tracking-[0.12em] text-[#9ca3af]">
                                   No image
                                 </div>
                               )}
                             </div>
                             <div className="min-w-0">
-                              <p className="truncate text-sm font-semibold text-[#1f1b17]">
+                              <p className="truncate text-sm font-semibold text-[#000000]">
                                 {item.name}
                               </p>
-                              <p className="mt-1 truncate text-[11px] text-[#7d6756]">
-                                {item.size || "-"} / Qty {item.quantity}
+                              <p className="mt-1 truncate text-[11px] text-[#4b5563]">
+                                {[item.perfumeType, item.size].filter(Boolean).join(" / ") || "-"} / Qty {item.quantity}
                               </p>
                             </div>
                           </div>
@@ -425,7 +431,7 @@ const Orders = ({ token }) => {
                           <button
                             type="button"
                             onClick={() => setSelectedId(order._id)}
-                            className="min-w-[96px] rounded-md border border-[#eadfd2] bg-[#fffdf9] px-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#7d6756]"
+                            className="min-w-[96px] rounded-md border border-[#e5e5e5] bg-[#ffffff] px-3 text-xs font-semibold uppercase tracking-[0.12em] text-[#4b5563]"
                           >
                             +{items.length - firstItems.length} more
                           </button>
@@ -433,16 +439,16 @@ const Orders = ({ token }) => {
                       </div>
                     </div>
 
-                    <div className="rounded-md border border-[#eadfd2] bg-[#fffdf9] p-3">
-                      <div className="flex items-center justify-between text-xs text-[#7d6756]">
+                    <div className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-3">
+                      <div className="flex items-center justify-between text-xs text-[#4b5563]">
                         <span>Subtotal</span>
-                        <span className="font-semibold text-[#1f1b17]">
+                        <span className="font-semibold text-[#000000]">
                           {formatPrice(totals.subtotal)}
                         </span>
                       </div>
-                      <div className="mt-2 flex items-center justify-between text-xs text-[#7d6756]">
+                      <div className="mt-2 flex items-center justify-between text-xs text-[#4b5563]">
                         <span>Delivery</span>
-                        <span className="font-semibold text-[#1f1b17]">
+                        <span className="font-semibold text-[#000000]">
                           {formatPrice(totals.shipping)}
                         </span>
                       </div>
@@ -454,12 +460,12 @@ const Orders = ({ token }) => {
                           </span>
                         </div>
                       )}
-                      <div className="mt-3 border-t border-[#eadfd2] pt-3">
+                      <div className="mt-3 border-t border-[#e5e5e5] pt-3">
                         <div className="flex items-end justify-between">
-                          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a8068]">
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
                             Total
                           </span>
-                          <span className="font-serif text-2xl text-[#1f1b17]">
+                          <span className="font-serif text-2xl text-[#000000]">
                             {formatPrice(totals.amount)}
                           </span>
                         </div>
@@ -467,11 +473,22 @@ const Orders = ({ token }) => {
                     </div>
                   </div>
 
+                  {order.customerNote && (
+                    <div className="mt-4 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
+                        Customer Note
+                      </p>
+                      <p className="mt-2 whitespace-pre-line text-sm leading-6 text-[#374151]">
+                        {order.customerNote}
+                      </p>
+                    </div>
+                  )}
+
                   <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <select
                       value={order.status || "Order Placed"}
                       onChange={(event) => statusHandler(event.target.value, order._id)}
-                      className="min-h-10 rounded-md border border-[#dfd1c1] bg-[#fffdf9] px-3 py-2 text-sm text-[#1f1b17] outline-none focus:border-[#c49a5e] focus:ring-2 focus:ring-[#c49a5e]/15"
+                      className="min-h-10 rounded-md border border-[#d4d4d4] bg-[#ffffff] px-3 py-2 text-sm text-[#000000] outline-none focus:border-[#000000] focus:ring-2 focus:ring-[#000000]/15"
                     >
                       {[...new Set([order.status, ...statusOptions].filter(Boolean))].map((status) => (
                         <option key={status} value={status}>
@@ -484,7 +501,7 @@ const Orders = ({ token }) => {
                       <button
                         type="button"
                         onClick={() => setSelectedId(order._id)}
-                        className="rounded-full border border-[#d8c2a5] px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#6f5844] transition hover:border-[#1f1b17] hover:text-[#1f1b17]"
+                        className="rounded-full border border-[#d4d4d4] px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] text-[#374151] transition hover:border-[#000000] hover:text-[#000000]"
                       >
                         View Details
                       </button>
@@ -518,7 +535,7 @@ const Orders = ({ token }) => {
 const OrderDetails = ({ order, onStatusChange, onDelete }) => {
   if (!order) {
     return (
-      <section className="rounded-md border border-[#eadfd2] bg-[#fffaf4] p-6 text-sm text-[#7d6756] shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
+      <section className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-6 text-sm text-[#4b5563] shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
         Select an order to view details.
       </section>
     );
@@ -529,16 +546,16 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
   const address = order.address || {};
 
   return (
-    <section className="rounded-md border border-[#eadfd2] bg-[#fffaf4] p-4 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
+    <section className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
       <div className="flex items-start justify-between gap-3">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b9945d]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#c47b92]">
             Order Detail
           </p>
-          <h2 className="mt-1 font-serif text-3xl leading-tight text-[#1f1b17]">
+          <h2 className="mt-1 font-serif text-3xl leading-tight text-[#000000]">
             {shortOrderId(order._id)}
           </h2>
-          <p className="mt-1 text-xs text-[#7d6756]">
+          <p className="mt-1 text-xs text-[#4b5563]">
             {formatDateTime(order.date)}
           </p>
         </div>
@@ -547,14 +564,14 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
         </span>
       </div>
 
-      <div className="mt-5 rounded-md border border-[#eadfd2] bg-[#fffdf9] p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a8068]">
+      <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
           Customer
         </p>
-        <p className="mt-2 font-serif text-2xl text-[#1f1b17]">
+        <p className="mt-2 font-serif text-2xl text-[#000000]">
           {getCustomerName(order)}
         </p>
-        <div className="mt-2 space-y-1 text-sm leading-6 text-[#7d6756]">
+        <div className="mt-2 space-y-1 text-sm leading-6 text-[#4b5563]">
           {address.phone && <p>{address.phone}</p>}
           {address.email && <p>{address.email}</p>}
           <p>
@@ -575,14 +592,51 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
         </div>
       </div>
 
-      <div className="mt-4 rounded-md border border-[#eadfd2] bg-[#fffdf9] p-4">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a8068]">
+      <div className="mt-4 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
+          Payment
+        </p>
+        <div className="mt-3 space-y-2 text-sm text-[#4b5563]">
+          <div className="flex items-center justify-between">
+            <span>Method</span>
+            <span className="font-semibold text-[#000000]">
+              {order.paymentMethod || "COD"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>Status</span>
+            <span className="font-semibold text-[#000000]">
+              {order.payment ? "Paid" : "Payment Pending"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between">
+            <span>Coupon</span>
+            <span className="font-semibold text-[#000000]">
+              {order.coupon || "None"}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {order.customerNote && (
+        <div className="mt-4 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
+            Customer Note
+          </p>
+          <p className="mt-3 whitespace-pre-line text-sm leading-6 text-[#374151]">
+            {order.customerNote}
+          </p>
+        </div>
+      )}
+
+      <div className="mt-4 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
+        <p className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
           Items
         </p>
         <div className="mt-3 space-y-3">
           {items.map((item) => (
             <div key={item.key} className="flex gap-3">
-              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-[#eee4d9]">
+              <div className="h-14 w-14 shrink-0 overflow-hidden rounded-md bg-[#EAEAEA]">
                 {item.thumb ? (
                   <img
                     src={item.thumb}
@@ -590,19 +644,19 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
                     className="h-full w-full object-cover"
                   />
                 ) : (
-                  <div className="grid h-full w-full place-items-center text-[9px] uppercase tracking-[0.12em] text-[#a49181]">
+                  <div className="grid h-full w-full place-items-center text-[9px] uppercase tracking-[0.12em] text-[#9ca3af]">
                     No image
                   </div>
                 )}
               </div>
               <div className="min-w-0 flex-1">
-                <p className="truncate text-sm font-semibold text-[#1f1b17]">
+                <p className="truncate text-sm font-semibold text-[#000000]">
                   {item.name}
                 </p>
-                <p className="mt-1 text-xs text-[#7d6756]">
-                  {item.size || "-"} / Qty {item.quantity}
+                <p className="mt-1 text-xs text-[#4b5563]">
+                  {[item.perfumeType, item.size, item.color].filter(Boolean).join(" / ") || "-"} / Qty {item.quantity}
                 </p>
-                <p className="mt-1 text-xs font-semibold text-[#1f1b17]">
+                <p className="mt-1 text-xs font-semibold text-[#000000]">
                   {formatPrice(item.subtotal)}
                 </p>
               </div>
@@ -611,17 +665,17 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
         </div>
       </div>
 
-      <div className="mt-4 rounded-md border border-[#eadfd2] bg-[#fffdf9] p-4">
+      <div className="mt-4 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
         <div className="space-y-2 text-sm">
-          <div className="flex items-center justify-between text-[#7d6756]">
+          <div className="flex items-center justify-between text-[#4b5563]">
             <span>Subtotal</span>
-            <span className="font-semibold text-[#1f1b17]">
+            <span className="font-semibold text-[#000000]">
               {formatPrice(totals.subtotal)}
             </span>
           </div>
-          <div className="flex items-center justify-between text-[#7d6756]">
+          <div className="flex items-center justify-between text-[#4b5563]">
             <span>Delivery</span>
-            <span className="font-semibold text-[#1f1b17]">
+            <span className="font-semibold text-[#000000]">
               {formatPrice(totals.shipping)}
             </span>
           </div>
@@ -632,24 +686,24 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
             </div>
           )}
         </div>
-        <div className="mt-4 flex items-end justify-between border-t border-[#eadfd2] pt-4">
-          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a8068]">
+        <div className="mt-4 flex items-end justify-between border-t border-[#e5e5e5] pt-4">
+          <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
             Total
           </span>
-          <span className="font-serif text-3xl text-[#1f1b17]">
+          <span className="font-serif text-3xl text-[#000000]">
             {formatPrice(totals.amount)}
           </span>
         </div>
       </div>
 
-      <div className="mt-4 rounded-md border border-[#eadfd2] bg-[#fffdf9] p-4">
-        <label className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#9a8068]">
+      <div className="mt-4 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
+        <label className="block text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
           Update Status
         </label>
         <select
           value={order.status || "Order Placed"}
           onChange={(event) => onStatusChange(event.target.value, order._id)}
-          className="mt-2 min-h-10 w-full rounded-md border border-[#dfd1c1] bg-[#fffaf4] px-3 py-2 text-sm text-[#1f1b17] outline-none focus:border-[#c49a5e] focus:ring-2 focus:ring-[#c49a5e]/15"
+          className="mt-2 min-h-10 w-full rounded-md border border-[#d4d4d4] bg-[#ffffff] px-3 py-2 text-sm text-[#000000] outline-none focus:border-[#000000] focus:ring-2 focus:ring-[#000000]/15"
         >
           {[...new Set([order.status, ...statusOptions].filter(Boolean))].map((status) => (
             <option key={status} value={status}>

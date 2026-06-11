@@ -8,7 +8,8 @@
   "type": "module",
   "scripts": {
     "start": "node server.js",
-    "server": "nodemon server.js "
+    "server": "nodemon server.js ",
+    "seed:nancy": "node scripts/seedNancyMockData.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

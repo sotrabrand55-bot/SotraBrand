@@ -2,9 +2,9 @@
 import React from "react";
 
 // Pass a tailwind bg class or a hex color string to `bg`.
-// Examples: bg="bg-gray-100" or bg="#f7f2f3"
+// Examples: bg="bg-white" or bg="#ffffff"
 // eslint-disable-next-line react/prop-types
-const FullWidth = ({ bg = "bg-gray-100", className = "", children, ...rest }) => {
+const FullWidth = ({ bg = "bg-white", className = "", children, ...rest }) => {
   // if user passed a hex, keep it raw; if they passed a tailwind class, use it
   const bgClass = bg.startsWith("bg-") ? bg : "";
   const bgStyle = !bgClass ? { backgroundColor: bg } : undefined;

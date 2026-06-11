@@ -1,5 +1,4 @@
 /* eslint-disable react/prop-types */
-import React from "react";
 import { useEffect, useMemo, useState } from "react";
 
 export const SkeletonBlock = ({ className = "" }) => (
@@ -117,25 +116,8 @@ export const ShimmerImage = ({
 };
 
 export const HeroSkeleton = () => (
-  <section className="relative left-1/2 w-screen -translate-x-1/2 overflow-hidden bg-[#fff7ef]">
-    <div className="mx-auto grid min-h-[calc(100svh-3.5rem)] max-w-7xl items-center gap-5 px-4 py-5 sm:min-h-[calc(100vh-5rem)] sm:gap-9 sm:px-6 sm:py-10 md:grid-cols-[0.9fr_1.1fr] lg:px-8 lg:py-14">
-      <div>
-        <SkeletonBlock className="h-3 w-36 rounded-full bg-[#eadfd2]" />
-        <SkeletonBlock className="mt-5 h-16 w-72 rounded-md bg-[#eadfd2] sm:h-24 sm:w-[420px]" />
-        <SkeletonBlock className="mt-5 h-4 w-full max-w-xl rounded-full bg-[#eadfd2]" />
-        <SkeletonBlock className="mt-3 h-4 w-4/5 max-w-lg rounded-full bg-[#eadfd2]" />
-        <div className="mt-7 flex flex-wrap gap-3">
-          <SkeletonBlock className="h-11 w-32 rounded-full bg-[#eadfd2]" />
-          <SkeletonBlock className="h-10 w-20 rounded-full bg-[#eadfd2]" />
-          <SkeletonBlock className="h-10 w-20 rounded-full bg-[#eadfd2]" />
-        </div>
-      </div>
-      <div className="grid h-[32vh] min-h-[220px] grid-cols-[1.1fr_0.78fr] grid-rows-2 gap-2.5 sm:h-[62vh] sm:min-h-[390px] sm:gap-4 lg:h-[70vh]">
-        <SkeletonBlock className="row-span-2 h-full rounded-sm bg-[#eadfd2]" />
-        <SkeletonBlock className="h-full rounded-sm bg-[#eadfd2]" />
-        <SkeletonBlock className="h-full rounded-sm bg-[#eadfd2]" />
-      </div>
-    </div>
+  <section className="relative left-1/2 aspect-[9/16] w-screen -translate-x-1/2 overflow-hidden bg-[#EAEAEA] md:aspect-[2/1] md:w-[calc(100vw-12px)] md:rounded-[16px]">
+    <SkeletonBlock className="nancy-cool-shimmer h-full w-full rounded-none bg-[#EAEAEA]" />
   </section>
 );
 
@@ -163,13 +145,13 @@ export const ShowcaseSkeleton = () => (
 export const SectionHeaderSkeleton = ({ titleWidth = "w-64" }) => (
   <div className="mb-8 text-center">
     <div className="mx-auto mb-3 flex w-fit items-center gap-3">
-      <SkeletonBlock className="h-px w-10 rounded-none bg-[#dccfbd]" />
-      <SkeletonBlock className="h-2.5 w-2.5 rotate-45 rounded-none bg-[#dccfbd]" />
-      <SkeletonBlock className="h-px w-10 rounded-none bg-[#dccfbd]" />
+      <SkeletonBlock className="h-px w-10 rounded-none bg-[#EAEAEA]" />
+      <SkeletonBlock className="h-2.5 w-2.5 rotate-45 rounded-none bg-[#EAEAEA]" />
+      <SkeletonBlock className="h-px w-10 rounded-none bg-[#EAEAEA]" />
     </div>
-    <SkeletonBlock className="mx-auto h-3 w-36 rounded-full bg-[#eadfd2]" />
-    <SkeletonBlock className={`mx-auto mt-4 h-14 ${titleWidth} max-w-full rounded-md bg-[#eadfd2]`} />
-    <SkeletonBlock className="mx-auto mt-4 h-4 w-full max-w-md rounded-full bg-[#eadfd2]" />
+    <SkeletonBlock className="mx-auto h-3 w-36 rounded-full bg-[#EAEAEA]" />
+    <SkeletonBlock className={`mx-auto mt-4 h-14 ${titleWidth} max-w-full rounded-md bg-[#EAEAEA]`} />
+    <SkeletonBlock className="mx-auto mt-4 h-4 w-full max-w-md rounded-full bg-[#EAEAEA]" />
   </div>
 );
 
@@ -177,7 +159,7 @@ export const ProductRailSkeleton = ({ titleWidth = "w-56", cards = 3 }) => (
   <section className="my-0 py-5 sm:py-6">
     <SectionHeaderSkeleton titleWidth={titleWidth} />
     <div className="flex justify-end px-2 pb-5">
-      <SkeletonBlock className="hidden h-10 w-28 rounded-full bg-[#eadfd2] sm:block" />
+      <SkeletonBlock className="hidden h-10 w-28 rounded-full bg-[#EAEAEA] sm:block" />
     </div>
     <div className="flex gap-6 overflow-hidden px-2 pb-2">
       {[...Array(cards)].map((_, index) => (
@@ -185,15 +167,15 @@ export const ProductRailSkeleton = ({ titleWidth = "w-56", cards = 3 }) => (
           key={index}
           className="flex-shrink-0 w-[82vw] sm:w-[46vw] lg:w-[32%]"
         >
-          <div className="rounded-md bg-[#fffaf4] p-3 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
-            <SkeletonBlock className="aspect-[4/5] rounded bg-[#eadfd2]" />
+          <div className="rounded-md bg-white p-3 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
+            <SkeletonBlock className="aspect-[4/5] rounded bg-[#EAEAEA]" />
             <div className="mt-4 flex items-center gap-2">
-              <SkeletonBlock className="h-7 w-20 rounded-full bg-[#eadfd2]" />
-              <SkeletonBlock className="h-7 w-16 rounded-full bg-[#eadfd2]" />
+              <SkeletonBlock className="h-7 w-20 rounded-full bg-[#EAEAEA]" />
+              <SkeletonBlock className="h-7 w-16 rounded-full bg-[#EAEAEA]" />
             </div>
-            <SkeletonBlock className="mt-4 h-7 w-3/4 rounded-md bg-[#eadfd2]" />
-            <SkeletonBlock className="mt-3 h-4 w-1/2 rounded-full bg-[#eadfd2]" />
-            <SkeletonBlock className="mt-4 h-5 w-24 rounded-full bg-[#eadfd2]" />
+            <SkeletonBlock className="mt-4 h-7 w-3/4 rounded-md bg-[#EAEAEA]" />
+            <SkeletonBlock className="mt-3 h-4 w-1/2 rounded-full bg-[#EAEAEA]" />
+            <SkeletonBlock className="mt-4 h-5 w-24 rounded-full bg-[#EAEAEA]" />
           </div>
         </div>
       ))}
@@ -201,93 +183,72 @@ export const ProductRailSkeleton = ({ titleWidth = "w-56", cards = 3 }) => (
   </section>
 );
 
-export const GiftSetsSectionSkeleton = () => (
-  <section className="relative left-1/2 w-screen -translate-x-1/2 bg-[#fffaf4] py-8 sm:py-10">
+export const FeaturedProductSkeleton = () => (
+  <section
+    aria-label="Featured Products loading"
+    className="nancy-featured-skeleton relative left-1/2 w-screen -translate-x-1/2 bg-white pb-8 pt-0 sm:pb-12"
+  >
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <SectionHeaderSkeleton titleWidth="w-56" />
-      <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-[1.6fr_0.8fr_0.9fr]">
-        {[1, 2, 3].map((slot) => (
-          <SkeletonBlock
-            key={slot}
-            className={`rounded-md bg-[#eadfd2] shadow-[0_14px_34px_rgba(62,45,28,0.08)] ${
-              slot === 1
-                ? "col-span-2 min-h-[270px] sm:min-h-[440px] lg:col-span-1"
-                : "min-h-[220px] sm:min-h-[440px]"
-            }`}
-          />
-        ))}
+      <div className="mb-3 flex justify-end gap-2">
+        <SkeletonBlock className="h-9 w-9 rounded-full bg-[#eeeeee]" />
+        <SkeletonBlock className="h-9 w-9 rounded-full bg-[#eeeeee]" />
       </div>
-      <SkeletonBlock className="mx-auto mt-7 h-12 w-44 rounded-full bg-[#eadfd2]" />
-    </div>
-  </section>
-);
 
-export const ScentWardrobeSkeleton = () => (
-  <section className="my-0 py-5 sm:py-6">
-    <SectionHeaderSkeleton titleWidth="w-[420px]" />
-    <div className="grid grid-cols-2 gap-3 sm:grid-cols-1 sm:gap-4 lg:grid-cols-2">
-      {[0, 1, 2, 3].map((index) => (
-        <div
-          key={index}
-          className="grid overflow-hidden rounded-md border border-[#eadfd2] bg-[#fffaf4] shadow-[0_12px_28px_rgba(62,45,28,0.08)] sm:grid-cols-[0.9fr_1.2fr]"
-        >
-          <SkeletonBlock className="min-h-[140px] rounded-none bg-[#eadfd2] sm:min-h-[260px]" />
-          <div className="p-3.5 sm:p-7">
-            <SkeletonBlock className="h-px w-10 rounded-none bg-[#dccfbd]" />
-            <SkeletonBlock className="mt-5 h-9 w-3/4 rounded-md bg-[#eadfd2]" />
-            <SkeletonBlock className="mt-4 h-4 w-full rounded-full bg-[#eadfd2]" />
-            <SkeletonBlock className="mt-3 h-4 w-4/5 rounded-full bg-[#eadfd2]" />
-            <div className="mt-7 flex gap-2">
-              <SkeletonBlock className="h-7 w-20 rounded-full bg-[#eadfd2]" />
-              <SkeletonBlock className="h-7 w-20 rounded-full bg-[#eadfd2]" />
-            </div>
+      <article className="w-[min(100%,25rem)] bg-white text-black sm:w-[24rem] lg:grid lg:w-full lg:grid-cols-[1.12fr_0.88fr] lg:items-center lg:gap-12 lg:px-10">
+        <SkeletonBlock className="aspect-[4/5] rounded-none bg-[#f2f2f2] lg:h-[42rem] lg:max-h-[72vh]" />
+
+        <div className="px-4 pb-6 pt-4 sm:px-5 lg:max-w-[42rem] lg:px-0 lg:py-12">
+          <SkeletonBlock className="h-5 w-28 rounded-md bg-[#ededed] lg:h-12 lg:w-56" />
+          <SkeletonBlock className="mt-3 h-5 w-36 rounded-md bg-[#ededed] lg:mt-8 lg:h-9 lg:w-64" />
+          <SkeletonBlock className="mt-2 h-3 w-44 rounded-full bg-[#ededed] lg:h-5 lg:w-72" />
+          <SkeletonBlock className="mt-5 h-4 w-full rounded-full bg-[#ededed] lg:mt-10 lg:h-7" />
+          <SkeletonBlock className="mt-3 h-4 w-4/5 rounded-full bg-[#ededed] lg:h-7" />
+          <SkeletonBlock className="mt-4 h-4 w-56 rounded-full bg-[#ededed] lg:h-7 lg:w-80" />
+
+          <div className="-mx-2 mt-3 flex gap-3 px-2 py-2 lg:mt-7 lg:gap-5">
+            {[0, 1, 2, 3, 4, 5].map((item) => (
+              <SkeletonBlock
+                key={item}
+                className="h-12 w-12 shrink-0 rounded-full bg-[#ededed] sm:h-14 sm:w-14"
+              />
+            ))}
           </div>
-        </div>
-      ))}
-    </div>
-  </section>
-);
 
-export const BrandStatementSkeleton = () => (
-  <section className="-mx-4 bg-[#fffaf4] py-10 sm:-mx-[5vw] sm:py-12 md:-mx-[7vw] lg:-mx-[9vw]">
-    <div className="mx-auto grid max-w-[1300px] items-center gap-10 px-4 sm:px-6 lg:grid-cols-[0.92fr_1.08fr] lg:gap-14">
-      <div>
-        <SkeletonBlock className="h-3 w-36 rounded-full bg-[#eadfd2]" />
-        <SkeletonBlock className="mt-5 h-16 w-full max-w-lg rounded-md bg-[#eadfd2]" />
-        <SkeletonBlock className="mt-6 h-4 w-full max-w-xl rounded-full bg-[#eadfd2]" />
-        <SkeletonBlock className="mt-3 h-4 w-5/6 max-w-lg rounded-full bg-[#eadfd2]" />
-        <div className="mt-7 grid gap-3 sm:grid-cols-2">
-          <SkeletonBlock className="h-20 rounded-md bg-[#eadfd2]" />
-          <SkeletonBlock className="h-20 rounded-md bg-[#eadfd2]" />
+          <div className="lg:mt-10 lg:flex lg:items-center lg:gap-8">
+            <div className="mt-5 flex items-center gap-3 lg:mt-0 lg:gap-8">
+              <SkeletonBlock className="h-8 w-8 rounded-full bg-[#ededed] lg:h-12 lg:w-12" />
+              <SkeletonBlock className="h-4 w-5 rounded-full bg-[#ededed]" />
+              <SkeletonBlock className="h-8 w-8 rounded-full bg-[#ededed] lg:h-12 lg:w-12" />
+            </div>
+            <SkeletonBlock className="mt-5 h-11 w-full rounded-none bg-[#ededed] lg:mt-0 lg:h-[4.4rem] lg:flex-1" />
+          </div>
+
+          <SkeletonBlock className="mt-4 h-11 w-full rounded-none bg-[#ededed] lg:mt-8 lg:h-[4.6rem]" />
+          <SkeletonBlock className="mt-5 h-5 w-20 rounded-full bg-[#ededed] lg:mt-10 lg:h-7" />
+          <SkeletonBlock className="mt-5 h-11 w-full rounded-none bg-[#ededed] lg:mt-10 lg:h-16" />
         </div>
-        <SkeletonBlock className="mt-8 h-12 w-40 rounded-full bg-[#eadfd2]" />
-      </div>
-      <SkeletonBlock className="min-h-[420px] rounded-md bg-[#eadfd2] sm:min-h-[520px]" />
+      </article>
     </div>
   </section>
 );
 
 export const CollectionGridSkeleton = ({ cards = 8 }) => (
-  <div className="grid grid-cols-2 gap-3 gap-y-6 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+  <div className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 md:grid-cols-3 xl:grid-cols-4">
     {Array.from({ length: cards }).map((_, index) => (
       <article
         key={index}
-        className="overflow-hidden rounded-md border border-[#eadfce] bg-[#fffdf9] shadow-[0_14px_34px_rgba(43,32,22,0.06)]"
+        className="overflow-hidden bg-white"
       >
-        <SkeletonBlock className="aspect-[3/4] rounded-none bg-[#eadfd2]" />
-        <div className="p-3.5 sm:p-4">
-          <div className="flex items-start justify-between gap-3">
-            <div className="min-w-0 flex-1">
-              <SkeletonBlock className="h-6 w-4/5 rounded-md bg-[#eadfd2]" />
-              <SkeletonBlock className="mt-2 h-3 w-3/5 rounded-full bg-[#eadfd2]" />
-            </div>
-            <SkeletonBlock className="h-9 w-9 shrink-0 rounded-full bg-[#eadfd2]" />
+        <SkeletonBlock className="aspect-[3/4] rounded-none bg-[#EAEAEA]" />
+        <div className="pt-3">
+          <div className="flex gap-1.5">
+            <SkeletonBlock className="h-5 w-5 rounded-full bg-[#EAEAEA]" />
+            <SkeletonBlock className="h-5 w-5 rounded-full bg-[#EAEAEA]" />
+            <SkeletonBlock className="h-5 w-5 rounded-full bg-[#EAEAEA]" />
           </div>
-          <div className="mt-3 flex gap-2">
-            <SkeletonBlock className="h-6 w-20 rounded-full bg-[#eadfd2]" />
-            <SkeletonBlock className="h-6 w-16 rounded-full bg-[#eadfd2]" />
-          </div>
-          <SkeletonBlock className="mt-3 h-4 w-24 rounded-full bg-[#eadfd2]" />
+          <SkeletonBlock className="mt-3 h-4 w-4/5 rounded-none bg-[#EAEAEA]" />
+          <SkeletonBlock className="mt-2 h-5 w-2/5 rounded-none bg-[#EAEAEA]" />
+          <SkeletonBlock className="mt-2 h-2.5 w-20 rounded-none bg-[#EAEAEA]" />
         </div>
       </article>
     ))}

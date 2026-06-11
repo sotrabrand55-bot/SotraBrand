@@ -11,6 +11,8 @@ const cookieBaseOptions = {
   path: "/",
 };
 
+const adminCookieMaxAge = 10 * 365 * 24 * 60 * 60 * 1000;
+
 const setAuthCookie = (res, name, token, maxAge) => {
   res.cookie(name, token, {
     ...cookieBaseOptions,
@@ -131,11 +133,10 @@ const adminLogin = async (req, res) => {
     if ( email === process.env.ADMIN_EMAIL && password === process.env.ADMIN_PASSWORD  ) { // iza hal email and password li rah e3mol 3laya test in json body matching the sam of env email and pass that i put so in that case create on token like this
 
       const token = jwt.sign(
-        { adminKey: email + password },
-        process.env.JWT_SECRET,
-        { expiresIn: "12h" }
-      ); // this is the token if the pass are matching
-      setAuthCookie(res, "levon_admin_token", token, 12 * 60 * 60 * 1000);
+        { adminKey: email + password, role: "admin" },
+        process.env.JWT_SECRET
+      ); // admin token intentionally has no expiry
+      setAuthCookie(res, "levon_admin_token", token, adminCookieMaxAge);
       res.json({ success: true, token });
 
     } else {

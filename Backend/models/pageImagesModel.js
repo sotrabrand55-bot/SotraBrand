@@ -4,9 +4,11 @@ const pageImagesSchema = new mongoose.Schema(
   {
     key: { type: String, default: "main", unique: true },
     aboutImage: { type: String, default: "" },
-    aboutImageAlt: { type: String, default: "LEVON fragrance collection" },
+    aboutImageFileId: { type: String, default: "" },
+    aboutImageAlt: { type: String, default: "Be Radiant by Nancy collection" },
     contactImage: { type: String, default: "" },
-    contactImageAlt: { type: String, default: "Levon perfume contact" },
+    contactImageFileId: { type: String, default: "" },
+    contactImageAlt: { type: String, default: "Be Radiant by Nancy contact" },
   },
   { timestamps: true }
 );

@@ -9,12 +9,9 @@ const pageTitles = [
   { match: /^\/edit/, eyebrow: "Product Manager", title: "Edit Product" },
   { match: /^\/add$/, eyebrow: "Product Manager", title: "Add Product" },
   { match: /^\/orders/, eyebrow: "Orders", title: "Order Control" },
-  { match: /^\/header-slides/, eyebrow: "Homepage", title: "Hero Header" },
-  { match: /^\/gift-sets/, eyebrow: "Homepage", title: "Gift Sets" },
-  { match: /^\/scent-wardrobe/, eyebrow: "Homepage", title: "Choose Your Mood" },
-  { match: /^\/brand-statement/, eyebrow: "Homepage", title: "Proudly Made" },
-  { match: /^\/page-images/, eyebrow: "Pages", title: "About + Contact Images" },
-  { match: /^\/subcat-tiles/, eyebrow: "Homepage", title: "Subcategory Tiles" },
+  { match: /^\/nancy-home/, eyebrow: "Nancy Studio", title: "Home Studio" },
+  { match: /^\/subcategory-studio/, eyebrow: "Nancy Studio", title: "Subcategory Studio" },
+  { match: /^\/categories/, eyebrow: "Menu", title: "Category Manager" },
   { match: /^\/maintenance/, eyebrow: "Settings", title: "Maintenance" },
   { match: /^\/delivery/, eyebrow: "Settings", title: "Delivery Control" },
   { match: /^\/cuppon/, eyebrow: "Settings", title: "Coupon Control" },
@@ -23,7 +20,7 @@ const pageTitles = [
 const Navbar = ({ setToken }) => {
   const { pathname } = useLocation();
   const page = pageTitles.find((item) => item.match.test(pathname)) || {
-    eyebrow: "Levon Admin",
+    eyebrow: "Nancy Admin",
     title: "Control Panel",
   };
 
@@ -38,25 +35,25 @@ const Navbar = ({ setToken }) => {
   };
 
   return (
-    <header className="sticky top-0 z-30 border-b border-[#eadfd2] bg-[#fffaf4]/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
+    <header className="sticky top-0 z-30 border-b border-black/10 bg-white/95 px-4 py-3 backdrop-blur sm:px-6 lg:px-8">
       <div className="mx-auto flex max-w-[1480px] items-center justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-[#b9945d]">
+          <p className="text-[10px] font-bold uppercase tracking-[0.24em] text-[#c47b92]">
             {page.eyebrow}
           </p>
-          <h1 className="mt-1 truncate font-serif text-2xl leading-none text-[#1f1b17] sm:text-3xl">
+          <h1 className="mt-1 truncate font-serif text-2xl leading-none text-black sm:text-3xl">
             {page.title}
           </h1>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="hidden rounded-full border border-[#eadfd2] bg-[#fffdf9] px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.16em] text-[#7d6756] sm:block">
+          <div className="hidden rounded-none border border-black/15 bg-white px-4 py-2 text-[11px] font-bold uppercase tracking-[0.16em] text-black/55 sm:block">
             Live Backend
           </div>
           <button
             type="button"
             onClick={handleLogout}
-            className="rounded-full border border-[#d8c2a5] bg-[#fffdf9] px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#1f1b17] transition hover:border-[#1f1b17] hover:bg-[#1f1b17] hover:text-white"
+            className="rounded-none border border-black bg-white px-5 py-2 text-xs font-bold uppercase tracking-[0.14em] text-black transition hover:bg-black hover:text-white"
           >
             Logout
           </button>

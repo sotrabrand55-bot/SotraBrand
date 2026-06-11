@@ -1,383 +1,402 @@
+import { mystiqueProductMedia, pheromoneTouchProductMedia } from "./productMediaData";
+
 const now = Date.now();
 
-export const mockProducts = [
-  {
-    _id: "mock-noir-ambre",
-    name: "Noir Ambre Extrait",
+const featuredPheromoneTouchProduct = {
+    _id: "mock-pheromone-touch-1",
+    name: "Pheromone Touch",
     description:
-      "A deep amber perfume with saffron, resin, and smoked cedar. Warm, elegant, and built for evening wear.",
-    price: 104,
-    discountPrice: 82,
-    image: [
-      "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85",
-      "https://images.unsplash.com/photo-1595425964071-2c1ecf4d3f37?auto=format&fit=crop&w=1200&q=85",
-      "https://images.unsplash.com/photo-1541643600914-78b084683601?auto=format&fit=crop&w=1200&q=85",
-    ],
-    category: "Fragrance",
-    subCategory: "Amber",
-    concentration: "Eau de Parfum",
-    sizes: ["50ml", "100ml"],
-    colors: ["amber", "gold", "black"],
+      "Body Splash Pheromone Touch. A fresh, radiant body mist with a soft feminine trail.",
+    price: 36,
+    discountPrice: 0,
+    rating: 5,
+    reviewCount: 2,
+    image: pheromoneTouchProductMedia.shadeOptions.map((option) => option.image),
+    storyImages: pheromoneTouchProductMedia.storyImages,
+    shadeOptions: pheromoneTouchProductMedia.shadeOptions,
+    category: "Pheromone Touch",
+    subCategory: "Pheromone Touch",
+    concentration: "Body Ritual",
+    sizes: ["100ml"],
+    colors: ["body splash", "body oil", "body lotion"],
     bestseller: true,
     newArrival: true,
     onSales: true,
+    featuredSlot: 1,
+    showSmallImages: true,
     active: true,
     outOfStock: false,
     stock: 18,
     date: now - 1000,
-  },
-  {
-    _id: "mock-rose-veil",
-    name: "Rose Veil Eau de Parfum",
+};
+
+const featuredMystiqueProduct = {
+    _id: "mock-mystique-featured-1",
+    name: "Mystique Parfum",
     description:
-      "Damask rose, white musk, and vanilla skin create a clean floral scent with a soft luxury trail.",
-    price: 76,
+      "Mystique Parfum. A deep red floral fragrance with a confident, elegant trail.",
+    price: 48,
     discountPrice: 0,
-    image: [
-      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
-      "https://images.unsplash.com/photo-1587017539504-67cfbddac569?auto=format&fit=crop&w=1200&q=85",
-    ],
-    category: "Fragrance",
-    subCategory: "Floral",
-    concentration: "Eau de Parfum",
-    sizes: ["30ml", "75ml"],
-    colors: ["rose", "blush", "white"],
-    bestseller: true,
-    newArrival: false,
-    onSales: false,
-    active: true,
-    outOfStock: false,
-    stock: 7,
-    date: now - 2000,
-  },
-  {
-    _id: "mock-cedar-rain",
-    name: "Cedar Rain",
-    description:
-      "Fresh bergamot, rain accord, and cedar leaf settle into a clean woody perfume for daily wear.",
-    price: 89,
-    discountPrice: 69,
-    image: [
-      "https://images.unsplash.com/photo-1608528577891-eb055944f2e7?auto=format&fit=crop&w=1200&q=85",
-      "https://images.unsplash.com/photo-1563170351-be82bc888aa4?auto=format&fit=crop&w=1200&q=85",
-    ],
-    category: "Fragrance",
-    subCategory: "Fresh",
-    concentration: "Eau de Toilette",
-    sizes: ["50ml", "100ml"],
-    colors: ["mint", "silver", "sky"],
-    bestseller: false,
-    newArrival: true,
-    onSales: true,
-    active: true,
-    outOfStock: false,
-    stock: 4,
-    date: now - 3000,
-  },
-  {
-    _id: "mock-golden-oud",
-    name: "Golden Oud",
-    description:
-      "A refined oud scent softened by cardamom, honeyed labdanum, and polished woods.",
-    price: 118,
-    discountPrice: 96,
-    image: [
-      "https://images.unsplash.com/photo-1600612253971-422e7f7faeb6?auto=format&fit=crop&w=1200&q=85",
-      "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85",
-    ],
-    category: "Fragrance",
-    subCategory: "Oud",
-    concentration: "Eau de Parfum",
-    sizes: ["50ml", "100ml"],
-    colors: ["gold", "brown", "black"],
-    bestseller: true,
-    newArrival: false,
-    onSales: true,
-    active: true,
-    outOfStock: false,
-    stock: 11,
-    date: now - 4000,
-  },
-  {
-    _id: "mock-musk-linen",
-    name: "Musk Linen",
-    description:
-      "A clean musk perfume with cotton flower, soft iris, and sandalwood for effortless daywear.",
-    price: 68,
-    discountPrice: 0,
-    image: [
-      "https://images.unsplash.com/photo-1585386959984-a41552231658?auto=format&fit=crop&w=1200&q=85",
-      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
-    ],
-    category: "Fragrance",
-    subCategory: "Musk",
-    concentration: "Eau de Toilette",
-    sizes: ["30ml", "75ml"],
-    colors: ["white", "cream", "silver"],
-    bestseller: false,
-    newArrival: true,
-    onSales: false,
-    active: true,
-    outOfStock: false,
-    stock: 2,
-    date: now - 5000,
-  },
-  {
-    _id: "mock-citrus-noir",
-    name: "Citrus Noir",
-    description:
-      "Bright citrus, black tea, and vetiver create a sharp, elegant perfume with a modern drydown.",
-    price: 84,
-    discountPrice: 72,
-    image: [
-      "https://images.unsplash.com/photo-1619994403073-2cec844b8e63?auto=format&fit=crop&w=1200&q=85",
-      "https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=1200&q=85",
-    ],
-    category: "Fragrance",
-    subCategory: "Citrus",
-    concentration: "Eau de Toilette",
-    sizes: ["50ml", "100ml"],
-    colors: ["yellow", "green", "black"],
-    bestseller: false,
-    newArrival: false,
-    onSales: true,
-    active: true,
-    outOfStock: false,
-    stock: 9,
-    date: now - 6000,
-  },
-  {
-    _id: "mock-discovery-set",
-    name: "Discovery Set",
-    description:
-      "A curated trio of Levon signatures for finding the scent that feels like yours.",
-    price: 64,
-    discountPrice: 0,
-    image: [
-      "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1200&q=85",
-      "https://images.unsplash.com/photo-1547887538-e3a2f32cb1cc?auto=format&fit=crop&w=1200&q=85",
-    ],
-    category: "Gift Sets",
-    subCategory: "Discovery Set",
-    concentration: "Eau de Parfum",
-    sizes: ["3 x 10ml"],
-    colors: ["black", "gold"],
+    rating: 5,
+    reviewCount: 6,
+    image: mystiqueProductMedia.shadeOptions.map((option) => option.image),
+    storyImages: mystiqueProductMedia.storyImages,
+    shadeOptions: mystiqueProductMedia.shadeOptions,
+    category: "Mystique Set",
+    subCategory: "Mystique parfum",
+    concentration: "Parfum",
+    sizes: ["100ml"],
+    colors: ["mystique parfum", "red bloom", "orchid touch", "gift box"],
     bestseller: true,
     newArrival: true,
     onSales: false,
+    featuredSlot: 2,
+    showSmallImages: true,
     active: true,
     outOfStock: false,
     stock: 14,
-    date: now - 7000,
+    date: now - 900,
+};
+
+const catalogDefinitions = [
+  {
+    category: "Pheromone Touch",
+    subCategory: "Pheromone Touch",
+    slug: "pheromone-touch",
+    basePrice: 36,
+    size: "100ml",
+    concentration: "Body Ritual",
   },
   {
-    _id: "mock-gift-for-her",
-    name: "For Her Gift Set",
-    description:
-      "A soft gift edit with rose, musk, and luminous amber notes.",
-    price: 142,
-    discountPrice: 124,
-    image: [
-      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
-      "https://images.unsplash.com/photo-1587017539504-67cfbddac569?auto=format&fit=crop&w=1200&q=85",
-    ],
-    category: "Gift Sets",
-    subCategory: "For Her",
-    concentration: "Eau de Parfum",
-    sizes: ["50ml", "10ml"],
-    colors: ["rose", "gold"],
-    bestseller: false,
-    newArrival: true,
-    onSales: true,
-    active: true,
-    outOfStock: false,
-    stock: 5,
-    date: now - 8000,
+    category: "Pheromone Touch",
+    subCategory: "Body lotion pheromone",
+    slug: "body-lotion-pheromone",
+    basePrice: 28,
+    size: "250ml",
+    concentration: "Body Lotion",
   },
   {
-    _id: "mock-gift-for-him",
-    name: "For Him Gift Set",
-    description:
-      "A refined pairing of oud, cedar, and warm amber for evening rituals.",
-    price: 148,
-    discountPrice: 0,
-    image: [
-      "https://images.unsplash.com/photo-1600612253971-422e7f7faeb6?auto=format&fit=crop&w=1200&q=85",
-      "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85",
-    ],
-    category: "Gift Sets",
-    subCategory: "For Him",
-    concentration: "Eau de Parfum",
-    sizes: ["100ml", "10ml"],
-    colors: ["black", "amber"],
-    bestseller: true,
-    newArrival: false,
-    onSales: false,
-    active: true,
-    outOfStock: false,
-    stock: 8,
-    date: now - 9000,
+    category: "Pheromone Touch",
+    subCategory: "Body oil pheromone",
+    slug: "body-oil-pheromone",
+    basePrice: 32,
+    size: "100ml",
+    concentration: "Body Oil",
   },
+  {
+    category: "Pheromone Touch",
+    subCategory: "Body splash pheromone",
+    slug: "body-splash-pheromone",
+    basePrice: 26,
+    size: "250ml",
+    concentration: "Body Splash",
+  },
+  {
+    category: "Pheromone Touch",
+    subCategory: "Body scrub pheromone",
+    slug: "body-scrub-pheromone",
+    basePrice: 30,
+    size: "300g",
+    concentration: "Body Scrub",
+  },
+  {
+    category: "Mystique Set",
+    subCategory: "Mystique parfum",
+    slug: "mystique-parfum",
+    basePrice: 48,
+    size: "50ml",
+    concentration: "Parfum",
+  },
+  {
+    category: "Mystique Set",
+    subCategory: "Body lotion mystique",
+    slug: "body-lotion-mystique",
+    basePrice: 30,
+    size: "250ml",
+    concentration: "Body Lotion",
+  },
+  {
+    category: "Mystique Set",
+    subCategory: "Body splash mystique",
+    slug: "body-splash-mystique",
+    basePrice: 28,
+    size: "250ml",
+    concentration: "Body Splash",
+  },
+  {
+    category: "Roll-on",
+    subCategory: "Radiant charm",
+    slug: "radiant-charm",
+    basePrice: 18,
+    size: "10ml",
+    concentration: "Roll-on",
+  },
+];
+
+const productNames = [
+  "Original",
+  "Rose Glow",
+  "Velvet Bloom",
+  "Soft Musk",
+  "Golden Touch",
+  "Midnight",
+  "Radiant",
+];
+
+const catalogImages = [
+  ...pheromoneTouchProductMedia.shadeOptions.map((option) => option.image),
+  ...pheromoneTouchProductMedia.storyImages.map((story) => story.image),
+];
+
+const generatedCatalogProducts = catalogDefinitions.flatMap(
+  (definition, definitionIndex) => {
+    const startIndex = definition.slug === "pheromone-touch" ? 2 : 1;
+
+    return Array.from(
+      { length: definition.slug === "pheromone-touch" ? 6 : 7 },
+      (_, localIndex) => {
+        const productNumber = startIndex + localIndex;
+        const sequence = definitionIndex * 7 + productNumber;
+        const imageStart = (sequence * 2) % catalogImages.length;
+        const images = Array.from(
+          { length: 3 },
+          (_, imageIndex) =>
+            catalogImages[(imageStart + imageIndex) % catalogImages.length]
+        );
+        const stock = sequence % 11 === 0 ? 0 : 3 + ((sequence * 5) % 24);
+        const hasDiscount = sequence % 4 === 0;
+        const price = definition.basePrice + localIndex * 2;
+
+        return {
+          _id: `mock-${definition.slug}-${productNumber}`,
+          name: `${definition.subCategory} ${productNames[localIndex]}`,
+          description: `${definition.subCategory} ${productNames[localIndex]}. A Be Radiant by Nancy ritual designed for softness, confidence, and a beautiful lasting finish.`,
+          price,
+          discountPrice: hasDiscount ? Math.max(1, price - 5) : 0,
+          rating: 4 + (sequence % 2) * 0.5,
+          reviewCount: 3 + ((sequence * 3) % 38),
+          image: images,
+          storyImages: images.map((image, storyIndex) => ({
+            id: `${definition.slug}-${productNumber}-story-${storyIndex + 1}`,
+            image,
+            alt: `${definition.subCategory} ${productNames[localIndex]}`,
+          })),
+          category: definition.category,
+          subCategory: definition.subCategory,
+          concentration: definition.concentration,
+          sizes: [definition.size],
+          colors: ["radiant", "soft", "nancy"],
+          bestseller: sequence % 3 === 0,
+          newArrival: sequence % 2 === 0,
+          onSales: hasDiscount,
+          featuredSlot: undefined,
+          showSmallImages: sequence % 2 === 0,
+          active: true,
+          outOfStock: stock === 0,
+          stock,
+          date: now - sequence * 1000,
+        };
+      }
+    );
+  }
+);
+
+export const mockProducts = [
+  featuredPheromoneTouchProduct,
+  featuredMystiqueProduct,
+  ...generatedCatalogProducts,
 ];
 
 export const mockHeaderSlides = [
   {
     _id: "mock-header-1",
-    image:
-      "https://images.unsplash.com/photo-1547887538-e3a2f32cb1cc?auto=format&fit=crop&w=1800&q=85",
-    title: "LEVON SIGNATURES",
-    blurb: "Modern extrait perfumes with a quiet luxury trail.",
-    badges: ["Amber", "Oud", "Musk"],
+    image: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-03_at_9.03.49_PM_YJfO-9jLTx.jpeg",
+    desktopImage: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-05_at_9.31.12_PM_mXLwfuaNt.jpeg",
     order: 0,
     active: true,
   },
   {
     _id: "mock-header-2",
-    image:
-      "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1800&q=85",
-    title: "SCENTS THAT STAY",
-    blurb: "Gift-ready bottles, refined notes, and polished everyday rituals.",
-    badges: ["Gift Sets", "Fresh", "Floral"],
+    image: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-05_at_9.31.12_PM_3SXZ2cOee.jpeg",
+    desktopImage: "",
     order: 1,
     active: true,
   },
   {
     _id: "mock-header-3",
-    image:
-      "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1800&q=85",
-    title: "GOLDEN OUD",
-    blurb: "Warm woods, polished amber, and a refined evening finish.",
-    badges: ["Evening", "Woody", "Gold"],
+    image: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-05_at_9.32.19_PM__1__KOAgKtYtI.jpeg",
+    desktopImage: "",
     order: 2,
     active: true,
   },
 ];
 
-export const mockGiftSetsPreview = [
+export const mockHomepageSections = [
   {
-    _id: "mock-gift-preview-1",
-    title: "Discovery Set",
-    image:
-      "https://images.unsplash.com/photo-1594035910387-fea47794261f?auto=format&fit=crop&w=1600&q=85",
-    linkTo: "/gift-sets",
+    key: "luxury-gallery",
+    title: "Luxury Video Gallery",
     active: true,
-    date: now,
-  },
-];
-
-export const mockCollectionList = [
-  {
-    _id: "mock-tile-amber",
-    title: "Amber",
-    subKey: "Amber",
-    image:
-      "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85",
-    active: true,
-    order: 0,
-  },
-  {
-    _id: "mock-tile-oud",
-    title: "Oud",
-    subKey: "Oud",
-    image:
-      "https://images.unsplash.com/photo-1600612253971-422e7f7faeb6?auto=format&fit=crop&w=1200&q=85",
-    active: true,
-    order: 1,
-  },
-  {
-    _id: "mock-tile-fresh",
-    title: "Fresh",
-    subKey: "Fresh",
-    image:
-      "https://images.unsplash.com/photo-1608528577891-eb055944f2e7?auto=format&fit=crop&w=1200&q=85",
-    active: true,
-    order: 2,
-  },
-];
-
-export const mockSubcatTiles = mockCollectionList;
-
-export const mockBrandStatements = [
-  {
-    _id: "mock-brand-statement",
-    eyebrow: "Levon Craft",
-    title: "Proudly Made by Our Brand",
-    description:
-      "At LEVON, we blend careful craftsmanship with modern perfume design, creating refined scents that celebrate everyday beauty and memorable rituals.",
-    buttonText: "Explore More",
-    buttonLink: "/Collection",
-    image:
-      "https://images.unsplash.com/photo-1600612253971-422e7f7faeb6?auto=format&fit=crop&w=1600&q=85",
-    imageAlt: "Levon perfume craftsmanship",
-    details: [
+    preferredSizeNote: "Mobile: vertical 9:16 videos/images. Laptop: 4 vertical columns work best.",
+    items: [
       {
-        title: "Brand Craft",
-        text: "Measured details, polished notes.",
+        id: "nancy-video-1",
+        type: "video",
+        src: "https://ik.imagekit.io/aovmyygbb/luxury-gallery-nancy-video-1-1780769455770-3690_1l8g6lDTe.mp4",
+        poster: "",
+        alt: "Nancy video 1",
+        label: "Nancy video 1",
+        order: 0,
+        active: true,
       },
       {
-        title: "Modern Scent Rituals",
-        text: "Designed for daily elegance.",
+        id: "nancy-video-2",
+        type: "video",
+        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Video_2026-06-05_at_9.47.07_PM_7p9uQ83mp.mp4",
+        poster: "",
+        alt: "Nancy video 2",
+        label: "Nancy video 2",
+        order: 1,
+        active: true,
+      },
+      {
+        id: "nancy-gallery-image-1",
+        type: "video",
+        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Video_2026-06-05_at_10.06.33_PM_NMGNt6M2I.mp4",
+        poster: "",
+        alt: "Pheromone Touch campaign",
+        label: "Pheromone Touch campaign",
+        order: 2,
+        active: true,
+      },
+      {
+        id: "nancy-video-3",
+        type: "video",
+        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Video_2026-06-05_at_10.03.50_PM_gQLA0to4h.mp4",
+        poster: "",
+        alt: "Nancy video 3",
+        label: "Nancy video 3",
+        order: 3,
+        active: true,
+      },
+      {
+        id: "nancy-video-4",
+        type: "video",
+        src: "https://ik.imagekit.io/aovmyygbb/luxury-gallery-nancy-video-4-1780769459546-215_X5h9-V4wJ.mp4",
+        poster: "",
+        alt: "Nancy video 4",
+        label: "Nancy video 4",
+        order: 4,
+        active: true,
+      },
+      {
+        id: "nancy-video-5",
+        type: "video",
+        src: "https://ik.imagekit.io/aovmyygbb/luxury-gallery-nancy-video-5-1780769460410-2190_AIUb7MWdZ.mp4",
+        poster: "",
+        alt: "Nancy video 5",
+        label: "Nancy video 5",
+        order: 5,
+        active: true,
       },
     ],
-    imageEyebrow: "LEVON SIGNATURE",
-    imageTitle: "Crafted to feel quiet, lasting, and unmistakably refined.",
+  },
+  {
+    key: "single-campaign",
+    title: "Single Campaign Video",
     active: true,
-    order: 0,
+    preferredSizeNote: "Mobile: 9:16 vertical. Laptop: wide 2:1 media matching the header width.",
+    items: [
+      {
+        id: "nancy-single-campaign-video",
+        type: "video",
+        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Video_2026-06-05_at_10.06.37_PM_XL4Er_YDF.mp4",
+        desktopSrc: "",
+        poster: "",
+        alt: "Be Radiant by Nancy campaign video",
+        label: "Be Radiant by Nancy campaign video",
+        order: 0,
+        active: true,
+      },
+    ],
+  },
+  {
+    key: "from-the-gram",
+    title: "From The Gram",
+    active: true,
+    preferredSizeNote: "Mobile: vertical 9:16. Laptop: 4 vertical columns with square edges.",
+    items: [
+      {
+        id: "from-the-gram-image-1",
+        type: "image",
+        src: "https://ik.imagekit.io/aovmyygbb/from-the-gram-from-the-gram-image-1-1780769462839-2104_7pqDQdiIt.jpeg",
+        poster: "",
+        alt: "Be Radiant by Nancy campaign",
+        label: "Be Radiant by Nancy campaign",
+        order: 0,
+        active: true,
+      },
+      {
+        id: "from-the-gram-video-1",
+        type: "video",
+        src: "https://ik.imagekit.io/aovmyygbb/from-the-gram-from-the-gram-video-1-1780769463610-4733_r-nVjX7be.mp4",
+        poster: "",
+        alt: "Be Radiant by Nancy social video",
+        label: "Be Radiant by Nancy social video",
+        order: 1,
+        active: true,
+      },
+      {
+        id: "from-the-gram-mystique-red-dress",
+        type: "image",
+        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-05_at_7.07.40_PM_ImvF4BwlT.jpeg",
+        poster: "",
+        alt: "Mystique perfume held against red satin",
+        label: "Mystique perfume held against red satin",
+        order: 2,
+        active: true,
+      },
+      {
+        id: "from-the-gram-image-3",
+        type: "image",
+        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-05_at_7.07.41_PM_oD4Rmd5Ax.jpeg",
+        poster: "",
+        alt: "Be Radiant by Nancy fragrance story",
+        label: "Be Radiant by Nancy fragrance story",
+        order: 3,
+        active: true,
+      },
+    ],
   },
 ];
 
-export const mockBrandStatement =
-  mockBrandStatements.find((item) => item.active) || mockBrandStatements[0];
-
-export const mockScentWardrobe = [
-  {
-    _id: "mock-wardrobe-fresh-day",
-    title: "Fresh Day",
-    description: "Clean brightness for morning routines and easy movement.",
-    image:
-      "https://images.unsplash.com/photo-1608528577891-eb055944f2e7?auto=format&fit=crop&w=1200&q=85",
-    tags: ["Bergamot", "Cedar"],
-    linkTo: "/collection?sub=Fresh&cat=Fragrance",
-    active: true,
-    order: 0,
-  },
-  {
-    _id: "mock-wardrobe-amber-night",
-    title: "Amber Night",
-    description: "Warm resin and polished woods for evening presence.",
-    image:
-      "https://images.unsplash.com/photo-1615634260167-c8cdede054de?auto=format&fit=crop&w=1200&q=85",
-    tags: ["Amber", "Vanilla"],
-    linkTo: "/collection?sub=Amber&cat=Fragrance",
-    active: true,
-    order: 1,
-  },
-  {
-    _id: "mock-wardrobe-floral-softness",
-    title: "Floral Softness",
-    description: "Petal notes, clean musk, and a soft luminous finish.",
-    image:
-      "https://images.unsplash.com/photo-1592945403244-b3fbafd7f539?auto=format&fit=crop&w=1200&q=85",
-    tags: ["Rose", "Musk"],
-    linkTo: "/collection?sub=Floral&cat=Fragrance",
-    active: true,
-    order: 2,
-  },
-  {
-    _id: "mock-wardrobe-oud-depth",
-    title: "Oud Depth",
-    description: "Deep woods and smoke for a refined signature trail.",
-    image:
-      "https://images.unsplash.com/photo-1600612253971-422e7f7faeb6?auto=format&fit=crop&w=1200&q=85",
-    tags: ["Oud", "Cedar"],
-    linkTo: "/collection?sub=Oud&cat=Fragrance",
-    active: true,
-    order: 3,
-  },
-];
+export const getMockHomepageSectionItems = (key) =>
+  (mockHomepageSections.find((section) => section.key === key)?.items || [])
+    .filter((item) => item.active !== false && item.src)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+    .map((item, index) => ({
+      id: item.id || `${key}-${index}`,
+      type: item.type === "video" ? "video" : "image",
+      src: item.src,
+      desktopSrc: item.desktopSrc || "",
+      poster: item.poster || "",
+      alt: item.alt || item.label || "Be Radiant by Nancy media",
+      label: item.label || item.alt || "Be Radiant by Nancy media",
+    }));
 
 export const mockSettings = {
   delivery_fee: 3,
+  announcementEnabled: true,
+  announcementItems: ["FREE 10 mL Tester With Every Purchase", "Free Shipping On All Orders"],
+  freeShippingEnabled: true,
+  freeShippingText: "Free Shipping On All Orders",
+  availableNowText: "AVAILABLE NOW",
+  brandEmail: "beradiantnancy@gmail.com",
+  socialLinks: {
+    instagram: "https://www.instagram.com/radiant_bynancy?igsh=MWY3YmwxcjNyYTNjcg==",
+    facebook: "https://www.facebook.com/share/18oAYDyvZt/",
+    tiktok: "https://www.tiktok.com/@radiant.nancy?_r=1&_t=ZS-96qoZYlR9xF",
+    email: "beradiantnancy@gmail.com",
+  },
 };
 
 export const useMockData =

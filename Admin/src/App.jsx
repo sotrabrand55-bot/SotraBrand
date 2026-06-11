@@ -6,18 +6,15 @@ import Orders from './pages/Orders'
 import { useEffect, useState } from 'react';
 import Login from './components/Login';
 import { ToastContainer} from 'react-toastify';
-import SubcatTiles from './pages/SubcatTiles';
-import HeaderSlides from './pages/HeaderSlides';
 import ProductsList from "./pages/ProductsList";
 import EditProduct from "./pages/EditProduct";
 import MaintenanceControl from './pages/MaintenanceControl';
 import DeliveryFeeControl from './pages/DeliveryFeeControl';
 import AddCoupon from './pages/AddCoupon';
 import Dashboard from './pages/Dashboard';
-import GiftSetsManager from './pages/GiftSetsManager';
-import ScentWardrobeManager from './pages/ScentWardrobeManager';
-import BrandStatementManager from './pages/BrandStatementManager';
-import PageImagesManager from './pages/PageImagesManager';
+import NancyHomeControl from './pages/NancyHomeControl';
+import CategoriesManager from './pages/CategoriesManager';
+import SubcategoryStudio from './pages/SubcategoryStudio';
 
 export const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "") // this how we get the env var
 export const currency = '$';
@@ -39,17 +36,17 @@ const App = () => {
 )
   return (
 
-    <div className='min-h-screen bg-[#fffaf4]'>
+    <div className='min-h-screen bg-white'>
       <ToastContainer/>
 
       {token === "" ? <Login setToken = {setToken}/> /* here is the turnery how its work if token === "" emty string so return the login page else return all our page */ 
        : <> {/* here this mean (:) as (else) so  else return all our pages if the login page not equal "" */ }
-     <div className='flex min-h-screen w-full'>
+     <div className='flex min-h-screen w-full overflow-x-hidden'>
         <Sidebar/>
 
-        <div className='min-w-0 flex-1 text-base text-[#1f1b17]'>
+        <div className='min-w-0 flex-1 text-base text-black'>
         <Navbar setToken = {setToken}/>
-        <div className='px-4 py-6 sm:px-6 lg:px-8'> 
+        <div className='mx-auto w-full max-w-[1700px] px-4 py-6 sm:px-6 lg:px-8'> 
 
         <Routes>
         <Route path="/" element={<Dashboard token={token} />} />
@@ -57,12 +54,9 @@ const App = () => {
         <Route path="/maintenance" element={<MaintenanceControl token={token} />} />
         <Route path="/products" element={<ProductsList token={token} />} />
         <Route path="/edit/:id" element={<EditProduct token={token} />} />
-        <Route path="/header-slides" element={<HeaderSlides token={token} />} />
-        <Route path='/subcat-tiles' element={<SubcatTiles token={token} />} />
-        <Route path='/gift-sets' element={<GiftSetsManager token={token}/>} />
-        <Route path='/scent-wardrobe' element={<ScentWardrobeManager token={token}/>} />
-        <Route path='/brand-statement' element={<BrandStatementManager token={token}/>} />
-        <Route path='/page-images' element={<PageImagesManager token={token}/>} />
+        <Route path="/nancy-home" element={<NancyHomeControl token={token} />} />
+        <Route path="/subcategory-studio" element={<SubcategoryStudio token={token} />} />
+        <Route path="/categories" element={<CategoriesManager token={token} />} />
         <Route path='/add' element={<Add token={token}/>} /> 
         <Route path='/orders' element={<Orders token={token}/>} /> 
         <Route path='/delivery' element={<DeliveryFeeControl token={token}/>} /> 

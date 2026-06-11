@@ -5,7 +5,7 @@ import { backendUrl, currency } from "../App";
 import { AdminDashboardSkeleton } from "../components/AdminSkeletons";
 
 const cardClass =
-  "rounded-md border border-[#eadfd2] bg-[#fffaf4] p-4 shadow-[0_14px_34px_rgba(62,45,28,0.06)]";
+  "rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4 shadow-[0_14px_34px_rgba(62,45,28,0.06)]";
 
 const formatPrice = (value) => {
   const amount = Number(value);
@@ -153,7 +153,7 @@ const Dashboard = ({ token }) => {
     if (sold.length) return sold.slice(0, 5);
 
     return products
-      .filter((product) => product.bestseller)
+      .filter((product) => product.active !== false)
       .slice(0, 5)
       .map((product) => ({
         title: product.name,
@@ -259,16 +259,16 @@ const Dashboard = ({ token }) => {
   }
 
   return (
-    <main className="mx-auto w-full max-w-[1480px] text-[#1f1b17]">
-      <div className="mb-5 flex flex-col gap-3 border-b border-[#eadfd2] pb-5 lg:flex-row lg:items-end lg:justify-between">
+    <main className="mx-auto w-full max-w-[1480px] text-[#000000]">
+      <div className="mb-5 flex flex-col gap-3 border-b border-[#e5e5e5] pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#b9945d]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.24em] text-[#c47b92]">
             Business Overview
           </p>
-          <h1 className="mt-1 font-serif text-4xl leading-none text-[#1f1b17]">
+          <h1 className="mt-1 font-serif text-4xl leading-none text-[#000000]">
             Dashboard
           </h1>
-          <p className="mt-2 text-sm text-[#7d6756]">
+          <p className="mt-2 text-sm text-[#4b5563]">
             Track visits, sales, stock, and customer activity.
           </p>
         </div>
@@ -281,8 +281,8 @@ const Dashboard = ({ token }) => {
               onClick={() => setRange(days)}
               className={`rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.12em] transition ${
                 range === days
-                  ? "border-[#1f1b17] bg-[#1f1b17] text-white"
-                  : "border-[#d8c2a5] text-[#6f5844] hover:border-[#1f1b17]"
+                  ? "border-[#000000] bg-[#000000] text-white"
+                  : "border-[#d4d4d4] text-[#374151] hover:border-[#000000]"
               }`}
             >
               {days === 1 ? "Today" : `${days} Days`}
@@ -291,13 +291,13 @@ const Dashboard = ({ token }) => {
           <button
             type="button"
             onClick={loadDashboard}
-            className="rounded-full border border-[#d8c2a5] px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#6f5844] transition hover:border-[#1f1b17] hover:text-[#1f1b17]"
+            className="rounded-full border border-[#d4d4d4] px-5 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#374151] transition hover:border-[#000000] hover:text-[#000000]"
           >
             Refresh
           </button>
           <button
             type="button"
-            className="rounded-full bg-[#1f1b17] px-6 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[#c49a5e]"
+            className="rounded-full bg-[#000000] px-6 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[#000000]"
           >
             Export
           </button>
@@ -307,14 +307,14 @@ const Dashboard = ({ token }) => {
       <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {kpis.map((kpi) => (
           <div key={kpi.label} className={cardClass}>
-            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9a8068]">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
               {kpi.label}
             </p>
             <div className="mt-2 flex items-end justify-between gap-3">
-              <p className="font-serif text-3xl leading-none text-[#1f1b17]">
+              <p className="font-serif text-3xl leading-none text-[#000000]">
                 {typeof kpi.value === "number" ? formatCompact(kpi.value) : kpi.value}
               </p>
-              <span className="rounded-full border border-[#dfd1c1] bg-[#fffdf9] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#7d6756]">
+              <span className="rounded-full border border-[#d4d4d4] bg-[#ffffff] px-2 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#4b5563]">
                 {kpi.note}
               </span>
             </div>
@@ -323,19 +323,19 @@ const Dashboard = ({ token }) => {
       </section>
 
       <section className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="rounded-md border border-[#eadfd2] bg-[#fffaf4] p-5 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
+        <div className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-5 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
           <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b9945d]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#c47b92]">
                 Sales Trend
               </p>
-              <h2 className="font-serif text-3xl text-[#1f1b17]">
+              <h2 className="font-serif text-3xl text-[#000000]">
                 Revenue and Orders
               </h2>
             </div>
-            <div className="flex gap-3 text-xs text-[#7d6756]">
+            <div className="flex gap-3 text-xs text-[#4b5563]">
               <span className="inline-flex items-center gap-2">
-                <span className="h-2 w-5 rounded-full bg-[#c49a5e]" />
+                <span className="h-2 w-5 rounded-full bg-[#000000]" />
                 Revenue
               </span>
               <span className="inline-flex items-center gap-2">
@@ -345,7 +345,7 @@ const Dashboard = ({ token }) => {
             </div>
           </div>
 
-          <div className="h-[260px] rounded-md border border-[#eadfd2] bg-[#fffdf9] p-4">
+          <div className="h-[260px] rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
             <svg viewBox="0 0 560 220" className="h-full w-full" role="img" aria-label="Revenue and orders trend">
               {[40, 80, 120, 160, 200].map((y) => (
                 <line
@@ -354,35 +354,35 @@ const Dashboard = ({ token }) => {
                   y1={y}
                   x2="560"
                   y2={y}
-                  stroke="#eadfd2"
+                  stroke="#e5e5e5"
                   strokeWidth="1"
                 />
               ))}
-              <path d={revenuePath} fill="none" stroke="#c49a5e" strokeWidth="4" strokeLinecap="round" />
+              <path d={revenuePath} fill="none" stroke="#000000" strokeWidth="4" strokeLinecap="round" />
               <path d={ordersPath} fill="none" stroke="#7b2d2d" strokeWidth="3" strokeLinecap="round" strokeDasharray="6 8" />
             </svg>
           </div>
         </div>
 
-        <aside className="rounded-md border border-[#eadfd2] bg-[#fffaf4] p-5 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b9945d]">
+        <aside className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-5 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#c47b92]">
             Live Store Activity
           </p>
           <div className="mt-4 space-y-3">
             {liveActivity.length ? (
               liveActivity.map((activity, index) => (
-                <div key={`${activity.title}-${index}`} className="rounded-md border border-[#eadfd2] bg-[#fffdf9] p-3">
-                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#9a8068]">
+                <div key={`${activity.title}-${index}`} className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-3">
+                  <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#6b7280]">
                     {activity.label}
                   </p>
-                  <p className="mt-1 text-sm font-semibold text-[#1f1b17]">
+                  <p className="mt-1 text-sm font-semibold text-[#000000]">
                     {activity.title}
                   </p>
-                  <p className="mt-1 text-xs text-[#7d6756]">{activity.detail}</p>
+                  <p className="mt-1 text-xs text-[#4b5563]">{activity.detail}</p>
                 </div>
               ))
             ) : (
-              <p className="rounded-md border border-[#eadfd2] bg-[#fffdf9] p-4 text-sm text-[#7d6756]">
+              <p className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4 text-sm text-[#4b5563]">
                 Activity will appear here when orders and analytics events arrive.
               </p>
             )}
@@ -391,35 +391,35 @@ const Dashboard = ({ token }) => {
       </section>
 
       <section className="mt-5 grid gap-5 xl:grid-cols-[minmax(0,1fr)_360px]">
-        <div className="rounded-md border border-[#eadfd2] bg-[#fffaf4] p-5 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
+        <div className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-5 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
           <div className="mb-4 flex items-end justify-between gap-3">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b9945d]">
-                Best Sellers
+              <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#c47b92]">
+                Top Products
               </p>
-              <h2 className="font-serif text-3xl text-[#1f1b17]">
+              <h2 className="font-serif text-3xl text-[#000000]">
                 Product Performance
               </h2>
             </div>
           </div>
-          <div className="overflow-hidden rounded-md border border-[#eadfd2] bg-[#fffdf9]">
+          <div className="overflow-hidden rounded-md border border-[#e5e5e5] bg-[#ffffff]">
             {bestSellers.map((product, index) => (
               <div
                 key={`${product.title}-${index}`}
-                className="grid grid-cols-[54px_minmax(0,1fr)_90px_100px] items-center gap-3 border-b border-[#eadfd2] p-3 last:border-b-0"
+                className="grid grid-cols-[54px_minmax(0,1fr)_90px_100px] items-center gap-3 border-b border-[#e5e5e5] p-3 last:border-b-0"
               >
-                <div className="h-12 w-12 overflow-hidden rounded-md bg-[#eee4d9]">
+                <div className="h-12 w-12 overflow-hidden rounded-md bg-[#EAEAEA]">
                   {product.image ? (
                     <img src={product.image} alt={product.title} className="h-full w-full object-cover" />
                   ) : null}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate font-semibold text-[#1f1b17]">
+                  <p className="truncate font-semibold text-[#000000]">
                     {product.title}
                   </p>
-                  <p className="text-xs text-[#7d6756]">Units sold</p>
+                  <p className="text-xs text-[#4b5563]">Units sold</p>
                 </div>
-                <p className="text-sm font-semibold text-[#1f1b17]">
+                <p className="text-sm font-semibold text-[#000000]">
                   {product.units}
                 </p>
                 <p className="text-right text-sm font-semibold text-[#7b2d2d]">
@@ -431,19 +431,19 @@ const Dashboard = ({ token }) => {
         </div>
 
         <div className="space-y-5">
-          <div className="rounded-md border border-[#eadfd2] bg-[#fffaf4] p-5 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#b9945d]">
+          <div className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-5 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#c47b92]">
               Low Stock Alerts
             </p>
             <div className="mt-4 space-y-2">
               {lowStock.length ? (
                 lowStock.map((product) => (
-                  <div key={product._id} className="flex items-center justify-between gap-3 rounded-md border border-[#eadfd2] bg-[#fffdf9] p-3">
+                  <div key={product._id} className="flex items-center justify-between gap-3 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-semibold text-[#1f1b17]">
+                      <p className="truncate text-sm font-semibold text-[#000000]">
                         {product.name}
                       </p>
-                      <p className="text-xs text-[#7d6756]">
+                      <p className="text-xs text-[#4b5563]">
                         {product.subCategory || product.category}
                       </p>
                     </div>
@@ -459,7 +459,7 @@ const Dashboard = ({ token }) => {
                   </div>
                 ))
               ) : (
-                <p className="rounded-md border border-[#eadfd2] bg-[#fffdf9] p-4 text-sm text-[#7d6756]">
+                <p className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4 text-sm text-[#4b5563]">
                   No low stock alerts.
                 </p>
               )}
@@ -468,32 +468,32 @@ const Dashboard = ({ token }) => {
 
           <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
             <div className={cardClass}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9a8068]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
                 Out of Stock
               </p>
-              <p className="mt-2 font-serif text-3xl text-[#1f1b17]">
+              <p className="mt-2 font-serif text-3xl text-[#000000]">
                 {outOfStockCount}
               </p>
             </div>
             <div className={cardClass}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9a8068]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
                 Coupon Usage
               </p>
-              <p className="mt-2 font-serif text-3xl text-[#1f1b17]">
+              <p className="mt-2 font-serif text-3xl text-[#000000]">
                 {couponUsage}
               </p>
-              <p className="mt-1 text-xs text-[#7d6756]">
+              <p className="mt-1 text-xs text-[#4b5563]">
                 {activeCoupons} active coupons
               </p>
             </div>
             <div className={cardClass}>
-              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#9a8068]">
+              <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#6b7280]">
                 Contact Messages
               </p>
-              <p className="mt-2 font-serif text-3xl text-[#1f1b17]">
+              <p className="mt-2 font-serif text-3xl text-[#000000]">
                 {contactMessages}
               </p>
-              <p className="mt-1 text-xs text-[#7d6756]">
+              <p className="mt-1 text-xs text-[#4b5563]">
                 Contact form currently sends email, not stored analytics.
               </p>
             </div>

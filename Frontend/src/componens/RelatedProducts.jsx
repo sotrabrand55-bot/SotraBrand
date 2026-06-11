@@ -1,4 +1,5 @@
-import React, { useContext, useEffect, useState } from "react";
+/* eslint-disable react/prop-types */
+import { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
 import ProductItem from "./ProductItem";
 
@@ -17,7 +18,11 @@ const RelatedProducts = ({ category, subCategory, currentId }) => {
         (item) => item.subCategory === subCategory
       );
 
-      setRelated((sameFamily.length ? sameFamily : activeProducts).slice(0, 4));
+      setRelated(
+        [...(sameFamily.length ? sameFamily : activeProducts)]
+          .sort((a, b) => Number(b?.date || 0) - Number(a?.date || 0))
+          .slice(0, 4)
+      );
     }
   }, [products, category, subCategory, currentId]);
 
@@ -26,16 +31,8 @@ const RelatedProducts = ({ category, subCategory, currentId }) => {
   return (
     <section className="pt-8">
       <div className="mb-8 text-center">
-        <div className="mx-auto mb-4 flex w-fit items-center gap-3 text-[#c49a5e]">
-          <span className="h-px w-10 bg-current" />
-          <span className="h-2.5 w-2.5 rotate-45 bg-current" />
-          <span className="h-px w-10 bg-current" />
-        </div>
-        <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#9a8068]">
+        <h2 className="text-3xl font-black uppercase leading-tight text-black sm:text-4xl">
           You May Also Like
-        </p>
-        <h2 className="mt-3 font-serif text-4xl leading-none text-[#1f1b17]">
-          Related Products
         </h2>
       </div>
 
@@ -51,6 +48,7 @@ const RelatedProducts = ({ category, subCategory, currentId }) => {
             outOfStock={item.outOfStock}
             colors={[]}
             sizes={item.sizes || []}
+            perfumeTypes={item.perfumeTypes || []}
             category={item.category}
             subCategory={item.subCategory}
             concentration={item.concentration}

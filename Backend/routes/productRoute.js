@@ -6,6 +6,7 @@ import {
   singleProduct,
   updateProduct,
   singleProductById,
+  addProductReview,
 } from "../controllers/productController.js";
 import upload from "../middleware/multer.js";
 import adminAuth from "../middleware/adminAuth.js";
@@ -18,6 +19,8 @@ productRouter.post('/add',adminAuth, // here the token to protect the add
     { name: 'image2', maxCount: 1 }, // Allows uploading 1 file for "image2"
     { name: 'image3', maxCount: 1 },
     { name: 'image4', maxCount: 1 },
+    ...Array.from({ length: 8 }, (_, index) => ({ name: `shadeImage${index}`, maxCount: 1 })),
+    ...Array.from({ length: 12 }, (_, index) => ({ name: `storyImage${index}`, maxCount: 1 })),
   ]),
   addProduct // Calls the addProduct function after images are uploaded
 );
@@ -26,11 +29,14 @@ productRouter.put('/:id', adminAuth, upload.fields([
   { name: 'image2', maxCount: 1 },
   { name: 'image3', maxCount: 1 },
   { name: 'image4', maxCount: 1 },
+  ...Array.from({ length: 8 }, (_, index) => ({ name: `shadeImage${index}`, maxCount: 1 })),
+  ...Array.from({ length: 12 }, (_, index) => ({ name: `storyImage${index}`, maxCount: 1 })),
 ]), updateProduct);
 
 productRouter.post('/remove',adminAuth, removeProduct); // here also we send the token to protect the remove 
 productRouter.post('/single', singleProduct);
 productRouter.get('/list', listProducts);
+productRouter.post('/:id/reviews', addProductReview);
 productRouter.get('/:id', singleProductById);
 export default productRouter;
 

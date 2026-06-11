@@ -2,7 +2,6 @@ import 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import About from './pages/About'
 import Product from './pages/Product'
-import Cart from './pages/Cart'
 import Login from './pages/Login'
 import Placeorder from './pages/Placeorder'
 import Orders from './pages/Orders' 
@@ -11,28 +10,42 @@ import Home from './pages/Home'
 import Footer from './componens/Footer'
 import Collection from './pages/Collection'
 import Contact from './pages/Contact'
-import GiftSets from './pages/GiftSets'
 import Favorites from './pages/Favorites'
+import Ratings from './pages/Ratings'
 import ComingSoon from './componens/ComingSoon'
-import LevonLoader from './componens/LevonLoader'
+import NancyPreviewLoader from './componens/NancyPreviewLoader'
 import ShippingPolicy from './componens/ShippingPolicy'
+import LegalPolicy from './componens/LegalPolicy'
+import SubcategoryProducts from './pages/SubcategoryProducts'
+import CartDrawer from './componens/CartDrawer'
+import CartRouteRedirect from './componens/CartRouteRedirect'
+import { ShopContext } from './context/ShopContext'
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
+import { useMockData } from './lib/mockData';
 
 // backend URL
 const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "");
 
 const App = () => {
   const location = useLocation();
+  const { cartDrawerOpen, closeCart } = useContext(ShopContext);
   const [fade, setFade] = useState(false);
 
   // 🔥 Maintenance
   const [maintenance, setMaintenance] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [previewLoading, setPreviewLoading] = useState(true);
 
   // fetch maintenance status (hooks are always called)
   useEffect(() => {
+    if (useMockData) {
+      setMaintenance(false);
+      setLoading(false);
+      return;
+    }
+
     const fetchMaintenance = async () => {
       try {
         const res = await fetch(`${backendUrl}/api/maintenance`);
@@ -53,8 +66,15 @@ const App = () => {
     return () => clearTimeout(timeout);
   }, [location.pathname]);
 
+  useEffect(() => {
+    const timeout = setTimeout(() => setPreviewLoading(false), 900);
+    return () => clearTimeout(timeout);
+  }, []);
+
   // 🔥 Render
-  if (loading) return <LevonLoader />;
+  if (loading || previewLoading) {
+    return <NancyPreviewLoader />;
+  }
 
   return (         
     <div className="min-h-screen bg-white ">
@@ -73,18 +93,22 @@ const App = () => {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/Collection" element={<Collection />} />
-              <Route path="/gift-sets" element={<GiftSets />} />
               <Route path="/favorites" element={<Favorites />} />
+              <Route path="/ratings" element={<Ratings />} />
               <Route path="/About" element={<About />} />
               <Route path="/Contact" element={<Contact />} />
               <Route path="/Product/:productId" element={<Product />} />
-              <Route path="/cart" element={<Cart />} />
+              <Route path="/cart" element={<CartRouteRedirect />} />
               <Route path="/login" element={<Login />} />
               <Route path="/place-order" element={<Placeorder />} />
               <Route path="/orders" element={<Orders />} />
               <Route path='/shippingpolicy' element={<ShippingPolicy />} />
+              <Route path="/privacy-policy" element={<LegalPolicy type="privacy" />} />
+              <Route path="/terms" element={<LegalPolicy type="terms" />} />
+              <Route path="/subcategory/:slug" element={<SubcategoryProducts />} />
             </Routes>
           </div>
+          <CartDrawer open={cartDrawerOpen} onClose={closeCart} />
           <Footer className="bg-[#2f2f2f] text-white" />
         </>
       )}

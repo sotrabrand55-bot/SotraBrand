@@ -7,7 +7,25 @@
 
 /* Global font */
 @layer base {
-  html, body { @apply font-sans; }
+  html, body, #root { @apply bg-white font-sans; }
+}
+
+html {
+  font-size: 16px;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-width: 320px;
+  margin: 0;
+}
+
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
 }
 
 
@@ -34,10 +52,431 @@ html, body {
   overscroll-behavior-x: none;
 }
 
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.nancy-announcement-marquee {
+  animation: nancy-announcement-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+.nancy-available-marquee {
+  animation: nancy-available-marquee 22s linear infinite;
+  will-change: transform;
+}
+
+.nancy-available-marquee span {
+  line-height: 1;
+}
+
+.nancy-velvet-fade-slide {
+  transform: scale(1);
+  transition:
+    opacity 1.35s ease-in-out,
+    transform 6.5s ease;
+  will-change: opacity, transform;
+}
+
+.nancy-velvet-fade-slide.is-active {
+  transform: scale(1.015);
+}
+
+.nancy-preview-loader-mark {
+  position: relative;
+  width: 5rem;
+  height: 5rem;
+}
+
+.nancy-preview-loader-mark span {
+  position: absolute;
+  inset: 0;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+  border-radius: 9999px;
+  animation: nancy-preview-loader-ring 1.15s ease-in-out infinite;
+}
+
+.nancy-preview-loader-mark span:nth-child(2) {
+  inset: 0.65rem;
+  animation-delay: 120ms;
+}
+
+.nancy-preview-loader-mark span:nth-child(3) {
+  inset: 1.3rem;
+  background: #000;
+  animation-delay: 240ms;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+.nancy-video-grid {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  padding: 0 8px;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  overscroll-behavior-x: contain;
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: transform;
+}
+
+.nancy-video-card {
+  width: min(74vw, 318px);
+  flex: 0 0 min(74vw, 318px);
+  aspect-ratio: 9 / 16;
+  border-radius: 0;
+  scroll-snap-align: center;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  contain: layout paint;
+}
+
+.nancy-video-card video {
+  transform: translateZ(0);
+  backface-visibility: hidden;
+  will-change: opacity;
+}
+
+@media (min-width: 1024px) {
+  .nancy-video-grid {
+    gap: 12px;
+    padding: 36px 6px 0;
+    scroll-padding-inline: 6px;
+  }
+
+  .nancy-video-card {
+    width: calc((100vw - 54px) / 4);
+    flex-basis: calc((100vw - 54px) / 4);
+    scroll-snap-align: start;
+  }
+
+  .nancy-video-progress {
+    margin: 10px 6px 0;
+  }
+}
+
+.nancy-video-toggle {
+  width: 52px;
+  height: 52px;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.nancy-video-progress {
+  position: relative;
+  height: 2px;
+  margin: 10px 8px 0;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.nancy-video-progress span {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  background: #000;
+  transition: transform 240ms ease;
+  will-change: transform;
+}
+
+.nancy-story-progress {
+  height: 3px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.16);
+}
+
+.nancy-story-progress span {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  background: #000;
+  transition: transform 240ms ease;
+  will-change: transform;
+}
+
+.nancy-shade-progress {
+  position: relative;
+  height: 2px;
+  margin: 0 0.5rem;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.14);
+}
+
+.nancy-shade-progress span {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  background: #000;
+  transition: transform 240ms ease;
+  will-change: transform;
+}
+
+.nancy-video-skeleton {
+  background: #EAEAEA;
+  overflow: hidden;
+}
+
+.nancy-video-skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: nancy-video-shimmer 1.2s infinite;
+  will-change: transform;
+}
+
+.nancy-cool-shimmer,
+.nancy-featured-skeleton .skeleton-shimmer {
+  background-color: #EAEAEA !important;
+}
+
+.nancy-cool-shimmer::after,
+.nancy-featured-skeleton .skeleton-shimmer::after {
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%
+  ) !important;
+  animation: nancy-video-shimmer 1.2s infinite !important;
+}
+
+.nancy-water-add::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  width: 0%;
+  background: #000;
+  transition: width 1.15s ease;
+  z-index: 0;
+}
+
+.nancy-water-add:hover::before,
+.nancy-water-add.is-filling::before {
+  width: 100%;
+}
+
+.nancy-water-add:hover,
+.nancy-water-add.is-filling {
+  color: #fff;
+}
+
+.nancy-price-value,
+.nancy-quantity-value {
+  display: inline-block;
+  transform-origin: center;
+  transition: color 180ms ease, transform 220ms ease, opacity 220ms ease;
+}
+
+.nancy-price-value.is-changing,
+.nancy-quantity-value.is-changing {
+  animation: nancy-value-pop 320ms ease;
+}
+
+.nancy-fireworks {
+  background: radial-gradient(circle at center, rgba(0, 0, 0, 0.18), transparent 58%);
+}
+
+.nancy-fireworks span {
+  position: absolute;
+  left: var(--spark-x);
+  top: var(--spark-y);
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 9999px;
+  background: var(--spark-color);
+  box-shadow: 0 0 0.95rem var(--spark-color);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.35);
+  animation: nancy-firework-pop 780ms ease-out var(--spark-delay) forwards;
+}
+
+@media (max-width: 399px) {
+  .nancy-brand-title {
+    font-size: 0.95rem !important;
+    letter-spacing: 0.085em !important;
+  }
+
+  .nancy-brand-subtitle {
+    font-size: 0.62rem !important;
+    gap: 0.22rem !important;
+  }
+
+  .nancy-brand-line {
+    width: 1.05rem !important;
+  }
+
+  .nancy-nav-actions {
+    right: 0.45rem !important;
+    gap: 0.35rem !important;
+  }
+
+  .nancy-nav-actions button {
+    width: 1.45rem !important;
+    height: 2rem !important;
+  }
+
+  .nancy-nav-actions svg {
+    width: 1.02rem !important;
+    height: 1.02rem !important;
+  }
+
+  .nancy-menu-action {
+    left: 0.7rem !important;
+    width: 2.2rem !important;
+    height: 2.2rem !important;
+  }
+
+  .nancy-menu-icon {
+    width: 1.55rem !important;
+    height: 1.55rem !important;
+  }
+}
+
+@media (min-width: 400px) and (max-width: 500px) {
+  .nancy-brand-title {
+    font-size: 0.94rem !important;
+    letter-spacing: 0.06em !important;
+  }
+
+  .nancy-brand-subtitle {
+    font-size: 0.64rem !important;
+    gap: 0.22rem !important;
+  }
+
+  .nancy-brand-line {
+    width: 1.05rem !important;
+  }
+
+  .nancy-nav-actions {
+    right: 0.85rem !important;
+    gap: 0.45rem !important;
+  }
+
+  .nancy-nav-actions button {
+    width: 1.65rem !important;
+    height: 2rem !important;
+  }
+
+  .nancy-nav-actions svg {
+    width: 1.08rem !important;
+    height: 1.08rem !important;
+  }
+
+  .nancy-available-marquee {
+    height: 5.35rem !important;
+    gap: 3.75rem !important;
+  }
+
+  .nancy-available-marquee span {
+    font-size: 2.35rem !important;
+  }
+}
+
+@media (min-width: 501px) and (max-width: 550px) {
+  .nancy-available-marquee {
+    height: 5.35rem !important;
+    gap: 3.75rem !important;
+  }
+
+  .nancy-available-marquee span {
+    font-size: 2.35rem !important;
+  }
+}
+
+@keyframes nancy-announcement-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes nancy-firework-pop {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.25);
+  }
+  22% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(
+        calc(-50% + var(--spark-dx)),
+        calc(-50% + var(--spark-dy))
+      )
+      scale(1);
+  }
+}
+
+@keyframes nancy-value-pop {
+  0% {
+    opacity: 0.62;
+    transform: translateY(0.18rem) scale(0.96);
+  }
+  55% {
+    opacity: 1;
+    transform: translateY(-0.04rem) scale(1.04);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes nancy-available-marquee {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@keyframes nancy-video-shimmer {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes nancy-preview-loader-ring {
+  0%,
+  100% {
+    opacity: 0.28;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
 .skeleton-shimmer {
   position: relative;
   overflow: hidden;
-  background-color: #eadfd2;
+  background-color: #EAEAEA !important;
   isolation: isolate;
 }
 
@@ -49,31 +488,27 @@ html, body {
   transform: translateX(-100%);
   background: linear-gradient(
     90deg,
-    rgba(234, 223, 210, 0) 0%,
-    rgba(255, 250, 244, 0.32) 36%,
-    rgba(255, 255, 255, 0.72) 50%,
-    rgba(216, 194, 165, 0.28) 64%,
-    rgba(234, 223, 210, 0) 100%
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%
   );
-  animation: skeleton-shimmer 1.25s ease-in-out infinite;
+  animation: nancy-video-shimmer 1.2s infinite;
   will-change: transform;
   pointer-events: none;
 }
 
 .image-loading-shimmer {
-  background-color: #eadfd2 !important;
+  background-color: #EAEAEA !important;
 }
 
 .image-loading-shimmer::after {
   background: linear-gradient(
-    100deg,
-    rgba(234, 223, 210, 0) 0%,
-    rgba(255, 250, 244, 0.34) 30%,
-    rgba(255, 255, 255, 0.94) 48%,
-    rgba(196, 154, 94, 0.24) 60%,
-    rgba(234, 223, 210, 0) 100%
+    90deg,
+    rgba(255, 255, 255, 0) 0%,
+    rgba(255, 255, 255, 0.8) 50%,
+    rgba(255, 255, 255, 0) 100%
   );
-  animation-duration: 0.95s;
+  animation: nancy-video-shimmer 1.2s infinite;
 }
 
 @keyframes skeleton-shimmer {
@@ -97,7 +532,7 @@ html, body {
   align-items: center;
   justify-content: center;
   gap: 0.7rem;
-  color: #c49a5e;
+  color: #000000;
 }
 
 .levon-ornament-line {
@@ -160,61 +595,6 @@ html, body {
 .levon-ornament-center span:nth-child(4) {
   left: 0;
   transform: rotate(315deg);
-}
-
-.checkout-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 410px;
-  gap: 1.75rem;
-  align-items: start;
-}
-
-.cart-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 400px;
-  gap: 2rem;
-  align-items: start;
-}
-
-.cart-line {
-  display: grid;
-  grid-template-columns: 128px minmax(0, 1fr) 132px;
-  gap: 1rem;
-  align-items: center;
-}
-
-.cart-line-image {
-  width: 128px;
-  height: 160px;
-}
-
-.cart-line-total {
-  min-width: 0;
-}
-
-@media (max-width: 1023px) {
-  .checkout-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .cart-layout {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 767px) {
-  .cart-line {
-    grid-template-columns: 96px minmax(0, 1fr);
-  }
-
-  .cart-line-image {
-    width: 96px;
-    height: 120px;
-  }
-
-  .cart-line-total {
-    grid-column: 1 / -1;
-  }
 }
 
 @keyframes levon-loader-bars {

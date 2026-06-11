@@ -3,10 +3,10 @@ import mongoose from "mongoose";
 
 const headerSlideSchema = new mongoose.Schema(
   {
-    image: { type: String, required: true }, // ImageKit URL
-    title: { type: String, required: true },
-    blurb: { type: String, default: "" },
-    badges: { type: [String], default: [] },
+    image: { type: String, required: true }, // Mobile ImageKit URL
+    imageFileId: { type: String, default: "" },
+    desktopImage: { type: String, default: "" },
+    desktopImageFileId: { type: String, default: "" },
     order: { type: Number, default: 0 },
     active: { type: Boolean, default: true },
   },

@@ -38,8 +38,83 @@ function pickSize(it) {
   return it.size ?? it.selectedSize ?? it.variantSize ?? undefined
 }
 
+function pickPerfumeType(it) {
+  return (
+    it.perfumeType ??
+    it.selectedPerfumeType ??
+    it.variantPerfumeType ??
+    it.concentration ??
+    undefined
+  )
+}
+
+function normalizeSize(value) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim()
+  const compact = text.toLowerCase().replace(/\s+/g, '')
+
+  if (!compact || compact === 'default') return ''
+  if (compact === '100ml') return '100ML'
+  if (compact === '50ml') return '50ML'
+  if (compact === '30ml') return '30ML'
+  if (compact === '10ml') return '10ML'
+
+  return text
+}
+
+function normalizeSizes(value = []) {
+  return [
+    ...new Set(
+      (Array.isArray(value) ? value : [])
+        .map(normalizeSize)
+        .filter(Boolean)
+    ),
+  ]
+}
+
+function normalizePerfumeType(value) {
+  const text = String(value || '').replace(/\s+/g, ' ').trim()
+  const compact = text.toLowerCase().replace(/\s+/g, '')
+
+  if (!compact || compact === 'default') return ''
+  if (['eaudeparfum', 'eaudeperfume', 'edp'].includes(compact)) return 'Eau de Parfum'
+  if (['eaudetoilette', 'edt'].includes(compact)) return 'Eau de Toilette'
+
+  return text
+}
+
+function normalizePerfumeTypes(value = []) {
+  return [
+    ...new Set(
+      (Array.isArray(value) ? value : [])
+        .map(normalizePerfumeType)
+        .filter(Boolean)
+    ),
+  ]
+}
+
+function getProductPerfumeType(product = {}) {
+  return normalizePerfumeTypes(product.perfumeTypes)[0] || normalizePerfumeType(product.concentration)
+}
+
 function pickColor(it) {
   return it.color ?? it.selectedColor ?? it.variantColor ?? undefined
+}
+
+function normalizeOption(value) {
+  return String(value || '').replace(/\s+/g, ' ').trim()
+}
+
+function getShadeValues(product = {}) {
+  return (Array.isArray(product.shadeOptions) ? product.shadeOptions : [])
+    .map((option, index) =>
+      normalizeOption(
+        option?.cartValue ||
+          option?.label ||
+          option?.id ||
+          `Option ${index + 1}`
+      )
+    )
+    .filter(Boolean)
 }
 
 const effectivePrice = (product = {}) => {
@@ -50,9 +125,33 @@ const effectivePrice = (product = {}) => {
     : price
 }
 
+const pickImageValue = (value) => {
+  if (!value) return ''
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) return value.map(pickImageValue).find(Boolean) || ''
+  if (typeof value === 'object') return value.image || value.url || value.path || value.secure_url || ''
+  return ''
+}
+
+const pickOrderProductImage = (product = {}) =>
+  pickImageValue(product.storyImages) ||
+  pickImageValue(product.shadeOptions) ||
+  pickImageValue(product.image) ||
+  pickImageValue(product.images) ||
+  pickImageValue(product.image1) ||
+  ''
+
 const placeOrder = async (req, res) => {
   try {
-    const { userId, items, address, paymentMethod = 'COD', totals = {}, appliedCoupon } = req.body;
+    const {
+      userId,
+      items,
+      address,
+      customerNote = '',
+      paymentMethod = 'COD',
+      totals = {},
+      appliedCoupon,
+    } = req.body;
 
     if (!userId) {
       return res.status(401).json({ success: false, message: 'Unauthorized: missing userId' });
@@ -104,6 +203,45 @@ const placeOrder = async (req, res) => {
         });
       }
 
+      const productSizes = normalizeSizes(p.sizes);
+      const requestedSize = normalizeSize(it.size);
+      if (productSizes.length && !requestedSize) {
+        return res.status(400).json({
+          success: false,
+          message: `${p.name} needs a product size`,
+        });
+      }
+      if (productSizes.length && requestedSize && !productSizes.includes(requestedSize)) {
+        return res.status(400).json({
+          success: false,
+          message: `${requestedSize} is not available for ${p.name}`,
+        });
+      }
+
+      const productPerfumeTypes = normalizePerfumeTypes(p.perfumeTypes);
+      const requestedPerfumeType = normalizePerfumeType(pickPerfumeType(it));
+      if (
+        productPerfumeTypes.length &&
+        requestedPerfumeType &&
+        !productPerfumeTypes.includes(requestedPerfumeType)
+      ) {
+        return res.status(400).json({
+          success: false,
+          message: `${requestedPerfumeType} is not available for ${p.name}`,
+        });
+      }
+      const orderPerfumeType =
+        requestedPerfumeType || productPerfumeTypes[0] || getProductPerfumeType(p) || '';
+
+      const shadeValues = getShadeValues(p);
+      const requestedColor = normalizeOption(it.color);
+      if (requestedColor && shadeValues.length && !shadeValues.includes(requestedColor)) {
+        return res.status(400).json({
+          success: false,
+          message: `${requestedColor} is not available for ${p.name}`,
+        });
+      }
+
       const unitPrice = effectivePrice(p);
       const itemSubtotal = unitPrice * qty;
       subtotal += itemSubtotal;
@@ -111,12 +249,13 @@ const placeOrder = async (req, res) => {
       orderItems.push({
         productId: String(p._id),
         title: p.name,
-        image: p.image || '',
+        image: pickOrderProductImage(p),
         category: p.category || '',
         subCategory: p.subCategory || '',
-        concentration: p.concentration || '',
-        size: it.size ?? null,
-        color: it.color ?? null,
+        concentration: orderPerfumeType || p.concentration || '',
+        perfumeType: orderPerfumeType || null,
+        size: productSizes.length ? requestedSize : null,
+        color: requestedColor || null,
         qty,
         unitPrice,
         subtotal: itemSubtotal,
@@ -142,6 +281,7 @@ const placeOrder = async (req, res) => {
       date: Date.now(),
       status: 'Order Placed',
       coupon: validCoupon?.code || null, // ✅ only save if coupon is active
+      customerNote: String(customerNote || '').trim().slice(0, 1200),
     };
 
     const newOrder = new orderModel(orderData);

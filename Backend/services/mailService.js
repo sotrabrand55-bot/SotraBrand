@@ -17,7 +17,7 @@ const getTransporter = () => {
 export const sendMail = async ({ to, subject, html, text }) => {
   const t = getTransporter();
   return t.sendMail({
-    from: `"LEVON" <${process.env.GMAIL_USER}>`,
+    from: `"Be Radiant By Nancy" <${process.env.GMAIL_USER}>`,
     to,
     subject,
     text,

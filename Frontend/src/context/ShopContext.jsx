@@ -1,9 +1,10 @@
-import { createContext, useState } from "react";
+import { createContext, useCallback, useState } from "react";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { mockProducts, mockSettings, useMockData } from "../lib/mockData";
+import { mapCategoryGroups, subcategoryGroups as fallbackCategoryGroups } from "../lib/subcategoryCatalog";
 import { getEffectiveProductPrice, normalizeProducts } from "../utils/productMapping";
 export const ShopContext = createContext();
 
@@ -15,8 +16,32 @@ const defaultScentFamilies = [
   "Oud",
   "Musk",
   "Citrus",
-  "Gift Sets",
 ];
+
+const DEFAULT_SIZE_KEY = "_no_size";
+const DEFAULT_COLOR_KEY = "_default";
+const DEFAULT_PERFUME_TYPE_KEY = "_no_perfume_type";
+
+const normalizeVariantKey = (value, fallback) => {
+  const text = String(value || "").trim();
+  return text && text.toLowerCase() !== "default" ? text : fallback;
+};
+
+const walkCartQuantities = (value, visitor, meta = {}) => {
+  if (typeof value === "number") {
+    if (value > 0) visitor(value, meta);
+    return;
+  }
+  if (!value || typeof value !== "object") return;
+
+  Object.entries(value).forEach(([key, child]) => {
+    if (typeof child === "number") {
+      if (child > 0) visitor(child, { ...meta, key });
+      return;
+    }
+    walkCartQuantities(child, visitor, { ...meta, key });
+  });
+};
 
 const ShopContextProvider = (props) => {
   const currency =
@@ -25,9 +50,14 @@ const ShopContextProvider = (props) => {
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [cartItems, setCartItems] = useState({});
+  const [cartDrawerOpen, setCartDrawerOpen] = useState(false);
   const [favoriteItems, setFavoriteItems] = useState(() => {
     try {
-      const stored = JSON.parse(localStorage.getItem("levon_favorites") || "[]");
+      const stored = JSON.parse(
+        localStorage.getItem("nancy_favorites") ||
+          localStorage.getItem("levon_favorites") ||
+          "[]"
+      );
       return Array.isArray(stored) ? stored : [];
     } catch {
       return [];
@@ -37,29 +67,46 @@ const ShopContextProvider = (props) => {
   const [products, setProducts] = useState([]); // instand of the assets products to store the new products from data base we just replace it
   const [productsLoading, setProductsLoading] = useState(true);
   const [scentFamilies, setScentFamilies] = useState(defaultScentFamilies);
+  const [siteSettings, setSiteSettings] = useState(mockSettings);
+  const [categoryGroups, setCategoryGroups] = useState(fallbackCategoryGroups);
   const [token, setToken] = useState("");
   const navigate = useNavigate();
   const [appliedCoupon, setAppliedCoupon] = useState(null); // currently applied coupon
- const [couponDiscount, setCouponDiscount] = useState(0); // discount amount
+  const [couponDiscount, setCouponDiscount] = useState(0); // discount amount
+  const openCart = useCallback(() => setCartDrawerOpen(true), []);
+  const closeCart = useCallback(() => setCartDrawerOpen(false), []);
 
   // 🔥 FETCH DELIVERY FEE ONCE
   useEffect(() => {
     if (useMockData) {
+      setSiteSettings(mockSettings);
       setDeliveryFee(mockSettings.delivery_fee);
       return;
     }
 
-    fetch(`${backendUrl}/api/settings/delivery-fee`)
-      .then((res) => res.json())
-      .then((data) => {
-        if (typeof data.delivery_fee === "number") {
-          setDeliveryFee(data.delivery_fee);
+    const fetchSettings = async () => {
+      try {
+        const res = await fetch(`${backendUrl}/api/settings/site`);
+        const data = await res.json();
+        if (data?.success && data.settings) {
+          const nextSettings = { ...mockSettings, ...data.settings };
+          setSiteSettings(nextSettings);
+          if (typeof nextSettings.delivery_fee === "number") {
+            setDeliveryFee(nextSettings.delivery_fee);
+          }
         }
-      })
-      .catch(() => {
-        // fallback safety
+      } catch {
         setDeliveryFee(3);
-      });
+      }
+    };
+
+    fetchSettings();
+    const interval = window.setInterval(fetchSettings, 10000);
+    window.addEventListener("focus", fetchSettings);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", fetchSettings);
+    };
   }, [backendUrl]);
 
   /*  why we use nagivate instad link ? 
@@ -69,12 +116,11 @@ const ShopContextProvider = (props) => {
 
   //----------------------ADD TO CART FUNCTION ---------------------------------------------
   // extended to support optional (color, quantity) but fully backward compatible with your old signature (itemId, size)
-  const addToCart = async (itemId, size, color = null, quantity = 1) => {
+  const addToCart = async (itemId, size, color = null, quantity = 1, perfumeType = null) => {
     // async yaani wa2t bfut a shi wbrj3 elh ma byaaml relod lal page
-    if (!size) {
-      toast.error("Select Prodct Size"); // this an alert error message
-      return;
-    }
+    const sizeKey = normalizeVariantKey(size, DEFAULT_SIZE_KEY);
+    const colorKey = normalizeVariantKey(color, DEFAULT_COLOR_KEY);
+    const perfumeTypeKey = normalizeVariantKey(perfumeType, DEFAULT_PERFUME_TYPE_KEY);
     if (quantity <= 0) quantity = 1;
 
     let cartData = structuredClone(cartItems);
@@ -86,41 +132,54 @@ const ShopContextProvider = (props) => {
     }
 
     // color-aware path (keeps old behavior if no color is provided)
-    if (color) {
-      if (typeof cartData[itemId][size] === "number") {
-        const prevQty = cartData[itemId][size] || 0;
-        cartData[itemId][size] = { _default: prevQty };
+    if (color || perfumeType) {
+      if (typeof cartData[itemId][sizeKey] === "number") {
+        const prevQty = cartData[itemId][sizeKey] || 0;
+        cartData[itemId][sizeKey] = {
+          [DEFAULT_COLOR_KEY]: { [DEFAULT_PERFUME_TYPE_KEY]: prevQty },
+        };
       } else if (
-        !cartData[itemId][size] ||
-        typeof cartData[itemId][size] !== "object"
+        !cartData[itemId][sizeKey] ||
+        typeof cartData[itemId][sizeKey] !== "object"
       ) {
-        cartData[itemId][size] = {};
+        cartData[itemId][sizeKey] = {};
       }
-      cartData[itemId][size][color] =
-        (cartData[itemId][size][color] || 0) + quantity;
+      if (typeof cartData[itemId][sizeKey][colorKey] === "number") {
+        cartData[itemId][sizeKey][colorKey] = {
+          [DEFAULT_PERFUME_TYPE_KEY]: cartData[itemId][sizeKey][colorKey],
+        };
+      }
+      if (
+        !cartData[itemId][sizeKey][colorKey] ||
+        typeof cartData[itemId][sizeKey][colorKey] !== "object"
+      ) {
+        cartData[itemId][sizeKey][colorKey] = {};
+      }
+      cartData[itemId][sizeKey][colorKey][perfumeTypeKey] =
+        (Number(cartData[itemId][sizeKey][colorKey][perfumeTypeKey]) || 0) + quantity;
     } else {
       // size-only (old)
-      if (cartData[itemId][size]) {
-        if (typeof cartData[itemId][size] === "object") {
-          cartData[itemId][size]._default =
-            (cartData[itemId][size]._default || 0) + quantity;
+      if (cartData[itemId][sizeKey]) {
+        if (typeof cartData[itemId][sizeKey] === "object") {
+          cartData[itemId][sizeKey]._default =
+            (cartData[itemId][sizeKey]._default || 0) + quantity;
         } else {
-          cartData[itemId][size] += quantity; // If it exists, increase the quantity
+          cartData[itemId][sizeKey] += quantity; // If it exists, increase the quantity
         }
       } else {
-        cartData[itemId][size] = quantity; // initialize quantity
+        cartData[itemId][sizeKey] = quantity; // initialize quantity
       }
     }
 
     setCartItems(cartData);
 
-    if (token) {
+    if (token && !useMockData) {
       // if tokem is available
       try {
         // include color and quantity if provided (older backend can ignore unknown fields safely)
         await axios.post(
           backendUrl + "/api/cart/add",
-          { itemId, size, color, quantity },
+          { itemId, size: sizeKey, color, perfumeType, quantity },
           { headers: { token } }
         );
       } catch (error) {
@@ -142,14 +201,10 @@ const ShopContextProvider = (props) => {
           const val = cartItems[items][item];
 
           // handle both old style (number) and new style (object of colors)
-          if (typeof val === "number") {
-            if (val) totalCount += val;
-          } else if (val && typeof val === "object") {
-            for (const c in val) {
-              if (val[c]) totalCount += val[c];
-            }
-          }
-        } catch (error) {
+          walkCartQuantities(val, (quantity) => {
+            totalCount += quantity;
+          });
+        } catch {
           /* empty */
         } // Catch any errors, but do nothing
       }
@@ -163,7 +218,7 @@ const ShopContextProvider = (props) => {
   }, [cartItems]);
 
   useEffect(() => {
-    localStorage.setItem("levon_favorites", JSON.stringify(favoriteItems));
+    localStorage.setItem("nancy_favorites", JSON.stringify(favoriteItems));
   }, [favoriteItems]);
 
   const toggleFavorite = (itemId) => {
@@ -195,29 +250,50 @@ const ShopContextProvider = (props) => {
   // ----------------------UPDATE QUANTITY FUNCTION ------------------------------------------
   // extended to support optional color; old calls still work (itemId, size, quantity)
   // ❗ FIX: allow quantity = 0 to REMOVE the line (and clean up empty size/item)
-  const updateQuantity = async (itemId, size, quantity, color = null) => {
+  const updateQuantity = async (itemId, size, quantity, color = null, perfumeType = null) => {
+    const sizeKey = normalizeVariantKey(size, DEFAULT_SIZE_KEY);
+    const colorKey = normalizeVariantKey(color, DEFAULT_COLOR_KEY);
+    const perfumeTypeKey = normalizeVariantKey(perfumeType, DEFAULT_PERFUME_TYPE_KEY);
     let cartData = structuredClone(cartItems); // Create a deep copy of cartItems to avoid modifying the original state directly
 
     // color-aware update/removal
-    if (color) {
+    if (color || perfumeType) {
       if (
         cartData[itemId] &&
-        cartData[itemId][size] &&
-        typeof cartData[itemId][size] === "object"
+        cartData[itemId][sizeKey] &&
+        typeof cartData[itemId][sizeKey] === "object"
       ) {
+        if (typeof cartData[itemId][sizeKey][colorKey] === "number") {
+          cartData[itemId][sizeKey][colorKey] = {
+            [DEFAULT_PERFUME_TYPE_KEY]: cartData[itemId][sizeKey][colorKey],
+          };
+        }
+        if (
+          !cartData[itemId][sizeKey][colorKey] ||
+          typeof cartData[itemId][sizeKey][colorKey] !== "object"
+        ) {
+          cartData[itemId][sizeKey][colorKey] = {};
+        }
         if (quantity <= 0) {
           // remove just this color
-          delete cartData[itemId][size][color];
+          delete cartData[itemId][sizeKey][colorKey][perfumeTypeKey];
         } else {
-          cartData[itemId][size][color] = quantity;
+          cartData[itemId][sizeKey][colorKey][perfumeTypeKey] = quantity;
+        }
+        if (
+          cartData[itemId][sizeKey][colorKey] &&
+          typeof cartData[itemId][sizeKey][colorKey] === "object" &&
+          Object.keys(cartData[itemId][sizeKey][colorKey]).length === 0
+        ) {
+          delete cartData[itemId][sizeKey][colorKey];
         }
         // cleanup empty size object
         if (
-          cartData[itemId][size] &&
-          typeof cartData[itemId][size] === "object" &&
-          Object.keys(cartData[itemId][size]).length === 0
+          cartData[itemId][sizeKey] &&
+          typeof cartData[itemId][sizeKey] === "object" &&
+          Object.keys(cartData[itemId][sizeKey]).length === 0
         ) {
-          delete cartData[itemId][size];
+          delete cartData[itemId][sizeKey];
         }
       }
     } else {
@@ -225,12 +301,12 @@ const ShopContextProvider = (props) => {
       if (cartData[itemId]) {
         if (quantity <= 0) {
           // remove the whole size entry
-          delete cartData[itemId][size];
+          delete cartData[itemId][sizeKey];
         } else {
-          if (typeof cartData[itemId][size] === "object") {
-            cartData[itemId][size]._default = quantity;
+          if (typeof cartData[itemId][sizeKey] === "object") {
+            cartData[itemId][sizeKey]._default = quantity;
           } else {
-            cartData[itemId][size] = quantity; // Update the quantity of the specific product size
+            cartData[itemId][sizeKey] = quantity; // Update the quantity of the specific product size
           }
         }
       }
@@ -243,13 +319,13 @@ const ShopContextProvider = (props) => {
 
     setCartItems(cartData); // Update the state with the modified cart data
 
-    if (token)
+    if (token && !useMockData)
       // if token available
       try {
         // include color so server can distinguish variants if supported (your backend can ignore it)
         await axios.post(
           backendUrl + "/api/cart/update",
-          { itemId, size, quantity, color },
+          { itemId, size: sizeKey, quantity, color, perfumeType },
           { headers: { token } }
         ); // we passing the token to can addtocart
       } catch (error) {
@@ -266,23 +342,18 @@ const ShopContextProvider = (props) => {
       const unitPrice = itemInfo ? getEffectiveProductPrice(itemInfo) : 0;
       for (const item in cartItems[items]) {
         const val = cartItems[items][item];
-        if (typeof val === "number") {
-          totalAmount += unitPrice * val;
-        } else if (val && typeof val === "object") {
-          for (const c in val) {
-            const q = val[c];
-            totalAmount += unitPrice * q;
-          }
-        }
+        walkCartQuantities(val, (quantity) => {
+          totalAmount += unitPrice * quantity;
+        });
       }
     }
     return totalAmount;
   };
 
   // ----------------GETTING THE PRODUCT DATA------------------------------------------
-  const getProductsData = async () => {
+  const getProductsData = async ({ silent = false } = {}) => {
     // to get the products from   data base
-    setProductsLoading(true);
+    if (!silent) setProductsLoading(true);
     if (useMockData) {
       setProducts(normalizeProducts(mockProducts));
       setProductsLoading(false);
@@ -300,14 +371,21 @@ const ShopContextProvider = (props) => {
       }
     } catch (error) {
       console.log(error);
-      setProducts([]);
-      toast.error("Backend products could not load");
+      if (!silent) {
+        setProducts([]);
+        toast.error("Backend products could not load");
+      }
     } finally {
-      setProductsLoading(false);
+      if (!silent) setProductsLoading(false);
     }
   };
 
   const getScentFamilies = async ({ silent = false } = {}) => {
+    if (useMockData) {
+      setScentFamilies(defaultScentFamilies);
+      return;
+    }
+
     try {
       const response = await axios.get(`${backendUrl}/api/scent-families/list`);
       if (response.data.success) {
@@ -324,7 +402,29 @@ const ShopContextProvider = (props) => {
     }
   };
 
+  const getCategoryGroups = async ({ silent = false } = {}) => {
+    if (useMockData) {
+      setCategoryGroups(fallbackCategoryGroups);
+      return;
+    }
+
+    try {
+      const response = await axios.get(`${backendUrl}/api/categories/list`);
+      if (response.data.success) {
+        const nextGroups = mapCategoryGroups(response.data.groups);
+        setCategoryGroups(nextGroups.length ? nextGroups : fallbackCategoryGroups);
+      } else if (!silent) {
+        toast.error(response.data.message || "Failed to load category menu");
+      }
+    } catch (error) {
+      console.log(error);
+      setCategoryGroups(fallbackCategoryGroups);
+    }
+  };
+
   const getUserCart = async (token) => {
+    if (useMockData) return;
+
     try {
       const response = await axios.post(
         backendUrl + "/api/cart/get",
@@ -352,6 +452,13 @@ const ShopContextProvider = (props) => {
       toast.error("Enter a coupon code");
       return;
     }
+    if (useMockData) {
+      toast.info("Coupons are paused while mock data is enabled");
+      setAppliedCoupon(null);
+      setCouponDiscount(0);
+      return;
+    }
+
     try {
       const res = await axios.post(
         backendUrl + "/api/coupon/check",
@@ -394,14 +501,23 @@ const ShopContextProvider = (props) => {
     // to show the data whenever this function will e excuted
     getProductsData();
     getScentFamilies({ silent: true });
+    getCategoryGroups({ silent: true });
   }, []);
 
   useEffect(() => {
+    if (useMockData) return;
+
     const interval = setInterval(() => {
+      getProductsData({ silent: true });
       getScentFamilies({ silent: true });
+      getCategoryGroups({ silent: true });
     }, 8000);
 
-    const onFocus = () => getScentFamilies({ silent: true });
+    const onFocus = () => {
+      getProductsData({ silent: true });
+      getScentFamilies({ silent: true });
+      getCategoryGroups({ silent: true });
+    };
     window.addEventListener("focus", onFocus);
 
     return () => {
@@ -412,6 +528,8 @@ const ShopContextProvider = (props) => {
 
   // i can add this function even in the login page it will work the same
   useEffect(() => {
+    if (useMockData) return;
+
     if (!token && localStorage.getItem("token")) {
       // if there is not token and the local storage has the token so
       setToken(localStorage.getItem("token")); // get the token from the localstorage and add it ino our var like this even we refresh it will not open the loggin page
@@ -422,7 +540,11 @@ const ShopContextProvider = (props) => {
   const value = {
     products,
     productsLoading,
+    getProductsData,
     scentFamilies,
+    categoryGroups,
+    getCategoryGroups,
+    siteSettings,
     getScentFamilies,
     currency,
     delivery_fee, // i can accses this accross all the compnents mtl assests.jsx
@@ -432,6 +554,9 @@ const ShopContextProvider = (props) => {
     setShowSearch,
     cartItems,
     setCartItems,
+    cartDrawerOpen,
+    openCart,
+    closeCart,
     favoriteItems,
     setFavoriteItems,
     toggleFavorite,

@@ -1,7 +1,10 @@
 // controllers/productController.js
-import imagekit from '../config/ImageKit.js';
 import productModel from '../models/productModel.js'; // <-- Make sure the path is correct
 import { logError } from "../utils/logger.js";
+import {
+  deleteImageKitAssets,
+  uploadImageKitAsset,
+} from "../utils/imagekitCleanup.js";
 
 // ---------- helpers (CSV / JSON strings -> arrays, string -> number/bool) ----------
 const toNum = (v) => (v === undefined || v === '' ? undefined : Number(v));
@@ -24,6 +27,122 @@ const toArray = (v) => {
   } catch (_) { /* not JSON, fall back to CSV */ }
   return String(v).split(',').map(s => s.trim()).filter(Boolean);
 };
+const normalizeSize = (value) => {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  const compact = text.toLowerCase().replace(/\s+/g, '');
+
+  if (!compact || compact === 'default') return '';
+  if (compact === '100ml') return '100ML';
+  if (compact === '50ml') return '50ML';
+  if (compact === '30ml') return '30ML';
+  if (compact === '10ml') return '10ML';
+
+  return text;
+};
+const normalizeSizes = (value) => [
+  ...new Set(toArray(value).map(normalizeSize).filter(Boolean)),
+];
+const normalizePerfumeType = (value) => {
+  const text = String(value || '').replace(/\s+/g, ' ').trim();
+  const compact = text.toLowerCase().replace(/\s+/g, '');
+
+  if (!compact || compact === 'default') return '';
+  if (['eaudeparfum', 'eaudeperfume', 'edp'].includes(compact)) return 'Eau de Parfum';
+  if (['eaudetoilette', 'edt'].includes(compact)) return 'Eau de Toilette';
+
+  return text;
+};
+const normalizePerfumeTypes = (value) => [
+  ...new Set(toArray(value).map(normalizePerfumeType).filter(Boolean)),
+];
+const toObjectArray = (v) => {
+  if (v === undefined || v === null || v === "") return [];
+  if (Array.isArray(v)) return v.filter((item) => item && typeof item === "object");
+  try {
+    const parsed = JSON.parse(v);
+    if (Array.isArray(parsed)) return parsed.filter((item) => item && typeof item === "object");
+  } catch {
+    return [];
+  }
+  return [];
+};
+
+const getExistingImageMeta = (product) => {
+  const meta = Array.isArray(product?.imageMeta) ? product.imageMeta : [];
+  const images = Array.isArray(product?.image) ? product.image : [];
+  const byUrl = new Map(
+    meta
+      .filter((item) => item?.url)
+      .map((item) => [item.url, { url: item.url, fileId: item.fileId || "" }])
+  );
+
+  images.forEach((url) => {
+    if (url && !byUrl.has(url)) byUrl.set(url, { url, fileId: "" });
+  });
+
+  return Array.from(byUrl.values());
+};
+
+const normalizeMediaOptions = async ({ rawItems, files, prefix, fallbackName, allowTextOnly = false }) => {
+  const items = toObjectArray(rawItems);
+
+  for (let index = 0; index < items.length; index += 1) {
+    const upload = await uploadImageKitAsset(
+      files?.[`${prefix}${index}`]?.[0],
+      `${fallbackName}-${index + 1}`
+    );
+
+    if (upload) {
+      items[index].image = upload.url;
+      items[index].fileId = upload.fileId;
+    }
+
+    items[index].id = items[index].id || `${fallbackName}-${Date.now()}-${index}`;
+    items[index].label = items[index].label || items[index].alt || "";
+    items[index].cartValue = items[index].cartValue || items[index].label || "";
+    items[index].description = items[index].description || "";
+    items[index].alt = items[index].alt || items[index].label || "";
+  }
+
+  return items.filter((item) => item.image || (allowTextOnly && (item.label || item.cartValue)));
+};
+
+const mediaAssets = (items = []) =>
+  items
+    .map((item) => ({ url: item?.image || "", fileId: item?.fileId || "" }))
+    .filter((item) => item.url || item.fileId);
+
+const removedMediaAssets = (previous = [], next = []) => {
+  const nextUrls = new Set(next.map((item) => item?.image).filter(Boolean));
+  return mediaAssets(previous).filter((item) => item.url && !nextUrls.has(item.url));
+};
+
+const uniqueAssets = (assets = []) => {
+  const seen = new Set();
+  return assets.filter((asset) => {
+    const key = asset?.fileId || asset?.url;
+    if (!key || seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+};
+
+const deriveProductImages = (...groups) =>
+  [
+    ...new Set(
+      groups
+        .flat()
+        .map((item) => item?.image)
+        .filter(Boolean)
+    ),
+  ];
+
+const unusedGalleryAssets = (product, nextImages = []) => {
+  const protectedUrls = new Set(nextImages);
+  return getExistingImageMeta(product).filter(
+    (asset) => asset.url && !protectedUrls.has(asset.url)
+  );
+};
 
 // ------------function for add product----------------
 const addProduct = async (req, res) => {
@@ -39,38 +158,41 @@ const addProduct = async (req, res) => {
       category,
       subCategory,
       concentration,
+      perfumeTypes,
       sizes,
-      bestseller,
       newArrival,
       onSales,
 
       // NEW FIELDS we keep the same style (strings/CSV -> convert)
       colors,          // e.g. "Red,Blue"  OR JSON/array from frontend (we will parse here)
       discountPrice,   // string -> Number
+      rating,
+      reviewCount,
       active,          // "true"/"false" -> boolean (default true)
       outOfStock,      // "true"/"false" -> boolean
       stock            // numeric stock count
+      ,featuredSlot
+      ,showSmallImages
+      ,shadeOptions
+      ,storyImages
     } = req.body;
 
-    // we check if the images are available in the request, and if they are, we store them in variables
-    const image1 = req.files?.image1?.[0];
-    const image2 = req.files?.image2?.[0];
-    const image3 = req.files?.image3?.[0];
-    const image4 = req.files?.image4?.[0];
-
-    const imageFiles = [image1, image2, image3, image4].filter((item) => item !== undefined); // we collect all images in an array and this filter to remove undifiend and store even if 1 image in the mongo db
-    const uploadedImageUrls = []; // to store the urls after upload
-
-    // we loop through the image array and upload them to ImageKit
-    for (const file of imageFiles) {
-      if (file) {
-        const result = await imagekit.upload({
-          file: file.buffer, // binary buffer (file saved in memory by multer)
-          fileName: file.originalname, // original file name
-        });
-        uploadedImageUrls.push(result.url); // after upload we push the url in the array
-      }
-    }
+    const parsedSizes = normalizeSizes(sizes);
+    const parsedPerfumeTypes = normalizePerfumeTypes(perfumeTypes);
+    const displayConcentration = normalizePerfumeType(concentration) || parsedPerfumeTypes[0] || '';
+    const parsedShadeOptions = await normalizeMediaOptions({
+      rawItems: shadeOptions,
+      files: req.files,
+      prefix: "shadeImage",
+      fallbackName: "shade-option",
+      allowTextOnly: true,
+    });
+    const parsedStoryImages = await normalizeMediaOptions({
+      rawItems: storyImages,
+      files: req.files,
+      prefix: "storyImage",
+      fallbackName: "story-image",
+    });
 
     //we create the productdata to save the url of images and the data (names,..) in the mongodb--------------------------------------
     const productData = {
@@ -79,23 +201,31 @@ const addProduct = async (req, res) => {
       category,
       price: Number(price), // price in form data input well took as string so we convertet as number
       subCategory,
-      concentration,
-      bestseller: bestseller === 'true' ? true : false, // same for bestseller  because the form data will took a string we will covert the string into true or false if its true so true if not so false
+      concentration: displayConcentration,
+      perfumeTypes: parsedPerfumeTypes,
+      bestseller: false,
       newArrival: newArrival === 'true' ? true : false,
       onSales: onSales === 'true' ? true : false,
 
       // because we cannot send the array directly as form data so from the frontend we will send the sizes and it will be convertet as array
       // (supports "S,M,L" OR '["S","M","L"]')
-      sizes: toArray(sizes),
+      sizes: parsedSizes,
 
       // NEW FIELDS saved the same way
       colors: toArray(colors),                  // "Red,Blue" -> ["Red","Blue"] OR JSON array
       discountPrice: toNum(discountPrice),      // "19.99" -> 19.99
+      rating: toNum(rating) ?? 5,
+      reviewCount: toNum(reviewCount) ?? 0,
       active: active === undefined ? true : toBool(active, true), // default true
       outOfStock: toBool(outOfStock, false),
       stock: toStock(stock, undefined),
+      featuredSlot: toNum(featuredSlot),
+      showSmallImages: showSmallImages === undefined ? true : toBool(showSmallImages, true),
+      shadeOptions: parsedShadeOptions,
+      storyImages: parsedStoryImages,
 
-      image: uploadedImageUrls, // to store the images url in the mongo db
+      image: deriveProductImages(parsedShadeOptions, parsedStoryImages),
+      imageMeta: [],
       date: Date.now(), // that shhould return the date of now
     };
 
@@ -117,7 +247,7 @@ const addProduct = async (req, res) => {
 const listProducts = async (req, res) => {
   try {
     // aham shi ltry la tekshof lerror l3ena
-    const products = await productModel.find({}); // to find the all data  // you can use .sort({ date: -1 }) to get latest first
+    const products = await productModel.find({}).sort({ date: -1, _id: -1 }); // newest products first
     res.json({ success: true, products }); // we put products to see if its work
   } catch (error) {
     logError("listProducts", error);
@@ -128,8 +258,21 @@ const listProducts = async (req, res) => {
 // function for removing product
 const removeProduct = async (req, res) => {
   try {
+    const product = await productModel.findById(req.body.id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const cleanup = await deleteImageKitAssets([
+      ...uniqueAssets([
+        ...getExistingImageMeta(product),
+        ...mediaAssets(product.shadeOptions),
+        ...mediaAssets(product.storyImages),
+      ]),
+    ]);
+
     await productModel.findByIdAndDelete(req.body.id); // so this function ecplain her self it will findby id and delete then we request from body the id to delete the product
-    res.json({ success: true, message: 'Product Removed' });
+    res.json({ success: true, message: 'Product Removed', imagekit: cleanup });
   } catch (error) {
     logError("removeProduct", error);
     res.json({ success: false, message: error.message });
@@ -185,31 +328,66 @@ const updateProduct = async (req, res) => {
       category,
       subCategory,
       concentration,
-      bestseller,
+      perfumeTypes,
       newArrival,
       onSales,
       sizes, // could be "S,M,L" string or array
-      imagesToRemove, // optional: JSON string or array of URLs to remove
-
       // NEW FIELDS (same style)
       colors,         // "Red,Blue" or array
       discountPrice,  // string number
+      rating,
+      reviewCount,
       active,         // "true"/"false"
       outOfStock,     // "true"/"false"
       stock           // numeric stock count
+      ,featuredSlot
+      ,showSmallImages
+      ,shadeOptions
+      ,storyImages
     } = req.body;
+
+    const nextShadeOptions =
+      shadeOptions !== undefined
+        ? await normalizeMediaOptions({
+            rawItems: shadeOptions,
+            files: req.files,
+            prefix: "shadeImage",
+            fallbackName: "shade-option",
+            allowTextOnly: true,
+          })
+        : product.shadeOptions;
+    const nextStoryImages =
+      storyImages !== undefined
+        ? await normalizeMediaOptions({
+            rawItems: storyImages,
+            files: req.files,
+            prefix: "storyImage",
+            fallbackName: "story-image",
+          })
+        : product.storyImages;
+    const parsedSizes =
+      sizes !== undefined ? normalizeSizes(sizes) : normalizeSizes(product.sizes);
+    const parsedPerfumeTypes =
+      perfumeTypes !== undefined
+        ? normalizePerfumeTypes(perfumeTypes)
+        : normalizePerfumeTypes(product.perfumeTypes);
+    const nextConcentration =
+      concentration !== undefined
+        ? normalizePerfumeType(concentration)
+        : normalizePerfumeType(product.concentration);
 
     const next = {
       name: name ?? product.name,
       description: description ?? product.description,
       category: category ?? product.category,
       subCategory: subCategory ?? product.subCategory,
-      concentration: concentration ?? product.concentration,
+      concentration: nextConcentration || parsedPerfumeTypes[0] || '',
+      perfumeTypes: parsedPerfumeTypes,
       price: price !== undefined ? Number(price) : product.price,
-      bestseller: toBool(bestseller, product.bestseller),
+      bestseller: false,
       newArrival: toBool(newArrival, product.newArrival),
       onSales: toBool(onSales, product.onSales),
-      sizes: sizes !== undefined ? toArray(sizes) : product.sizes,
+      sizes: parsedSizes,
 
       // NEW FIELDS (same style)
       colors: colors !== undefined ? toArray(colors) : product.colors,
@@ -217,52 +395,29 @@ const updateProduct = async (req, res) => {
         discountPrice !== undefined && discountPrice !== ''
           ? Number(discountPrice)
           : (discountPrice === '' ? undefined : product.discountPrice),
+      rating: rating !== undefined ? Number(rating) : product.rating,
+      reviewCount: reviewCount !== undefined ? Number(reviewCount) : product.reviewCount,
       active: toBool(active, product.active),
       outOfStock: toBool(outOfStock, product.outOfStock),
       stock: toStock(stock, product.stock),
+      featuredSlot:
+        featuredSlot !== undefined && featuredSlot !== ""
+          ? Number(featuredSlot)
+          : (featuredSlot === "" ? undefined : product.featuredSlot),
+      showSmallImages: toBool(showSmallImages, product.showSmallImages),
+      shadeOptions: nextShadeOptions,
+      storyImages: nextStoryImages,
     };
 
-    // 3) Handle images
-    // Existing images:
-    let newImages = Array.isArray(product.image) ? [...product.image] : [];
-
-    // 3a) Remove specific existing images if requested
-    //     Client can send:
-    //     - imagesToRemove as JSON string: '["https://.../img1.jpg","https://.../img2.jpg"]'
-    //     - or as repeated fields
-    let toRemove = [];
-    if (imagesToRemove !== undefined) {
-      try {
-        if (typeof imagesToRemove === 'string') {
-          toRemove = JSON.parse(imagesToRemove); // attempt to parse JSON
-        } else if (Array.isArray(imagesToRemove)) {
-          toRemove = imagesToRemove;
-        }
-      } catch (_) {
-        // ignore malformed JSON; treat as no removals
-      }
+    if (shadeOptions !== undefined) {
+      await deleteImageKitAssets(removedMediaAssets(product.shadeOptions, next.shadeOptions));
     }
-    if (Array.isArray(toRemove) && toRemove.length) {
-      newImages = newImages.filter((url) => !toRemove.includes(url));
-      // (Optional) You can also delete files from ImageKit by fileId if you store it.
+    if (storyImages !== undefined) {
+      await deleteImageKitAssets(removedMediaAssets(product.storyImages, next.storyImages));
     }
 
-    // 3b) Upload any newly provided images (image1..image4) via multer memory buffers
-    const fileFields = ['image1', 'image2', 'image3', 'image4'];
-    const uploadCandidates = [];
-    fileFields.forEach((f) => {
-      if (req.files?.[f]?.[0]) {
-        uploadCandidates.push(req.files[f][0]);
-      }
-    });
-
-    for (const file of uploadCandidates) {
-      const result = await imagekit.upload({
-        file: file.buffer,
-        fileName: file.originalname,
-      });
-      newImages.push(result.url);
-    }
+    const nextProductImages = deriveProductImages(next.shadeOptions, next.storyImages);
+    await deleteImageKitAssets(unusedGalleryAssets(product, nextProductImages));
 
     // 4) Persist all updates
     product.name = next.name;
@@ -270,8 +425,9 @@ const updateProduct = async (req, res) => {
     product.category = next.category;
     product.subCategory = next.subCategory;
     product.concentration = next.concentration;
+    product.perfumeTypes = next.perfumeTypes;
     product.price = next.price;
-    product.bestseller = next.bestseller;
+    product.bestseller = false;
     product.newArrival = next.newArrival;
     product.onSales = next.onSales;
     product.sizes = next.sizes;
@@ -279,11 +435,18 @@ const updateProduct = async (req, res) => {
     // NEW
     product.colors = next.colors;
     product.discountPrice = next.discountPrice;
+    product.rating = next.rating;
+    product.reviewCount = next.reviewCount;
     product.active = next.active;
     product.outOfStock = next.outOfStock;
     product.stock = next.stock;
+    product.featuredSlot = next.featuredSlot;
+    product.showSmallImages = next.showSmallImages;
+    product.shadeOptions = next.shadeOptions;
+    product.storyImages = next.storyImages;
 
-    product.image = newImages; // final merged image list
+    product.imageMeta = [];
+    product.image = nextProductImages;
 
     await product.save();
 
@@ -298,11 +461,58 @@ const updateProduct = async (req, res) => {
   }
 };
 
+const addProductReview = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const product = await productModel.findById(id);
+    if (!product) {
+      return res.status(404).json({ success: false, message: "Product not found" });
+    }
+
+    const rating = Math.max(1, Math.min(5, Math.round(Number(req.body.rating) || 0)));
+    if (!rating) {
+      return res.status(400).json({ success: false, message: "Choose a rating first" });
+    }
+
+    const review = {
+      name: String(req.body.name || "Customer").trim().slice(0, 60) || "Customer",
+      rating,
+      comment: String(req.body.comment || "").trim().slice(0, 500),
+      date: Date.now(),
+    };
+
+    product.reviews = Array.isArray(product.reviews) ? product.reviews : [];
+    product.reviews.unshift(review);
+    const reviewCount = product.reviews.length;
+    const ratingTotal = product.reviews.reduce(
+      (sum, item) => sum + (Number(item.rating) || 0),
+      0
+    );
+    product.reviewCount = reviewCount;
+    product.rating = reviewCount ? Number((ratingTotal / reviewCount).toFixed(1)) : 5;
+
+    await product.save();
+
+    return res.json({
+      success: true,
+      message: "Review added",
+      product,
+      reviews: product.reviews,
+      rating: product.rating,
+      reviewCount: product.reviewCount,
+    });
+  } catch (error) {
+    logError("addProductReview", error);
+    return res.status(500).json({ success: false, message: error.message });
+  }
+};
+
 export {
   listProducts,
   addProduct,
   removeProduct,
   singleProduct,      // your original (POST body {productId})
   singleProductById,  // optional GET /:id version
-  updateProduct
+  updateProduct,
+  addProductReview
 };

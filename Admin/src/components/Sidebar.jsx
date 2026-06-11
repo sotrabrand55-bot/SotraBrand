@@ -17,14 +17,11 @@ const navGroups = [
     ],
   },
   {
-    label: "Homepage",
+    label: "Nancy Studio",
     items: [
-      { to: "/header-slides", label: "Hero Header", icon: "HH" },
-      { to: "/gift-sets", label: "Gift Sets", icon: "GS" },
-      { to: "/scent-wardrobe", label: "Choose Mood", icon: "CM" },
-      { to: "/brand-statement", label: "Proudly Made", icon: "PM" },
-      { to: "/page-images", label: "Page Images", icon: "PI" },
-      { to: "/subcat-tiles", label: "Subcategory Tiles", icon: "ST" },
+      { to: "/nancy-home", label: "Home Studio", icon: "HS" },
+      { to: "/subcategory-studio", label: "Subcategory Studio", icon: "SS" },
+      { to: "/categories", label: "Categories", icon: "CA" },
     ],
   },
   {
@@ -39,18 +36,18 @@ const navGroups = [
 
 const Sidebar = () => {
   return (
-    <aside className="sticky top-0 hidden h-screen w-[84px] shrink-0 border-r border-[#eadfd2] bg-[#fffaf4] px-3 py-5 shadow-[12px_0_34px_rgba(62,45,28,0.05)] md:block xl:w-[282px]">
-      <div className="mb-7 border-b border-[#eadfd2] pb-5">
+    <aside className="sticky top-0 hidden h-screen w-[84px] shrink-0 border-r border-black/10 bg-white px-3 py-5 shadow-[12px_0_34px_rgba(0,0,0,0.04)] md:block xl:w-[282px]">
+      <div className="mb-7 border-b border-black/10 pb-5">
         <div className="flex items-center gap-3">
-          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-md bg-[#1f1b17] font-serif text-lg text-[#d8b778]">
-            L
+          <div className="grid h-11 w-11 shrink-0 place-items-center rounded-none bg-black font-serif text-lg text-white">
+            R
           </div>
           <div className="hidden min-w-0 xl:block">
-            <p className="font-serif text-2xl leading-none tracking-[0.18em] text-[#1f1b17]">
-              LEVON
+            <p className="font-serif text-2xl leading-none tracking-[0.12em] text-black">
+              BE RADIANT
             </p>
-            <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.22em] text-[#9a8068]">
-              Admin Panel
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#c47b92]">
+              by Nancy Admin
             </p>
           </div>
         </div>
@@ -59,7 +56,7 @@ const Sidebar = () => {
       <nav className="h-[calc(100vh-124px)] overflow-y-auto pr-1 no-scrollbar">
         {navGroups.map((group) => (
           <div key={group.label} className="mb-5">
-            <p className="mb-2 hidden px-3 text-[10px] font-semibold uppercase tracking-[0.2em] text-[#b9945d] xl:block">
+            <p className="mb-2 hidden px-3 text-[10px] font-bold uppercase tracking-[0.2em] text-black/45 xl:block">
               {group.label}
             </p>
             <div className="space-y-1.5">
@@ -71,8 +68,8 @@ const Sidebar = () => {
                   className={({ isActive }) =>
                     `group flex items-center justify-center gap-3 rounded-md border px-2 py-2.5 text-sm font-semibold transition xl:justify-start xl:px-3 ${
                       isActive
-                        ? "border-[#1f1b17] bg-[#1f1b17] text-white shadow-[0_14px_30px_rgba(31,27,23,0.16)]"
-                        : "border-transparent text-[#6f5844] hover:border-[#d8c2a5] hover:bg-[#fffdf9] hover:text-[#1f1b17]"
+                        ? "border-black bg-black text-white shadow-[0_14px_30px_rgba(0,0,0,0.16)]"
+                        : "border-transparent text-black/60 hover:border-black/20 hover:bg-[#f5f5f5] hover:text-black"
                     }`
                   }
                 >
@@ -81,8 +78,8 @@ const Sidebar = () => {
                       <span
                         className={`grid h-9 w-9 shrink-0 place-items-center rounded-md border text-[10px] font-bold tracking-[0.12em] transition ${
                           isActive
-                            ? "border-[#d8b778]/35 bg-[#d8b778] text-[#1f1b17]"
-                            : "border-[#eadfd2] bg-[#fffdf9] text-[#9a8068] group-hover:border-[#c49a5e] group-hover:text-[#1f1b17]"
+                            ? "border-white/30 bg-white text-black"
+                            : "border-black/10 bg-white text-black/45 group-hover:border-black/30 group-hover:text-black"
                         }`}
                       >
                         {item.icon}

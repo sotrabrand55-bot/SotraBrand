@@ -10,7 +10,9 @@ const adminAuth = async (req, res, next) => {
         return res.json({success:false,message:"Not Athorized Login Again"}) // we add return because wen its return it will stop here
       }
         
-      const token_decode = jwt.verify(token,process.env.JWT_SECRET); // ✅ If token is provided, decode and verify it using your secret key yaene iza hada jarab yfut bi fake token men el JWT_secret
+      const token_decode = jwt.verify(token, process.env.JWT_SECRET, {
+        ignoreExpiration: true,
+      }); // admin tokens are allowed to stay logged in without expiry
       const expectedAdminKey = process.env.ADMIN_EMAIL + process.env.ADMIN_PASSWORD;
       const decodedAdminKey =
         typeof token_decode === "string" ? token_decode : token_decode?.adminKey;

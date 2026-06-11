@@ -1,4 +1,5 @@
-export const perfumeSizeOptions = ["30ML", "50ML", "75ML", "100ML", "3 x 10ML"];
+export const perfumeSizeOptions = ["100ML", "30ML", "50ML", "10ML"];
+export const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette"];
 
 const normalizePerfumeSize = (value) => {
   const text = String(value || "").replace(/\s+/g, " ").trim();
@@ -6,9 +7,9 @@ const normalizePerfumeSize = (value) => {
 
   if (compact === "30ml") return "30ML";
   if (compact === "50ml") return "50ML";
-  if (compact === "75ml") return "75ML";
   if (compact === "100ml") return "100ML";
-  if (compact === "3x10ml") return "3 x 10ML";
+  if (compact === "10ml") return "10ML";
+  if (compact === "default") return "";
 
   return text;
 };
@@ -21,6 +22,17 @@ const sortPerfumeSizes = (sizes) => {
     if (aOrder !== bOrder) return aOrder - bOrder;
     return String(a).localeCompare(String(b));
   });
+};
+
+export const normalizePerfumeType = (value) => {
+  const text = String(value || "").replace(/\s+/g, " ").trim();
+  const compact = text.toLowerCase().replace(/\s+/g, "");
+
+  if (!compact || compact === "default") return "";
+  if (["eaudeparfum", "eaudeperfume", "edp"].includes(compact)) return "Eau de Parfum";
+  if (["eaudetoilette", "edt"].includes(compact)) return "Eau de Toilette";
+
+  return text;
 };
 
 const parseArray = (value) => {
@@ -73,6 +85,8 @@ const parseBool = (value, fallback = false) => {
 
 export const getProductImages = (product = {}) =>
   unique([
+    ...parseImageArray(product.storyImages?.map?.((item) => item?.image) || []),
+    ...parseImageArray(product.shadeOptions?.map?.((item) => item?.image) || []),
     ...parseImageArray(product.image),
     ...parseImageArray(product.images),
     parseImageValue(product.image1),
@@ -107,6 +121,16 @@ export const normalizeProduct = (product = {}) => {
   const sizes = sortPerfumeSizes([
     ...new Set(parseArray(product.sizes).map(normalizePerfumeSize).filter(Boolean)),
   ]);
+  const explicitPerfumeTypes = parseArray(product.perfumeTypes)
+    .map(normalizePerfumeType)
+    .filter(Boolean);
+  const legacyPerfumeType = perfumeTypeOptions.includes(normalizePerfumeType(product.concentration))
+    ? normalizePerfumeType(product.concentration)
+    : "";
+  const perfumeTypes = [...new Set([
+    ...explicitPerfumeTypes,
+    legacyPerfumeType,
+  ].filter(Boolean))];
 
   return {
     ...product,
@@ -127,7 +151,8 @@ export const normalizeProduct = (product = {}) => {
     image4: image[3] || "",
     category: product.category || "Fragrance",
     subCategory: product.subCategory || "",
-    concentration: product.concentration || "",
+    concentration: product.concentration || perfumeTypes[0] || "",
+    perfumeTypes,
     sizes,
     colors: parseArray(product.colors),
     bestseller: parseBool(product.bestseller, false),

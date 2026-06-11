@@ -7,7 +7,6 @@ import userRouter from "./routes/userRoute.js";
 import productRouter from "./routes/productRoute.js";
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
-import subcatTileRoute from "./routes/subcatTileRoute.js";
 import headerSlideRoute from "./routes/headerSlideRoute.js"
 import orderNotifyRoute from "./routes/orderNotifyRoute.js";
 import contactRoutes from './routes/contactRoutes.js';
@@ -15,10 +14,10 @@ import maintenanceRoutes from "./routes/maintenanceRoutes.js";
 import settingsRoutes from "./routes/settingsRoutes.js";
 import couponRoutes from "./routes/couponRoutes.js";
 import scentFamilyRoute from "./routes/scentFamilyRoute.js";
-import brandStatementRoute from "./routes/brandStatementRoute.js";
-import giftSetDisplayRoute from "./routes/giftSetDisplayRoute.js";
-import scentWardrobeRoute from "./routes/scentWardrobeRoute.js";
+import categoryGroupRoute from "./routes/categoryGroupRoute.js";
 import pageImagesRoute from "./routes/pageImagesRoute.js";
+import homepageSectionRoute from "./routes/homepageSectionRoute.js";
+import subcategoryPageRoute from "./routes/subcategoryPageRoute.js";
 // ------- APP Config ----------
 const app = express();
 const port = process.env.PORT || 4000;
@@ -78,7 +77,6 @@ app.use('/api/user', userRouter);
 app.use('/api/product',productRouter);
 app.use('/api/cart',cartRouter);
 app.use('/api/order',orderRouter);
-app.use("/api/subcat-tiles", subcatTileRoute);
 app.use("/api/header-slides", headerSlideRoute);
 app.use("/api/order", orderNotifyRoute);
 app.use('/api/contact', contactRoutes);
@@ -86,10 +84,10 @@ app.use("/api/maintenance", maintenanceRoutes);
 app.use("/api/settings", settingsRoutes);
 app.use("/api/coupon", couponRoutes);
 app.use("/api/scent-families", scentFamilyRoute);
-app.use("/api/brand-statement", brandStatementRoute);
-app.use("/api/gift-set-display", giftSetDisplayRoute);
-app.use("/api/scent-wardrobe", scentWardrobeRoute);
+app.use("/api/categories", categoryGroupRoute);
 app.use("/api/page-images", pageImagesRoute);
+app.use("/api/homepage-sections", homepageSectionRoute);
+app.use("/api/subcategory-pages", subcategoryPageRoute);
 
 app.get('/api/test', (req, res) => {
   res.json({ success: true, message: "Backend is working!" });

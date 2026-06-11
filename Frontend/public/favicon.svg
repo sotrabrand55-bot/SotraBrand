@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Be Radiant By Nancy">
+  <rect width="64" height="64" rx="0" fill="#000000"/>
+  <path d="M18 10h17.5c8.5 0 14.2 5 14.2 12.4 0 5.1-2.7 9.2-7.2 11.1L51 54H38.8l-7.3-18.2h-3.2V54H18V10Zm10.3 9v8.9h6.2c3.1 0 4.9-1.8 4.9-4.5 0-2.8-1.8-4.4-4.9-4.4h-6.2Z" fill="#ffffff"/>
+  <path d="M13 57h38" stroke="#c47b92" stroke-width="2" stroke-linecap="square"/>
+</svg>

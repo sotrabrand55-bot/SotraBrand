@@ -1,62 +1,50 @@
-// controllers/headerSlideController.js
 import HeaderSlide from "../models/headerSlideModel.js";
-import imagekit from "../config/ImageKit.js"; // <-- same client you use for subcatTile
+import {
+  deleteImageKitAssets,
+  uploadImageKitAsset,
+} from "../utils/imagekitCleanup.js";
 
-const parseBadges = (value) => {
-  if (Array.isArray(value)) {
-    return value.map(String).map((item) => item.trim()).filter(Boolean);
-  }
-
-  if (value === undefined || value === null || value === "") return [];
-
-  try {
-    const parsed = JSON.parse(value);
-    if (Array.isArray(parsed)) {
-      return parsed.map(String).map((item) => item.trim()).filter(Boolean);
-    }
-  } catch {
-    // Fall back to comma-separated text so admin edits stay forgiving.
-  }
-
-  return String(value)
-    .split(",")
-    .map((item) => item.trim())
-    .filter(Boolean);
+const publicSlide = (slide) => {
+  const item = typeof slide?.toObject === "function" ? slide.toObject() : slide;
+  if (!item) return item;
+  const { title, blurb, badges, ...headerMedia } = item;
+  return headerMedia;
 };
 
 export const addSlide = async (req, res) => {
   try {
-    const { title, blurb = "", badges = "[]", order = 0, active = "true" } = req.body;
+    const { order = 0, active = "true" } = req.body;
+    const mobileFile = req.files?.image?.[0];
+    const desktopFile = req.files?.desktopImage?.[0];
 
-    if (!req.file?.buffer) {
-      return res.status(400).json({ success: false, message: "Image required" });
+    if (!mobileFile?.buffer) {
+      return res.status(400).json({ success: false, message: "Mobile image required" });
     }
 
-    // upload to ImageKit
-    const uploadRes = await imagekit.upload({
-      file: req.file.buffer,
-      fileName: req.file.originalname || `header-${Date.now()}.jpg`,
-    });
+    const [imageAsset, desktopAsset] = await Promise.all([
+      uploadImageKitAsset(mobileFile, "header-mobile"),
+      uploadImageKitAsset(desktopFile, "header-desktop"),
+    ]);
 
     const slide = await HeaderSlide.create({
-      image: uploadRes.url,               // ✅ store ImageKit URL
-      title,
-      blurb,
-      badges: parseBadges(badges),
+      image: imageAsset?.url || "",
+      imageFileId: imageAsset?.fileId || "",
+      desktopImage: desktopAsset?.url || "",
+      desktopImageFileId: desktopAsset?.fileId || "",
       order: Number(order),
       active: active === "true",
     });
 
-    res.json({ success: true, slide });
+    res.json({ success: true, slide: publicSlide(slide) });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
 };
 
-export const listSlides = async (req, res) => {
+export const listSlides = async (_req, res) => {
   try {
     const slides = await HeaderSlide.find().sort({ order: 1, createdAt: 1 });
-    res.json({ success: true, slides });
+    res.json({ success: true, slides: slides.map(publicSlide) });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -65,28 +53,44 @@ export const listSlides = async (req, res) => {
 export const updateSlide = async (req, res) => {
   try {
     const { id } = req.params;
-    const patch = {};
-    const { title, blurb, badges, order, active } = req.body;
+    const current = await HeaderSlide.findById(id);
+    if (!current) {
+      return res.status(404).json({ success: false, message: "Slide not found" });
+    }
 
-    if (title !== undefined) patch.title = title;
-    if (blurb !== undefined) patch.blurb = blurb;
-    if (badges !== undefined) patch.badges = parseBadges(badges);
+    const patch = {};
+    const { order, active, clearDesktopImage } = req.body;
+
     if (order !== undefined) patch.order = Number(order);
     if (active !== undefined) patch.active = active === "true";
+    if (clearDesktopImage === "true") {
+      await deleteImageKitAssets([
+        { url: current.desktopImage, fileId: current.desktopImageFileId },
+      ]);
+      patch.desktopImage = "";
+      patch.desktopImageFileId = "";
+    }
 
-    // if a new image is provided, upload to ImageKit
-    if (req.file?.buffer) {
-      const uploadRes = await imagekit.upload({
-        file: req.file.buffer,
-        fileName: req.file.originalname || `header-${Date.now()}.jpg`,
-      });
-      patch.image = uploadRes.url;        // ✅ replace with ImageKit URL
+    const [imageAsset, desktopAsset] = await Promise.all([
+      uploadImageKitAsset(req.files?.image?.[0], "header-mobile"),
+      uploadImageKitAsset(req.files?.desktopImage?.[0], "header-desktop"),
+    ]);
+    if (imageAsset) {
+      await deleteImageKitAssets([{ url: current.image, fileId: current.imageFileId }]);
+      patch.image = imageAsset.url;
+      patch.imageFileId = imageAsset.fileId;
+    }
+    if (desktopAsset) {
+      await deleteImageKitAssets([
+        { url: current.desktopImage, fileId: current.desktopImageFileId },
+      ]);
+      patch.desktopImage = desktopAsset.url;
+      patch.desktopImageFileId = desktopAsset.fileId;
     }
 
     const updated = await HeaderSlide.findByIdAndUpdate(id, patch, { new: true });
-    if (!updated) return res.status(404).json({ success: false, message: "Slide not found" });
 
-    res.json({ success: true, slide: updated });
+    res.json({ success: true, slide: publicSlide(updated) });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }
@@ -96,12 +100,17 @@ export const removeSlide = async (req, res) => {
   try {
     const { id } = req.params;
     const slide = await HeaderSlide.findById(id);
-    if (!slide) return res.status(404).json({ success: false, message: "Slide not found" });
+    if (!slide) {
+      return res.status(404).json({ success: false, message: "Slide not found" });
+    }
 
-    // (Optional) you can delete from ImageKit using fileId if you store it.
-    // For now we just remove DB record.
+    const cleanup = await deleteImageKitAssets([
+      { url: slide.image, fileId: slide.imageFileId },
+      { url: slide.desktopImage, fileId: slide.desktopImageFileId },
+    ]);
+
     await HeaderSlide.findByIdAndDelete(id);
-    res.json({ success: true });
+    res.json({ success: true, imagekit: cleanup });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
   }

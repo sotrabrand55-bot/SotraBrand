@@ -1,52 +1,84 @@
 /* eslint-disable react/prop-types */
-/* eslint-disable no-unused-vars */
-import React, { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { FiChevronDown, FiFilter, FiSliders, FiX } from "react-icons/fi";
+import {
+  FiChevronDown,
+  FiChevronLeft,
+  FiChevronRight,
+  FiFilter,
+  FiX,
+} from "react-icons/fi";
+import { AnimatePresence, motion } from "framer-motion";
 import { ShopContext } from "../context/ShopContext";
-import ProductItem from "../componens/ProductItem";
+import CollectionProductCard from "../componens/CollectionProductCard";
 import SearchBar from "../componens/SearchBar";
 import { CollectionGridSkeleton } from "../componens/Skeletons";
 import { getEffectiveProductPrice } from "../utils/productMapping";
-import { motion, AnimatePresence } from "framer-motion";
-
-const categoryOptions = ["Fragrance", "Gift Sets", "For Her", "For Him"];
-const defaultTypeOptions = ["Amber", "Floral", "Fresh", "Woods", "Oud", "Musk", "Citrus"];
+import { subcategoryGroups as fallbackSubcategoryGroups } from "../lib/subcategoryCatalog";
 const concentrationOptions = ["Eau de Parfum", "Eau de Toilette"];
 const lowStockLimit = 5;
+
+const matchesCategoryGroup = (item, categoryName, categorySubcategories) => {
+  const childCategories = categorySubcategories[categoryName] || [];
+  return (
+    item?.category === categoryName ||
+    item?.subCategory === categoryName ||
+    childCategories.includes(item?.category) ||
+    childCategories.includes(item?.subCategory)
+  );
+};
+
+const matchesSubcategory = (item, subcategoryName) =>
+  item?.subCategory
+    ? item.subCategory === subcategoryName
+    : item?.category === subcategoryName;
 
 const getStockCount = (item) => {
   if (item?.stock === undefined || item?.stock === null || item?.stock === "") {
     return null;
   }
-  const value = Number(item?.stock);
+  const value = Number(item.stock);
   return Number.isFinite(value) ? value : null;
 };
 
-const getConcentration = (item) =>
-  String(item?.concentration || "").trim();
+const stockStatus = (item) => {
+  const stock = getStockCount(item);
+  const soldOut = Boolean(item?.outOfStock) || (stock !== null && stock <= 0);
+  const lowStock = !soldOut && stock !== null && stock <= lowStockLimit;
+  const inStock = !soldOut && (stock === null || stock > 0);
+  return { soldOut, lowStock, inStock };
+};
+
+const getConcentration = (item) => String(item?.concentration || "").trim();
+
+const toggleArrayValue = (setter, value) =>
+  setter((current) =>
+    current.includes(value)
+      ? current.filter((item) => item !== value)
+      : [...current, value]
+  );
 
 const Collection = () => {
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-
-  const { products, productsLoading, search, showSearch, scentFamilies } = useContext(ShopContext);
-  const typeOptions =
-    Array.isArray(scentFamilies) && scentFamilies.length
-      ? scentFamilies
-      : defaultTypeOptions;
-
-  // UI + filters state
+  const location = useLocation();
+  const { products, productsLoading, search, showSearch, categoryGroups } = useContext(ShopContext);
+  const subcategoryGroups =
+    categoryGroups?.length ? categoryGroups : fallbackSubcategoryGroups;
+  const categorySubcategories = useMemo(
+    () =>
+      Object.fromEntries(
+        subcategoryGroups.map((group) => [
+          group.label,
+          group.children.map((child) => child.label),
+        ])
+      ),
+    [subcategoryGroups]
+  );
   const [showFilterPanel, setShowFilterPanel] = useState(false);
-  const [filterProduct, setFilterProduct] = useState([]);
-  // committed (applied) filters
+  const [openCategoryGroups, setOpenCategoryGroups] = useState({});
   const [category, setCategory] = useState([]);
   const [subCategory, setSubCategory] = useState([]);
   const [concentration, setConcentration] = useState([]);
-  const [sortType, setSortType] = useState("relevent");
-
-  // special flags (committed)
+  const [sortType, setSortType] = useState("newest");
   const [specialFlags, setSpecialFlags] = useState({
     newArrival: false,
     onSales: false,
@@ -56,8 +88,6 @@ const Collection = () => {
     lowStock: false,
     outOfStock: false,
   });
-
-  // temp selection inside panel (staged until Apply)
   const [tempCategory, setTempCategory] = useState([]);
   const [tempSubCategory, setTempSubCategory] = useState([]);
   const [tempConcentration, setTempConcentration] = useState([]);
@@ -70,292 +100,184 @@ const Collection = () => {
     lowStock: false,
     outOfStock: false,
   });
-
-  // collapsible sections
   const [openSections, setOpenSections] = useState({
     categories: true,
-    type: true,
     concentration: true,
     special: true,
     availability: true,
   });
-
-  // bootstrap URL/state params
-  const location = useLocation();
-  // pagination
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  const toggleSection = (key) =>
-    setOpenSections((prev) => ({ ...prev, [key]: !prev[key] }));
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
-  // staged toggles (operate on temp arrays)
-  const toggleTempCategory = (val) =>
-    setTempCategory((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
-    );
-
-  const toggleTempSubCategory = (val) =>
-    setTempSubCategory((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
-    );
-
-  const toggleTempConcentration = (val) =>
-    setTempConcentration((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
-    );
-
-  const toggleTempNewArrival = () =>
-    setTempSpecialFlags((p) => ({ ...p, newArrival: !p.newArrival }));
-
-  const toggleTempOnSales = () =>
-    setTempSpecialFlags((p) => ({ ...p, onSales: !p.onSales }));
-
-  const toggleTempStockFlag = (key) =>
-    setTempStockFlags((p) => ({ ...p, [key]: !p[key] }));
-
-  // commit staged -> applied
-  const applyFilters = () => {
-    setCategory([...tempCategory]);
-    setSubCategory([...tempSubCategory]);
-    setConcentration([...tempConcentration]);
-    setSpecialFlags({ ...tempSpecialFlags });
-    setStockFlags({ ...tempStockFlags });
-    setShowFilterPanel(false);
-    setCurrentPage(1);
-  };
-
-  const resetFilters = () => {
-    setTempCategory([]);
-    setTempSubCategory([]);
-    setTempConcentration([]);
-    setTempSpecialFlags({ newArrival: false, onSales: false });
-    setTempStockFlags({ inStock: false, lowStock: false, outOfStock: false });
-  };
-
-  const clearAll = () => {
-    setTempCategory([]);
-    setTempSubCategory([]);
-    setTempConcentration([]);
-    setTempSpecialFlags({ newArrival: false, onSales: false });
-    setTempStockFlags({ inStock: false, lowStock: false, outOfStock: false });
-    // also clear committed
-    setCategory([]);
-    setSubCategory([]);
-    setConcentration([]);
-    setSpecialFlags({ newArrival: false, onSales: false });
-    setStockFlags({ inStock: false, lowStock: false, outOfStock: false });
-    setShowFilterPanel(false);
-    setCurrentPage(1);
-  };
-
-  // Sync filters from URL or Link state so homepage category links auto-select here.
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const fromState = location.state || {};
+    const parseList = (value) =>
+      value
+        ? String(value)
+            .split(",")
+            .map((item) => item.trim())
+            .filter(Boolean)
+        : [];
 
-    const catParam = params.get("cat") || fromState.cat;
-    let nextCategory = [];
-    if (catParam) {
-      nextCategory = catParam
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-    }
+    const nextCategory = parseList(params.get("cat") || fromState.cat);
+    const nextSubCategory = parseList(params.get("sub") || fromState.sub);
+    const nextConcentration = parseList(
+      params.get("conc") ||
+        params.get("concentration") ||
+        fromState.conc ||
+        fromState.concentration
+    );
+    const specialParts = parseList(
+      params.get("special") || fromState.special
+    ).map((item) => item.toLowerCase());
+    const stockParts = parseList(
+      params.get("stock") || fromState.stock
+    ).map((item) => item.toLowerCase());
+    const nextSpecialFlags = {
+      newArrival:
+        specialParts.includes("newarrival") || specialParts.includes("new"),
+      onSales:
+        specialParts.includes("onsales") ||
+        specialParts.includes("onsale") ||
+        specialParts.includes("sale"),
+    };
+    const nextStockFlags = {
+      inStock:
+        stockParts.includes("instock") || stockParts.includes("in-stock"),
+      lowStock:
+        stockParts.includes("lowstock") || stockParts.includes("low-stock"),
+      outOfStock:
+        stockParts.includes("outofstock") ||
+        stockParts.includes("out-of-stock") ||
+        stockParts.includes("oos"),
+    };
+
     setCategory(nextCategory);
     setTempCategory(nextCategory);
-
-    const subParam = params.get("sub") || fromState.sub;
-    let nextSubCategory = [];
-    if (subParam) {
-      nextSubCategory = subParam
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-    }
     setSubCategory(nextSubCategory);
     setTempSubCategory(nextSubCategory);
-
-    const concParam = params.get("conc") || params.get("concentration") || fromState.conc || fromState.concentration;
-    let nextConcentration = [];
-    if (concParam) {
-      nextConcentration = concParam
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-    }
     setConcentration(nextConcentration);
     setTempConcentration(nextConcentration);
-
-    const specialParam = params.get("special") || fromState.special;
-    let nextFlags = { newArrival: false, onSales: false };
-    if (specialParam) {
-      const parts = specialParam.split(",").map((s) => s.trim().toLowerCase());
-      nextFlags = {
-        newArrival: parts.includes("newarrival") || parts.includes("new"),
-        onSales:
-          parts.includes("onsales") ||
-          parts.includes("sale") ||
-          parts.includes("onsale"),
-      };
-    }
-    setSpecialFlags(nextFlags);
-    setTempSpecialFlags(nextFlags);
-
-    const stockParam = params.get("stock") || fromState.stock;
-    let nextStockFlags = { inStock: false, lowStock: false, outOfStock: false };
-    if (stockParam) {
-      const parts = stockParam.split(",").map((s) => s.trim().toLowerCase());
-      nextStockFlags = {
-        inStock: parts.includes("instock") || parts.includes("in-stock"),
-        lowStock: parts.includes("lowstock") || parts.includes("low-stock"),
-        outOfStock:
-          parts.includes("outofstock") ||
-          parts.includes("out-of-stock") ||
-          parts.includes("oos"),
-      };
-    }
+    setSpecialFlags(nextSpecialFlags);
+    setTempSpecialFlags(nextSpecialFlags);
     setStockFlags(nextStockFlags);
     setTempStockFlags(nextStockFlags);
     setCurrentPage(1);
-  }, [location.search, location.state]);
 
-  // Filter logic (applied filters)
-  const applyFilterLogic = () => {
-    let productsCopy = [...(products || [])];
+  }, [location.key, location.search]);
 
-    // search (if search overlay in use)
-    if (showSearch && search?.trim() !== "") {
+  useEffect(() => {
+    if (!subCategory.length) return;
+
+    const matchingGroups = subcategoryGroups.filter((group) =>
+      group.children.some((child) => subCategory.includes(child.label))
+    );
+    if (!matchingGroups.length) return;
+
+    setOpenCategoryGroups((current) => ({
+      ...current,
+      ...Object.fromEntries(matchingGroups.map((group) => [group.label, true])),
+    }));
+  }, [subCategory, subcategoryGroups]);
+
+  const filteredProducts = useMemo(() => {
+    let result = [...(products || [])];
+
+    if (showSearch && search?.trim()) {
       const term = search.trim().toLowerCase().replace(/\s+/g, "");
-      productsCopy = productsCopy.filter((item) =>
-        (item.name || "").toLowerCase().replace(/\s+/g, "").includes(term)
+      result = result.filter((item) =>
+        String(item?.name || "")
+          .toLowerCase()
+          .replace(/\s+/g, "")
+          .includes(term)
       );
     }
-
-    // category
-    if (category.length > 0) {
-      productsCopy = productsCopy.filter((item) =>
-        category.includes(item.category) || category.includes(item.subCategory)
+    if (category.length) {
+      result = result.filter((item) =>
+        category.some((name) => matchesCategoryGroup(item, name, categorySubcategories))
       );
     }
-
-    // subCategory
-    if (subCategory.length > 0) {
-      productsCopy = productsCopy.filter((item) =>
-        subCategory.includes(item.subCategory)
+    if (subCategory.length) {
+      result = result.filter((item) =>
+        subCategory.some((name) => matchesSubcategory(item, name))
       );
     }
-
-    if (concentration.length > 0) {
-      productsCopy = productsCopy.filter((item) =>
+    if (concentration.length) {
+      result = result.filter((item) =>
         concentration.includes(getConcentration(item))
       );
     }
-
-    // flags
-    if (specialFlags.newArrival && !specialFlags.onSales) {
-      productsCopy = productsCopy.filter((i) => i.newArrival);
-    } else if (!specialFlags.newArrival && specialFlags.onSales) {
-      productsCopy = productsCopy.filter((i) => i.onSales);
-    } else if (specialFlags.newArrival && specialFlags.onSales) {
-      productsCopy = productsCopy.filter((i) => i.newArrival || i.onSales);
+    if (specialFlags.newArrival || specialFlags.onSales) {
+      result = result.filter(
+        (item) =>
+          (specialFlags.newArrival && item?.newArrival) ||
+          (specialFlags.onSales && item?.onSales)
+      );
     }
-
     if (stockFlags.inStock || stockFlags.lowStock || stockFlags.outOfStock) {
-      productsCopy = productsCopy.filter((item) => {
-        const stock = getStockCount(item);
-        const soldOut = Boolean(item.outOfStock) || (stock !== null && stock <= 0);
-        const lowStock = !soldOut && stock !== null && stock <= lowStockLimit;
-        const inStock = !soldOut && (stock === null || stock > 0);
-
+      result = result.filter((item) => {
+        const status = stockStatus(item);
         return (
-          (stockFlags.inStock && inStock) ||
-          (stockFlags.lowStock && lowStock) ||
-          (stockFlags.outOfStock && soldOut)
+          (stockFlags.inStock && status.inStock) ||
+          (stockFlags.lowStock && status.lowStock) ||
+          (stockFlags.outOfStock && status.soldOut)
         );
       });
     }
 
-    setFilterProduct(productsCopy);
-  };
-
-  // Sort logic (applied to filtered list)
-  const sortProduct = () => {
-    const list = [...filterProduct];
-    switch (sortType) {
-      case "low-high":
-        list.sort((a, b) => getEffectiveProductPrice(a) - getEffectiveProductPrice(b));
-        setFilterProduct(list);
-        break;
-      case "high-low":
-        list.sort((a, b) => getEffectiveProductPrice(b) - getEffectiveProductPrice(a));
-        setFilterProduct(list);
-        break;
-      default:
-        applyFilterLogic();
-        break;
+    if (sortType === "newest" || sortType === "relevent") {
+      result.sort((a, b) => Number(b?.date || 0) - Number(a?.date || 0));
     }
-  };
+    if (sortType === "low-high") {
+      result.sort(
+        (a, b) => getEffectiveProductPrice(a) - getEffectiveProductPrice(b)
+      );
+    }
+    if (sortType === "high-low") {
+      result.sort(
+        (a, b) => getEffectiveProductPrice(b) - getEffectiveProductPrice(a)
+      );
+    }
+    return result;
+  }, [
+    category,
+    categorySubcategories,
+    concentration,
+    products,
+    search,
+    showSearch,
+    sortType,
+    specialFlags,
+    stockFlags,
+    subCategory,
+  ]);
 
   useEffect(() => {
-    sortProduct();
     setCurrentPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sortType]); // sortType only
+  }, [
+    category,
+    concentration,
+    search,
+    showSearch,
+    sortType,
+    specialFlags,
+    stockFlags,
+    subCategory,
+  ]);
 
-  useEffect(() => {
-    applyFilterLogic();
-    setCurrentPage(1);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [category, subCategory, concentration, products, specialFlags, stockFlags, showSearch, search]);
-
-  useEffect(() => {
-    setFilterProduct(products || []);
-  }, [products]);
-
-  // Pagination math
-  const totalPages = Math.max(
-    1,
-    Math.ceil(filterProduct.length / itemsPerPage)
-  );
+  const totalPages = Math.max(1, Math.ceil(filteredProducts.length / itemsPerPage));
   const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  const visibleProducts = filterProduct.slice(startIndex, endIndex);
+  const visibleProducts = filteredProducts.slice(
+    startIndex,
+    startIndex + itemsPerPage
+  );
 
-  const goTop = () => window.scrollTo({ top: 0, behavior: "smooth" });
-
-  // open panel: copy committed filters into temp
-  const openPanel = () => {
-    setTempCategory([...category]);
-    setTempSubCategory([...subCategory]);
-    setTempConcentration([...concentration]);
-    setTempSpecialFlags({ ...specialFlags });
-    setTempStockFlags({ ...stockFlags });
-    setShowFilterPanel(true);
-  };
-
-  // --------------------
-  // Animations (Framer Motion)
-  // --------------------
-  const gridVariants = {
-    hidden: {},
-    show: {
-      transition: {
-        staggerChildren: 0.04,
-        delayChildren: 0.06,
-      },
-    },
-  };
-  const cardVariants = {
-    hidden: { opacity: 0, y: 10, scale: 0.995 },
-    show: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: { duration: 0.32, ease: [0.2, 0.9, 0.2, 1] },
-    },
-    hover: { scale: 1.01, transition: { duration: 0.18 } },
-  };
+  const countItems = (predicate) => (products || []).filter(predicate).length;
   const activeFilters = [
     ...category,
     ...subCategory,
@@ -366,7 +288,6 @@ const Collection = () => {
     ...(stockFlags.lowStock ? ["Low Stock"] : []),
     ...(stockFlags.outOfStock ? ["Out of Stock"] : []),
   ];
-
   const tempActiveFilters = [
     ...tempCategory,
     ...tempSubCategory,
@@ -377,472 +298,590 @@ const Collection = () => {
     ...(tempStockFlags.lowStock ? ["Low Stock"] : []),
     ...(tempStockFlags.outOfStock ? ["Out of Stock"] : []),
   ];
-
   const hasPendingMobileFilters =
-    tempCategory.join("|") !== category.join("|") ||
-    tempSubCategory.join("|") !== subCategory.join("|") ||
-    tempConcentration.join("|") !== concentration.join("|") ||
-    tempSpecialFlags.newArrival !== specialFlags.newArrival ||
-    tempSpecialFlags.onSales !== specialFlags.onSales ||
-    tempStockFlags.inStock !== stockFlags.inStock ||
-    tempStockFlags.lowStock !== stockFlags.lowStock ||
-    tempStockFlags.outOfStock !== stockFlags.outOfStock;
+    JSON.stringify({
+      tempCategory,
+      tempSubCategory,
+      tempConcentration,
+      tempSpecialFlags,
+      tempStockFlags,
+    }) !==
+    JSON.stringify({
+      tempCategory: category,
+      tempSubCategory: subCategory,
+      tempConcentration: concentration,
+      tempSpecialFlags: specialFlags,
+      tempStockFlags: stockFlags,
+    });
+
+  const clearAll = () => {
+    setCategory([]);
+    setSubCategory([]);
+    setConcentration([]);
+    setSpecialFlags({ newArrival: false, onSales: false });
+    setStockFlags({ inStock: false, lowStock: false, outOfStock: false });
+    setTempCategory([]);
+    setTempSubCategory([]);
+    setTempConcentration([]);
+    setTempSpecialFlags({ newArrival: false, onSales: false });
+    setTempStockFlags({ inStock: false, lowStock: false, outOfStock: false });
+    setShowFilterPanel(false);
+    setCurrentPage(1);
+  };
+
+  const resetMobileFilters = () => {
+    setTempCategory([]);
+    setTempSubCategory([]);
+    setTempConcentration([]);
+    setTempSpecialFlags({ newArrival: false, onSales: false });
+    setTempStockFlags({ inStock: false, lowStock: false, outOfStock: false });
+  };
+
+  const openPanel = () => {
+    setTempCategory([...category]);
+    setTempSubCategory([...subCategory]);
+    setTempConcentration([...concentration]);
+    setTempSpecialFlags({ ...specialFlags });
+    setTempStockFlags({ ...stockFlags });
+    setShowFilterPanel(true);
+  };
+
+  const applyFilters = () => {
+    setCategory([...tempCategory]);
+    setSubCategory([...tempSubCategory]);
+    setConcentration([...tempConcentration]);
+    setSpecialFlags({ ...tempSpecialFlags });
+    setStockFlags({ ...tempStockFlags });
+    setShowFilterPanel(false);
+    setCurrentPage(1);
+  };
+
+  const chooseFamily = (label) => {
+    setCategory([label]);
+    setTempCategory([label]);
+    setSubCategory([]);
+    setTempSubCategory([]);
+    setOpenCategoryGroups((current) => ({ ...current, [label]: true }));
+    setCurrentPage(1);
+  };
+
+  const removeFilter = (filter) => {
+    if (category.includes(filter)) {
+      setCategory((current) => current.filter((item) => item !== filter));
+      setTempCategory((current) => current.filter((item) => item !== filter));
+    } else if (subCategory.includes(filter)) {
+      setSubCategory((current) => current.filter((item) => item !== filter));
+      setTempSubCategory((current) => current.filter((item) => item !== filter));
+    } else if (concentration.includes(filter)) {
+      setConcentration((current) => current.filter((item) => item !== filter));
+      setTempConcentration((current) => current.filter((item) => item !== filter));
+    } else if (filter === "New Arrival") {
+      setSpecialFlags((current) => ({ ...current, newArrival: false }));
+      setTempSpecialFlags((current) => ({ ...current, newArrival: false }));
+    } else if (filter === "On Sale") {
+      setSpecialFlags((current) => ({ ...current, onSales: false }));
+      setTempSpecialFlags((current) => ({ ...current, onSales: false }));
+    } else {
+      const key = {
+        "In Stock": "inStock",
+        "Low Stock": "lowStock",
+        "Out of Stock": "outOfStock",
+      }[filter];
+      if (key) {
+        setStockFlags((current) => ({ ...current, [key]: false }));
+        setTempStockFlags((current) => ({ ...current, [key]: false }));
+      }
+    }
+  };
+
+  const goToPage = (page) => {
+    setCurrentPage(page);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
 
   const FilterSection = ({ sectionKey, title, children }) => (
-    <div className="overflow-hidden border-b border-[#eadfce] last:border-b-0">
+    <div className="border-b border-black/15">
       <button
         type="button"
-        onClick={() => toggleSection(sectionKey)}
-        className="flex w-full items-center justify-between px-5 py-4 text-left"
+        onClick={() =>
+          setOpenSections((current) => ({
+            ...current,
+            [sectionKey]: !current[sectionKey],
+          }))
+        }
+        className="flex w-full items-center justify-between py-5 text-left"
         aria-expanded={openSections[sectionKey]}
       >
-        <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1f1b17]">
+        <span className="text-[11px] font-bold uppercase tracking-[0.2em]">
           {title}
         </span>
         <FiChevronDown
-          className={`h-4 w-4 text-[#c49a5e] transition-transform ${
+          className={`h-4 w-4 transition-transform ${
             openSections[sectionKey] ? "rotate-180" : ""
           }`}
         />
       </button>
-      <div className={`${openSections[sectionKey] ? "block" : "hidden"} px-5 pb-5`}>
-        {children}
-      </div>
+      <div className={openSections[sectionKey] ? "pb-5" : "hidden"}>{children}</div>
     </div>
   );
 
   const checkboxClass =
-    "h-3.5 w-3.5 rounded border-[#d8c8b5] accent-[#c49a5e]";
-
-  const countItems = (predicate) => (products || []).filter(predicate).length;
-  const stockStatus = (item) => {
-    const stock = getStockCount(item);
-    const soldOut = Boolean(item.outOfStock) || (stock !== null && stock <= 0);
-    const lowStock = !soldOut && stock !== null && stock <= lowStockLimit;
-    const inStock = !soldOut && (stock === null || stock > 0);
-    return { soldOut, lowStock, inStock };
-  };
+    "h-4 w-4 shrink-0 rounded-none border-black/40 accent-black";
   const filterRowClass =
-    "flex items-center justify-between gap-3 rounded-full px-2 py-1.5 transition hover:bg-[#fffaf4]";
-  const countBadgeClass =
-    "ml-auto rounded-full bg-[#f3eadf] px-2 py-0.5 text-[11px] font-semibold text-[#9a8068]";
+    "flex min-h-10 items-center justify-between gap-3 py-2 text-sm text-black/70 transition hover:text-black";
+  const countClass = "text-[10px] font-semibold uppercase tracking-[0.12em] text-black/40";
+
+  const CategoryDropdowns = ({
+    selectedCategories,
+    selectedSubcategories,
+    onToggleCategory,
+    onToggleSubcategory,
+  }) => (
+    <div>
+      {subcategoryGroups.map((group) => {
+        const isOpen = Boolean(openCategoryGroups[group.label]);
+        const selectedChildCount = group.children.filter((child) =>
+          selectedSubcategories.includes(child.label)
+        ).length;
+
+        return (
+          <div key={group.label} className="border-b border-black/10 last:border-0">
+            <div className="flex items-center gap-2">
+              <label className={`${filterRowClass} min-w-0 flex-1`}>
+                <span className="flex min-w-0 items-center gap-3">
+                  <input
+                    className={checkboxClass}
+                    type="checkbox"
+                    checked={selectedCategories.includes(group.label)}
+                    onChange={() => onToggleCategory(group.label)}
+                  />
+                  <span className="truncate font-medium text-black">{group.label}</span>
+                </span>
+                <span className={countClass}>
+                  {countItems((item) =>
+                    matchesCategoryGroup(item, group.label, categorySubcategories)
+                  )}
+                </span>
+              </label>
+              <button
+                type="button"
+                onClick={() =>
+                  setOpenCategoryGroups((current) => ({
+                    ...current,
+                    [group.label]: !current[group.label],
+                  }))
+                }
+                className="relative grid h-10 w-10 shrink-0 place-items-center"
+                aria-label={`${isOpen ? "Close" : "Open"} ${group.label} subcategories`}
+              >
+                <FiChevronDown
+                  className={`h-4 w-4 transition-transform ${isOpen ? "rotate-180" : ""}`}
+                />
+                {selectedChildCount > 0 && (
+                  <span className="absolute right-0 top-0 grid h-4 min-w-4 place-items-center rounded-full bg-black px-1 text-[8px] font-bold text-white">
+                    {selectedChildCount}
+                  </span>
+                )}
+              </button>
+            </div>
+            <AnimatePresence initial={false}>
+              {isOpen && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.24, ease: [0.22, 1, 0.36, 1] }}
+                  className="overflow-hidden"
+                >
+                  <div className="mb-3 ml-2 border-l border-black/20 pl-4">
+                    {group.children.map((child) => (
+                      <label key={child.label} className={filterRowClass}>
+                        <span className="flex min-w-0 items-center gap-3">
+                          <input
+                            className={checkboxClass}
+                            type="checkbox"
+                            checked={selectedSubcategories.includes(child.label)}
+                            onChange={() => onToggleSubcategory(child.label)}
+                          />
+                          <span className="leading-5">{child.label}</span>
+                        </span>
+                        <span className={countClass}>
+                          {countItems((item) => matchesSubcategory(item, child.label))}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        );
+      })}
+    </div>
+  );
+
+  const FilterContents = ({
+    selectedCategories,
+    selectedSubcategories,
+    selectedConcentration,
+    selectedSpecialFlags,
+    selectedStockFlags,
+    onCategory,
+    onSubcategory,
+    onConcentration,
+    onSpecial,
+    onStock,
+  }) => (
+    <>
+      <FilterSection sectionKey="categories" title="Categories">
+        <CategoryDropdowns
+          selectedCategories={selectedCategories}
+          selectedSubcategories={selectedSubcategories}
+          onToggleCategory={onCategory}
+          onToggleSubcategory={onSubcategory}
+        />
+      </FilterSection>
+      <FilterSection sectionKey="concentration" title="Concentration">
+        {concentrationOptions.map((option) => (
+          <label key={option} className={filterRowClass}>
+            <span className="flex items-center gap-3">
+              <input
+                className={checkboxClass}
+                type="checkbox"
+                checked={selectedConcentration.includes(option)}
+                onChange={() => onConcentration(option)}
+              />
+              {option}
+            </span>
+            <span className={countClass}>
+              {countItems((item) => getConcentration(item) === option)}
+            </span>
+          </label>
+        ))}
+      </FilterSection>
+      <FilterSection sectionKey="special" title="Special">
+        <label className={filterRowClass}>
+          <span className="flex items-center gap-3">
+            <input
+              className={checkboxClass}
+              type="checkbox"
+              checked={selectedSpecialFlags.newArrival}
+              onChange={() => onSpecial("newArrival")}
+            />
+            New Arrival
+          </span>
+          <span className={countClass}>{countItems((item) => item?.newArrival)}</span>
+        </label>
+        <label className={filterRowClass}>
+          <span className="flex items-center gap-3">
+            <input
+              className={checkboxClass}
+              type="checkbox"
+              checked={selectedSpecialFlags.onSales}
+              onChange={() => onSpecial("onSales")}
+            />
+            On Sale
+          </span>
+          <span className={countClass}>{countItems((item) => item?.onSales)}</span>
+        </label>
+      </FilterSection>
+      <FilterSection sectionKey="availability" title="Availability">
+        {[
+          ["inStock", "In Stock"],
+          ["lowStock", "Low Stock"],
+          ["outOfStock", "Out of Stock"],
+        ].map(([key, label]) => (
+          <label key={key} className={filterRowClass}>
+            <span className="flex items-center gap-3">
+              <input
+                className={checkboxClass}
+                type="checkbox"
+                checked={selectedStockFlags[key]}
+                onChange={() => onStock(key)}
+              />
+              {label}
+            </span>
+            <span className={countClass}>
+              {countItems((item) => {
+                const status = stockStatus(item);
+                return key === "outOfStock" ? status.soldOut : status[key];
+              })}
+            </span>
+          </label>
+        ))}
+      </FilterSection>
+    </>
+  );
 
   return (
-    <main className="min-h-screen bg-[#fffaf4] text-[#1f1b17]">
-      <section
-        className={`border-b border-[#eadfce] px-4 sm:px-[5vw] md:px-[7vw] lg:px-[3vw] ${
-          showSearch ? "pt-7" : "pt-12"
-        }`}
-      >
-        <div className={`mx-auto max-w-[1480px] text-center ${showSearch ? "pb-7" : "pb-9"}`}>
-          <div className="mx-auto mb-4 flex w-fit items-center gap-3 text-[#c49a5e]">
-            <span className="h-px w-10 bg-current" />
-            <span className="h-2.5 w-2.5 rotate-45 bg-current" />
-            <span className="h-px w-10 bg-current" />
+    <main className="min-h-screen bg-white text-black">
+      <section className="border-b border-black/15 bg-white px-4 pb-8 pt-10 sm:px-6 sm:pb-10 sm:pt-14 lg:px-10">
+        <div className="mx-auto max-w-[1480px]">
+          <div className="text-center">
+            <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-black/55 sm:text-xs">
+              Be Radiant By Nancy
+            </p>
+            <h1 className="mt-3 text-4xl font-black uppercase leading-none sm:text-6xl lg:text-7xl">
+              The Collection
+            </h1>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-black/55 sm:text-base">
+              Find the ritual, scent, and finish made for your radiance.
+            </p>
           </div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#9a8068]">
-            The Collection
-          </p>
-          <h1
-            className={`mt-3 font-serif leading-none text-[#1f1b17] ${
-              showSearch ? "text-4xl sm:text-5xl" : "text-4xl sm:text-5xl md:text-6xl"
-            }`}
-          >
-            All Collection
-          </h1>
-          <p className={`mx-auto max-w-2xl text-sm leading-7 text-[#7d6756] sm:text-base ${showSearch ? "mt-4" : "mt-5"}`}>
-            Explore Levon perfumes, scent families, and gift-ready edits with
-            quiet filters made for finding the right trail.
-          </p>
-          {showSearch && (
-            <div className="mx-auto mt-5 flex w-full max-w-3xl flex-col gap-3 sm:flex-row lg:hidden">
-              <button
-                onClick={openPanel}
-                className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8c8b5] bg-[#fffdf9] px-4 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#1f1b17] shadow-[0_10px_24px_rgba(43,32,22,0.06)] transition hover:border-[#c49a5e]"
-                aria-label="Open filters"
-              >
-                <FiFilter className="h-4 w-4" />
-                Filters
-              </button>
 
-              <label className="relative sm:min-w-[210px]">
-                <span className="sr-only">Sort By</span>
-                <select
-                  onChange={(e) => setSortType(e.target.value)}
-                  className="w-full appearance-none rounded-full border border-[#d8c8b5] bg-[#fffdf9] px-4 py-2.5 pr-10 text-sm text-[#1f1b17] shadow-[0_10px_24px_rgba(43,32,22,0.06)] outline-none transition hover:border-[#c49a5e] focus:border-[#c49a5e]"
-                  value={sortType}
-                >
-                  <option value="relevent">Sort By: Relevant</option>
-                  <option value="low-high">Sort By: Low to High</option>
-                  <option value="high-low">Sort By: High to Low</option>
-                </select>
-                <FiChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#c49a5e]" />
-              </label>
-            </div>
-          )}
+          <div className="mx-auto mt-8 flex max-w-4xl snap-x gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:justify-center">
+            <button
+              type="button"
+              onClick={clearAll}
+              className={`shrink-0 border px-5 py-3 text-[10px] font-bold uppercase tracking-[0.17em] transition sm:text-xs ${
+                activeFilters.length === 0
+                  ? "border-black bg-black text-white"
+                  : "border-black/25 bg-white text-black hover:border-black"
+              }`}
+            >
+              All Products
+            </button>
+            {subcategoryGroups.map((group) => (
+              <button
+                key={group.label}
+                type="button"
+                onClick={() => chooseFamily(group.label)}
+                className={`shrink-0 border px-5 py-3 text-[10px] font-bold uppercase tracking-[0.17em] transition sm:text-xs ${
+                  category.includes(group.label)
+                    ? "border-black bg-black text-white"
+                    : "border-black/25 bg-white text-black hover:border-black"
+                }`}
+              >
+                {group.label}
+              </button>
+            ))}
+          </div>
           <SearchBar />
         </div>
       </section>
 
-      <section className="px-4 py-8 sm:px-[5vw] md:px-[7vw] lg:px-[3vw]">
-        <div className="mx-auto flex max-w-[1480px] flex-col gap-6 lg:flex-row lg:gap-8">
-          <aside className="hidden w-[270px] shrink-0 lg:block">
-            <div className="sticky top-28 overflow-hidden rounded-md border border-[#eadfce] bg-[#fffdf9] shadow-[0_18px_45px_rgba(43,32,22,0.07)]">
-              <div className="border-b border-[#eadfce] px-5 py-5">
-                <div className="flex items-center gap-3">
-                  <span className="grid h-9 w-9 place-items-center rounded-full bg-[#1f1b17] text-white">
-                    <FiSliders className="h-4 w-4" />
-                  </span>
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#9a8068]">
-                      Refine
-                    </p>
-                    <p className="font-serif text-2xl text-[#1f1b17]">
-                      Filters
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              <FilterSection sectionKey="categories" title="Categories">
-                <div className="flex flex-col gap-3 text-sm text-[#6f5844]">
-                  {categoryOptions.map((option) => (
-                    <label key={option} className={filterRowClass}>
-                      <span className="flex items-center gap-3">
-                        <input
-                          className={checkboxClass}
-                          type="checkbox"
-                          value={option}
-                          checked={category.includes(option)}
-                          onChange={(e) => {
-                            const val = e.target.value;
-                            setCategory((prev) =>
-                              prev.includes(val)
-                                ? prev.filter((v) => v !== val)
-                                : [...prev, val]
-                            );
-                          }}
-                        />
-                        {option}
-                      </span>
-                      <span className={countBadgeClass}>
-                        {countItems((item) => item.category === option || item.subCategory === option)}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
-
-              <FilterSection sectionKey="type" title="Scent Family">
-                <div className="flex flex-col gap-3 text-sm text-[#6f5844]">
-                  {typeOptions.map((type) => (
-                    <label key={type} className={filterRowClass}>
-                      <span className="flex items-center gap-3">
-                        <input
-                          className={checkboxClass}
-                          type="checkbox"
-                          value={type}
-                          checked={subCategory.includes(type)}
-                          onChange={() => {
-                            const val = type;
-                            setSubCategory((prev) =>
-                              prev.includes(val)
-                                ? prev.filter((v) => v !== val)
-                                : [...prev, val]
-                            );
-                          }}
-                        />
-                        {type}
-                      </span>
-                      <span className={countBadgeClass}>
-                        {countItems((item) => item.subCategory === type)}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
-
-              <FilterSection sectionKey="concentration" title="Concentration">
-                <div className="flex flex-col gap-3 text-sm text-[#6f5844]">
-                  {concentrationOptions.map((option) => (
-                    <label key={option} className={filterRowClass}>
-                      <span className="flex items-center gap-3">
-                        <input
-                          className={checkboxClass}
-                          type="checkbox"
-                          value={option}
-                          checked={concentration.includes(option)}
-                          onChange={() => {
-                            setConcentration((prev) =>
-                              prev.includes(option)
-                                ? prev.filter((v) => v !== option)
-                                : [...prev, option]
-                            );
-                          }}
-                        />
-                        {option}
-                      </span>
-                      <span className={countBadgeClass}>
-                        {countItems((item) => getConcentration(item) === option)}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </FilterSection>
-
-              <FilterSection sectionKey="special" title="Special">
-                <div className="flex flex-col gap-3 text-sm text-[#6f5844]">
-                  <label className="flex items-center gap-3">
-                    <input
-                      className={checkboxClass}
-                      type="checkbox"
-                      checked={specialFlags.newArrival}
-                      onChange={() =>
-                        setSpecialFlags((p) => ({
-                          ...p,
-                          newArrival: !p.newArrival,
-                        }))
-                      }
-                    />
-                    New Arrival
-                  </label>
-
-                  <label className="flex items-center gap-3">
-                    <input
-                      className={checkboxClass}
-                      type="checkbox"
-                      checked={specialFlags.onSales}
-                      onChange={() =>
-                        setSpecialFlags((p) => ({ ...p, onSales: !p.onSales }))
-                      }
-                    />
-                    On Sale
-                  </label>
-                </div>
-              </FilterSection>
-
-              <FilterSection sectionKey="availability" title="Availability">
-                <div className="flex flex-col gap-3 text-sm text-[#6f5844]">
-                  <label className={`${filterRowClass} border border-[#d8c8b5] bg-[#fffaf4] font-semibold text-[#1f1b17]`}>
-                    <span className="flex items-center gap-3">
-                      <input
-                        className={checkboxClass}
-                        type="checkbox"
-                        checked={stockFlags.inStock}
-                        onChange={() =>
-                          setStockFlags((p) => ({ ...p, inStock: !p.inStock }))
-                        }
-                      />
-                      <span className="inline-flex items-center gap-2">
-                        <span className="h-2 w-2 rounded-full bg-[#3b7a57]" />
-                        In Stock
-                      </span>
-                    </span>
-                    <span className="rounded-full bg-[#e5f1e8] px-2 py-0.5 text-[11px] font-bold text-[#2f6c4d]">
-                      {countItems((item) => stockStatus(item).inStock)}
-                    </span>
-                  </label>
-                  <label className={filterRowClass}>
-                    <span className="flex items-center gap-3">
-                      <input
-                        className={checkboxClass}
-                        type="checkbox"
-                        checked={stockFlags.lowStock}
-                        onChange={() =>
-                          setStockFlags((p) => ({ ...p, lowStock: !p.lowStock }))
-                        }
-                      />
-                      Low Stock
-                    </span>
-                    <span className={countBadgeClass}>
-                      {countItems((item) => stockStatus(item).lowStock)}
-                    </span>
-                  </label>
-                  <label className={filterRowClass}>
-                    <span className="flex items-center gap-3">
-                      <input
-                        className={checkboxClass}
-                        type="checkbox"
-                        checked={stockFlags.outOfStock}
-                        onChange={() =>
-                          setStockFlags((p) => ({
-                            ...p,
-                            outOfStock: !p.outOfStock,
-                          }))
-                        }
-                      />
-                      Out of Stock
-                    </span>
-                    <span className={countBadgeClass}>
-                      {countItems((item) => stockStatus(item).soldOut)}
-                    </span>
-                  </label>
-                </div>
-              </FilterSection>
-
+      <section className="bg-white px-4 py-7 sm:px-6 sm:py-10 lg:px-10">
+        <div className="mx-auto max-w-[1480px]">
+          <div className="mb-6 flex items-center border-y border-black/15 lg:hidden">
+            <button
+              type="button"
+              onClick={openPanel}
+              className="flex h-14 flex-1 items-center justify-center gap-2 border-r border-black/15 text-[11px] font-bold uppercase tracking-[0.18em]"
+            >
+              <FiFilter className="h-4 w-4" />
+              Filters
               {activeFilters.length > 0 && (
-                <div className="px-5 py-5">
-                  <button
-                    onClick={clearAll}
-                    className="w-full rounded-full border border-[#d8c8b5] px-4 py-2 text-xs font-semibold uppercase tracking-[0.16em] text-[#6f5844] transition hover:border-[#c49a5e] hover:text-[#1f1b17]"
-                  >
-                    Clear All
-                  </button>
-                </div>
+                <span className="grid h-5 min-w-5 place-items-center rounded-full bg-black px-1 text-[9px] text-white">
+                  {activeFilters.length}
+                </span>
               )}
-            </div>
-          </aside>
-
-          <div className="min-w-0 flex-1">
-            <div className="mb-5 rounded-md border border-[#eadfce] bg-[#fffdf9] px-4 py-4 shadow-[0_14px_34px_rgba(43,32,22,0.05)] sm:px-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9a8068]">
-                    {filterProduct.length} results
-                  </p>
-                  <p className="mt-1 text-sm text-[#7d6756]">
-                    Showing {visibleProducts.length} of {filterProduct.length} products
-                  </p>
-                </div>
-
-                <div className={`${showSearch ? "hidden lg:flex" : "flex"} flex-col gap-3 sm:flex-row sm:items-center sm:justify-between lg:justify-end`}>
-                  <button
-                    onClick={openPanel}
-                    className="inline-flex items-center justify-center gap-2 rounded-full border border-[#d8c8b5] bg-[#fffaf4] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#1f1b17] transition hover:border-[#c49a5e] lg:hidden"
-                    aria-label="Open filters"
-                  >
-                    <FiFilter className="h-4 w-4" />
-                    Filters
-                  </button>
-
-                  <label className="relative">
-                    <span className="sr-only">Sort By</span>
-                    <select
-                      onChange={(e) => setSortType(e.target.value)}
-                      className="w-full appearance-none rounded-full border border-[#d8c8b5] bg-[#fffaf4] px-4 py-2 pr-10 text-sm text-[#1f1b17] outline-none transition hover:border-[#c49a5e] focus:border-[#c49a5e] sm:w-[210px]"
-                      value={sortType}
-                    >
-                      <option value="relevent">Sort By: Relevant</option>
-                      <option value="low-high">Sort By: Low to High</option>
-                      <option value="high-low">Sort By: High to Low</option>
-                    </select>
-                    <FiChevronDown className="pointer-events-none absolute right-4 top-1/2 h-4 w-4 -translate-y-1/2 text-[#c49a5e]" />
-                  </label>
-                </div>
-              </div>
-
-              {activeFilters.length > 0 && (
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {activeFilters.map((f, i) => (
-                    <span
-                      key={`${f}-${i}`}
-                      className="rounded-full border border-[#eadfce] bg-[#fffaf4] px-3 py-1 text-xs font-medium text-[#6f5844]"
-                    >
-                      {f}
-                    </span>
-                  ))}
-                </div>
-              )}
-            </div>
-
-            {productsLoading ? (
-              <CollectionGridSkeleton cards={8} />
-            ) : (
-              <motion.div
-                className="grid grid-cols-2 gap-3 gap-y-6 sm:gap-4 md:grid-cols-3 xl:grid-cols-4"
-                variants={gridVariants}
-                initial="hidden"
-                animate="show"
+            </button>
+            <label className="relative h-14 flex-1">
+              <span className="sr-only">Sort products</span>
+              <select
+                value={sortType}
+                onChange={(event) => setSortType(event.target.value)}
+                className="h-full w-full appearance-none bg-white px-4 text-center text-[11px] font-bold uppercase tracking-[0.15em] outline-none"
               >
-                {visibleProducts.map((item) => (
-                  <motion.div
-                    key={item._id}
-                    variants={cardVariants}
-                    whileHover="hover"
-                    whileTap={{ scale: 0.98 }}
-                    style={{ transformOrigin: "center" }}
-                  >
-                    <ProductItem
-                      id={item._id}
-                      name={item.name}
-                      image={item.image || item.image1}
-                      price={item.price}
-                      discountPrice={item.discountPrice}
-                      onSales={item.onSales}
-                      outOfStock={item.outOfStock}
-                      colors={item.colors || []}
-                      sizes={item.sizes || []}
-                      category={item.category}
-                      subCategory={item.subCategory}
-                      concentration={item.concentration}
-                      stock={item.stock}
-                    />
-                  </motion.div>
-                ))}
-              </motion.div>
-            )}
+                <option value="newest">Newest</option>
+                <option value="low-high">Price Low to High</option>
+                <option value="high-low">Price High to Low</option>
+              </select>
+              <FiChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
+            </label>
+          </div>
 
-            {!productsLoading && filterProduct.length === 0 && (
-              <div className="rounded-md border border-[#eadfce] bg-[#fffdf9] py-16 text-center">
-                <p className="font-serif text-3xl text-[#1f1b17]">
-                  No matching scents
-                </p>
-                <p className="mt-3 text-sm text-[#7d6756]">
-                  Clear a filter or try another scent family.
-                </p>
-              </div>
-            )}
-
-            {filterProduct.length > 0 && (
-              <div className="mt-10 flex flex-wrap items-center justify-center gap-2 text-sm">
+          {activeFilters.length > 0 && (
+            <div className="mb-7 flex flex-wrap items-center gap-2">
+              {activeFilters.map((filter, index) => (
                 <button
-                  onClick={() => {
-                    setCurrentPage((p) => Math.max(p - 1, 1));
-                    goTop();
-                  }}
-                  disabled={currentPage === 1}
-                  className={`rounded-full border px-4 py-2 transition ${
-                    currentPage === 1
-                      ? "cursor-not-allowed border-[#eadfce] text-[#b7a898]"
-                      : "border-[#d8c8b5] text-[#6f5844] hover:border-[#c49a5e] hover:text-[#1f1b17]"
-                  }`}
+                  key={`${filter}-${index}`}
+                  type="button"
+                  onClick={() => removeFilter(filter)}
+                  className="inline-flex items-center gap-2 border border-black/25 px-3 py-2 text-[9px] font-bold uppercase tracking-[0.14em] transition hover:border-black"
                 >
-                  Previous
+                  {filter}
+                  <FiX className="h-3 w-3" />
                 </button>
+              ))}
+              <button
+                type="button"
+                onClick={clearAll}
+                className="px-2 py-2 text-[9px] font-bold uppercase tracking-[0.14em] underline underline-offset-4"
+              >
+                Clear all
+              </button>
+            </div>
+          )}
 
-                {[...Array(totalPages)].map((_, i) => (
+          <div className="flex gap-10">
+            <aside className="hidden w-[250px] shrink-0 lg:block xl:w-[280px]">
+              <div className="sticky top-28 border-t border-black">
+                <div className="flex items-center justify-between border-b border-black/15 py-5">
+                  <h2 className="text-sm font-black uppercase tracking-[0.2em]">Refine</h2>
+                  <span className="text-[10px] font-semibold uppercase tracking-[0.12em] text-black/45">
+                    {activeFilters.length} selected
+                  </span>
+                </div>
+                <FilterContents
+                  selectedCategories={category}
+                  selectedSubcategories={subCategory}
+                  selectedConcentration={concentration}
+                  selectedSpecialFlags={specialFlags}
+                  selectedStockFlags={stockFlags}
+                  onCategory={(value) => toggleArrayValue(setCategory, value)}
+                  onSubcategory={(value) => toggleArrayValue(setSubCategory, value)}
+                  onConcentration={(value) => toggleArrayValue(setConcentration, value)}
+                  onSpecial={(key) =>
+                    setSpecialFlags((current) => ({
+                      ...current,
+                      [key]: !current[key],
+                    }))
+                  }
+                  onStock={(key) =>
+                    setStockFlags((current) => ({
+                      ...current,
+                      [key]: !current[key],
+                    }))
+                  }
+                />
+                {activeFilters.length > 0 && (
                   <button
-                    key={i}
-                    onClick={() => {
-                      setCurrentPage(i + 1);
-                      goTop();
-                    }}
-                    className={`h-9 w-9 rounded-full border transition ${
-                      currentPage === i + 1
-                        ? "border-[#1f1b17] bg-[#1f1b17] text-white"
-                        : "border-[#d8c8b5] text-[#6f5844] hover:border-[#c49a5e]"
-                    }`}
+                    type="button"
+                    onClick={clearAll}
+                    className="mt-5 w-full border border-black px-4 py-3 text-[10px] font-bold uppercase tracking-[0.2em] transition hover:bg-black hover:text-white"
                   >
-                    {i + 1}
+                    Clear All Filters
                   </button>
-                ))}
-
-                <button
-                  onClick={() => {
-                    setCurrentPage((p) => Math.min(p + 1, totalPages));
-                    goTop();
-                  }}
-                  disabled={currentPage === totalPages}
-                  className={`rounded-full border px-4 py-2 transition ${
-                    currentPage === totalPages
-                      ? "cursor-not-allowed border-[#eadfce] text-[#b7a898]"
-                      : "border-[#d8c8b5] text-[#6f5844] hover:border-[#c49a5e] hover:text-[#1f1b17]"
-                  }`}
-                >
-                  Next
-                </button>
+                )}
               </div>
-            )}
+            </aside>
+
+            <div className="min-w-0 flex-1">
+              <div className="mb-7 hidden items-center justify-between border-y border-black/15 py-4 lg:flex">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.2em]">
+                    {filteredProducts.length} products
+                  </p>
+                  <p className="mt-1 text-xs text-black/45">
+                    Showing {visibleProducts.length} on this page
+                  </p>
+                </div>
+                <label className="relative min-w-[220px] border-l border-black/15 pl-6">
+                  <span className="sr-only">Sort products</span>
+                  <select
+                    value={sortType}
+                    onChange={(event) => setSortType(event.target.value)}
+                    className="w-full appearance-none bg-white py-2 pr-8 text-[11px] font-bold uppercase tracking-[0.14em] outline-none"
+                  >
+                    <option value="newest">Sort: Newest</option>
+                    <option value="low-high">Sort: Price Low to High</option>
+                    <option value="high-low">Sort: Price High to Low</option>
+                  </select>
+                  <FiChevronDown className="pointer-events-none absolute right-0 top-1/2 h-4 w-4 -translate-y-1/2" />
+                </label>
+              </div>
+
+              <div className="mb-5 flex items-end justify-between lg:hidden">
+                <div>
+                  <p className="text-xs font-bold uppercase tracking-[0.18em]">
+                    {filteredProducts.length} products
+                  </p>
+                  <p className="mt-1 text-[10px] uppercase tracking-[0.12em] text-black/40">
+                    Page {currentPage} of {totalPages}
+                  </p>
+                </div>
+              </div>
+
+              {productsLoading ? (
+                <CollectionGridSkeleton cards={8} />
+              ) : visibleProducts.length ? (
+                <motion.div
+                  key={`${currentPage}-${sortType}-${activeFilters.join("|")}`}
+                  className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 md:grid-cols-3 xl:grid-cols-4"
+                  initial="hidden"
+                  animate="show"
+                  variants={{
+                    hidden: {},
+                    show: { transition: { staggerChildren: 0.035 } },
+                  }}
+                >
+                  {visibleProducts.map((product) => (
+                    <motion.div
+                      key={product._id}
+                      variants={{
+                        hidden: { opacity: 0, y: 14 },
+                        show: {
+                          opacity: 1,
+                          y: 0,
+                          transition: { duration: 0.34, ease: [0.22, 1, 0.36, 1] },
+                        },
+                      }}
+                    >
+                      <CollectionProductCard product={product} />
+                    </motion.div>
+                  ))}
+                </motion.div>
+              ) : (
+                <div className="border-y border-black/15 py-20 text-center">
+                  <h2 className="text-2xl font-black uppercase sm:text-3xl">
+                    No matching products
+                  </h2>
+                  <p className="mt-3 text-sm text-black/50">
+                    Try another category or clear your filters.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={clearAll}
+                    className="mt-7 border border-black bg-black px-6 py-3 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-white hover:text-black"
+                  >
+                    View All Products
+                  </button>
+                </div>
+              )}
+
+              {!productsLoading && filteredProducts.length > 0 && totalPages > 1 && (
+                <nav
+                  className="mt-14 flex items-center justify-center border-t border-black/15 pt-7"
+                  aria-label="Collection pagination"
+                >
+                  <button
+                    type="button"
+                    onClick={() => goToPage(Math.max(currentPage - 1, 1))}
+                    disabled={currentPage === 1}
+                    className="grid h-11 w-11 place-items-center border border-black/20 transition hover:border-black disabled:cursor-not-allowed disabled:opacity-25"
+                    aria-label="Previous page"
+                  >
+                    <FiChevronLeft className="h-4 w-4" />
+                  </button>
+                  <div className="mx-3 flex items-center">
+                    {Array.from({ length: totalPages }).map((_, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => goToPage(index + 1)}
+                        className={`h-11 min-w-11 border-y border-r border-black/20 px-3 text-xs font-bold transition first:border-l ${
+                          currentPage === index + 1
+                            ? "bg-black text-white"
+                            : "bg-white text-black hover:bg-black/5"
+                        }`}
+                      >
+                        {index + 1}
+                      </button>
+                    ))}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => goToPage(Math.min(currentPage + 1, totalPages))}
+                    disabled={currentPage === totalPages}
+                    className="grid h-11 w-11 place-items-center border border-black/20 transition hover:border-black disabled:cursor-not-allowed disabled:opacity-25"
+                    aria-label="Next page"
+                  >
+                    <FiChevronRight className="h-4 w-4" />
+                  </button>
+                </nav>
+              )}
+            </div>
           </div>
         </div>
       </section>
@@ -855,247 +894,96 @@ const Collection = () => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <motion.div
-              className="absolute inset-0 bg-[#1f1b17]/45 backdrop-blur-sm"
+            <button
+              type="button"
+              className="absolute inset-0 h-full w-full bg-black/45"
               onClick={() => setShowFilterPanel(false)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
+              aria-label="Close filters"
             />
             <motion.aside
-              className="absolute left-0 top-0 flex h-full w-[86vw] max-w-[360px] flex-col overflow-auto bg-[#fffaf4] shadow-2xl"
-              initial={{ x: -36, opacity: 0 }}
-              animate={{
-                x: 0,
-                opacity: 1,
-                transition: { type: "spring", stiffness: 260, damping: 24 },
-              }}
-              exit={{ x: -36, opacity: 0, transition: { duration: 0.18 } }}
+              className="absolute left-0 top-0 flex h-full w-[92vw] max-w-[390px] flex-col bg-white"
+              initial={{ x: "-100%" }}
+              animate={{ x: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
+              exit={{ x: "-100%", transition: { duration: 0.22 } }}
             >
-              <div className="border-b border-[#eadfce] px-5 py-5">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.22em] text-[#9a8068]">
-                      Refine
-                    </p>
-                    <h3 className="mt-1 font-serif text-3xl text-[#1f1b17]">
-                      Filters
-                    </h3>
-                  </div>
+              <header className="flex items-center justify-between border-b border-black px-5 py-5">
+                <div>
+                  <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-black/45">
+                    Refine the collection
+                  </p>
+                  <h2 className="mt-1 text-2xl font-black uppercase">Filters</h2>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setShowFilterPanel(false)}
+                  className="grid h-11 w-11 place-items-center border border-black/25"
+                  aria-label="Close filters"
+                >
+                  <FiX className="h-5 w-5" />
+                </button>
+              </header>
+
+              {hasPendingMobileFilters && (
+                <div className="border-b border-black/15 px-5 py-3">
                   <button
-                    onClick={() => setShowFilterPanel(false)}
-                    className="grid h-9 w-9 place-items-center rounded-full border border-[#d8c8b5] text-[#1f1b17]"
-                    aria-label="Close filters"
+                    type="button"
+                    onClick={applyFilters}
+                    className="flex w-full items-center justify-between bg-black px-5 py-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white"
                   >
-                    <FiX className="h-4 w-4" />
+                    Apply changes
+                    <span>{tempActiveFilters.length}</span>
                   </button>
                 </div>
-                <div className="mt-4 flex w-fit items-center gap-2 text-[#c49a5e]">
-                  <span className="h-px w-8 bg-current" />
-                  <span className="h-2 w-2 rotate-45 bg-current" />
-                  <span className="h-px w-8 bg-current" />
-                </div>
+              )}
+
+              <div className="flex-1 overflow-y-auto px-5">
+                <FilterContents
+                  selectedCategories={tempCategory}
+                  selectedSubcategories={tempSubCategory}
+                  selectedConcentration={tempConcentration}
+                  selectedSpecialFlags={tempSpecialFlags}
+                  selectedStockFlags={tempStockFlags}
+                  onCategory={(value) => toggleArrayValue(setTempCategory, value)}
+                  onSubcategory={(value) => toggleArrayValue(setTempSubCategory, value)}
+                  onConcentration={(value) =>
+                    toggleArrayValue(setTempConcentration, value)
+                  }
+                  onSpecial={(key) =>
+                    setTempSpecialFlags((current) => ({
+                      ...current,
+                      [key]: !current[key],
+                    }))
+                  }
+                  onStock={(key) =>
+                    setTempStockFlags((current) => ({
+                      ...current,
+                      [key]: !current[key],
+                    }))
+                  }
+                />
               </div>
 
-              <AnimatePresence>
-                {hasPendingMobileFilters && (
-                  <motion.div
-                    className="sticky top-0 z-20 border-b border-[#eadfce] bg-[#fffaf4]/95 px-5 py-3 shadow-[0_12px_24px_rgba(43,32,22,0.08)] backdrop-blur"
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.18 }}
-                  >
-                    <button
-                      onClick={applyFilters}
-                      className="flex w-full items-center justify-between rounded-full bg-[#1f1b17] px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[#c49a5e]"
-                    >
-                      <span>Apply Filters</span>
-                      <span className="rounded-full bg-white/15 px-2 py-0.5 text-[11px]">
-                        {tempActiveFilters.length}
-                      </span>
-                    </button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
-
-              <div className="flex-1 px-5 py-5">
-                <div className="mb-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1f1b17]">
-                    Categories
-                  </p>
-                  <div className="mt-3 flex flex-col gap-3 text-sm text-[#6f5844]">
-                    {categoryOptions.map((option) => (
-                      <label key={option} className={filterRowClass}>
-                        <span className="flex items-center gap-3">
-                          <input
-                            className={checkboxClass}
-                            type="checkbox"
-                            value={option}
-                            checked={tempCategory.includes(option)}
-                            onChange={() => toggleTempCategory(option)}
-                          />
-                          {option}
-                        </span>
-                        <span className={countBadgeClass}>
-                          {countItems((item) => item.category === option || item.subCategory === option)}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1f1b17]">
-                    Scent Family
-                  </p>
-                  <div className="mt-3 flex flex-col gap-3 text-sm text-[#6f5844]">
-                    {typeOptions.map((type) => (
-                      <label key={type} className={filterRowClass}>
-                        <span className="flex items-center gap-3">
-                          <input
-                            className={checkboxClass}
-                            type="checkbox"
-                            value={type}
-                            checked={tempSubCategory.includes(type)}
-                            onChange={() => toggleTempSubCategory(type)}
-                          />
-                          {type}
-                        </span>
-                        <span className={countBadgeClass}>
-                          {countItems((item) => item.subCategory === type)}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1f1b17]">
-                    Concentration
-                  </p>
-                  <div className="mt-3 flex flex-col gap-3 text-sm text-[#6f5844]">
-                    {concentrationOptions.map((option) => (
-                      <label key={option} className={filterRowClass}>
-                        <span className="flex items-center gap-3">
-                          <input
-                            className={checkboxClass}
-                            type="checkbox"
-                            checked={tempConcentration.includes(option)}
-                            onChange={() => toggleTempConcentration(option)}
-                          />
-                          {option}
-                        </span>
-                        <span className={countBadgeClass}>
-                          {countItems((item) => getConcentration(item) === option)}
-                        </span>
-                      </label>
-                    ))}
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1f1b17]">
-                    Special
-                  </p>
-                  <div className="mt-3 flex flex-col gap-3 text-sm text-[#6f5844]">
-                    <label className="flex items-center gap-3">
-                      <input
-                        className={checkboxClass}
-                        type="checkbox"
-                        checked={tempSpecialFlags.newArrival}
-                        onChange={toggleTempNewArrival}
-                      />
-                      New Arrival
-                    </label>
-                    <label className="flex items-center gap-3">
-                      <input
-                        className={checkboxClass}
-                        type="checkbox"
-                        checked={tempSpecialFlags.onSales}
-                        onChange={toggleTempOnSales}
-                      />
-                      On Sale
-                    </label>
-                  </div>
-                </div>
-
-                <div className="mt-6">
-                  <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#1f1b17]">
-                    Availability
-                  </p>
-                  <div className="mt-3 flex flex-col gap-3 text-sm text-[#6f5844]">
-                    <label className={`${filterRowClass} border border-[#d8c8b5] bg-[#fffaf4] font-semibold text-[#1f1b17]`}>
-                      <span className="flex items-center gap-3">
-                        <input
-                          className={checkboxClass}
-                          type="checkbox"
-                          checked={tempStockFlags.inStock}
-                          onChange={() => toggleTempStockFlag("inStock")}
-                        />
-                        <span className="inline-flex items-center gap-2">
-                          <span className="h-2 w-2 rounded-full bg-[#3b7a57]" />
-                          In Stock
-                        </span>
-                      </span>
-                      <span className="rounded-full bg-[#e5f1e8] px-2 py-0.5 text-[11px] font-bold text-[#2f6c4d]">
-                        {countItems((item) => stockStatus(item).inStock)}
-                      </span>
-                    </label>
-                    <label className={filterRowClass}>
-                      <span className="flex items-center gap-3">
-                        <input
-                          className={checkboxClass}
-                          type="checkbox"
-                          checked={tempStockFlags.lowStock}
-                          onChange={() => toggleTempStockFlag("lowStock")}
-                        />
-                        Low Stock
-                      </span>
-                      <span className={countBadgeClass}>
-                        {countItems((item) => stockStatus(item).lowStock)}
-                      </span>
-                    </label>
-                    <label className={filterRowClass}>
-                      <span className="flex items-center gap-3">
-                        <input
-                          className={checkboxClass}
-                          type="checkbox"
-                          checked={tempStockFlags.outOfStock}
-                          onChange={() => toggleTempStockFlag("outOfStock")}
-                        />
-                        Out of Stock
-                      </span>
-                      <span className={countBadgeClass}>
-                        {countItems((item) => stockStatus(item).soldOut)}
-                      </span>
-                    </label>
-                  </div>
-                </div>
-              </div>
-
-              <div className="sticky bottom-0 border-t border-[#eadfce] bg-[#fffaf4] px-5 py-4">
+              <footer className="border-t border-black bg-white px-5 py-4">
                 <div className="mb-3 flex items-center justify-between">
                   <button
-                    onClick={resetFilters}
-                    className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9a8068]"
+                    type="button"
+                    onClick={resetMobileFilters}
+                    className="text-[9px] font-bold uppercase tracking-[0.17em] underline underline-offset-4"
                   >
                     Reset
                   </button>
-                  <button
-                    onClick={clearAll}
-                    className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9a8068]"
-                  >
-                    Clear All
-                  </button>
+                  <span className="text-[9px] font-bold uppercase tracking-[0.15em] text-black/45">
+                    {tempActiveFilters.length} selected
+                  </span>
                 </div>
                 <button
+                  type="button"
                   onClick={applyFilters}
-                  className="w-full rounded-full bg-[#1f1b17] px-5 py-3 text-sm font-semibold uppercase tracking-[0.14em] text-white transition hover:bg-[#c49a5e]"
+                  className="w-full bg-black px-5 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-white"
                 >
-                  Apply Filters
+                  Show Products
                 </button>
-              </div>
+              </footer>
             </motion.aside>
           </motion.div>
         )}

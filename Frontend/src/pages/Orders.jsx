@@ -1,13 +1,7 @@
-import React, { useContext, useEffect, useState } from "react";
+﻿import { useCallback, useContext, useEffect, useState } from "react";
 import axios from "axios";
-import {
-  FiArrowRight,
-  FiClock,
-  FiPackage,
-  FiRefreshCw,
-} from "react-icons/fi";
+import { FiArrowRight, FiClock, FiPackage, FiRefreshCw } from "react-icons/fi";
 import { toast } from "react-toastify";
-import LevonOrnament from "../componens/LevonOrnament";
 import { ShimmerImage } from "../componens/Skeletons";
 import { ShopContext } from "../context/ShopContext";
 
@@ -32,27 +26,20 @@ const getStatusStyle = (status = "") => {
   if (key.includes("delivered")) {
     return {
       dot: "bg-green-500",
-      pill: "border-green-200 bg-green-50 text-green-700",
-    };
-  }
-
-  if (key.includes("ship") || key.includes("way")) {
-    return {
-      dot: "bg-[#c49a5e]",
-      pill: "border-[#ead3af] bg-[#fff8eb] text-[#8a6530]",
+      pill: "border-green-500 text-green-700",
     };
   }
 
   if (key.includes("cancel")) {
     return {
-      dot: "bg-[#7b2d2d]",
-      pill: "border-red-200 bg-red-50 text-[#7b2d2d]",
+      dot: "bg-red-600",
+      pill: "border-red-500 text-red-700",
     };
   }
 
   return {
-    dot: "bg-[#7b2d2d]",
-    pill: "border-[#eadfd2] bg-[#fffaf4] text-[#1f1b17]",
+    dot: "bg-black",
+    pill: "border-black text-black",
   };
 };
 
@@ -65,7 +52,7 @@ const Orders = () => {
   const { backendUrl, currency, token, navigate } = useContext(ShopContext);
   const [orderData, setOrderData] = useState([]);
 
-  const loadOrderData = async () => {
+  const loadOrderData = useCallback(async () => {
     try {
       if (!token) return;
 
@@ -82,29 +69,48 @@ const Orders = () => {
       console.log(error);
       toast.error("Failed to load orders");
     }
-  };
+  }, [backendUrl, token]);
 
   useEffect(() => {
     loadOrderData();
-  }, [token]);
+  }, [loadOrderData]);
+
+  useEffect(() => {
+    if (token) return undefined;
+
+    toast.info(
+      <div className="space-y-1 leading-5">
+        <p>Please log in to view your orders.</p>
+        <p dir="rtl">يرجى تسجيل الدخول لعرض طلباتك.</p>
+      </div>,
+      { position: "top-center", autoClose: 1800 }
+    );
+
+    const redirectTimer = window.setTimeout(() => {
+      navigate("/login?mode=login");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }, 1200);
+
+    return () => window.clearTimeout(redirectTimer);
+  }, [navigate, token]);
 
   const renderEmptyState = ({ loginRequired = false } = {}) => (
-    <div className="mx-auto mt-10 max-w-md rounded-md border border-[#eadfd2] bg-white/72 p-8 text-center shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
-      <div className="mx-auto grid h-14 w-14 place-items-center rounded-full border border-[#d8c8b5] text-[#c49a5e]">
+    <div className="mx-auto mt-10 max-w-md border-y border-black/15 bg-white p-8 text-center">
+      <div className="mx-auto grid h-14 w-14 place-items-center border border-black/20 text-black">
         <FiPackage className="h-6 w-6" />
       </div>
-      <p className="mt-5 font-serif text-2xl">
+      <p className="mt-5 text-2xl font-black uppercase">
         {loginRequired ? "Sign in to view orders." : "No orders yet."}
       </p>
-      <p className="mt-3 text-sm leading-7 text-[#7d6756]">
+      <p className="mt-3 text-sm leading-7 text-black/55">
         {loginRequired
-          ? "Your Levon order history appears after you log in."
+          ? "Your Be Radiant order history appears after you log in."
           : "When you place an order, its status and details will appear here."}
       </p>
       <button
         type="button"
-        onClick={() => navigate(loginRequired ? "/login" : "/collection")}
-        className="mt-6 inline-flex items-center justify-center gap-3 rounded-full bg-[#1f1b17] px-7 py-3 text-xs font-semibold uppercase tracking-[0.16em] text-white transition hover:bg-[#c49a5e]"
+        onClick={() => navigate(loginRequired ? "/login?mode=login" : "/collection")}
+        className="mt-6 inline-flex h-12 items-center justify-center gap-3 bg-black px-7 text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#222]"
       >
         {loginRequired ? "Login" : "Shop Collection"}
         <FiArrowRight className="h-4 w-4" />
@@ -113,22 +119,17 @@ const Orders = () => {
   );
 
   return (
-    <main className="min-h-screen bg-[#fffaf4] px-4 pb-14 pt-10 text-[#1f1b17] sm:px-[5vw] md:px-[7vw] lg:px-[3vw]">
+    <main className="min-h-screen bg-white px-4 pb-14 pt-10 text-black sm:px-6 lg:px-10">
       <section className="mx-auto max-w-[1300px]">
         <div className="mx-auto max-w-3xl text-center">
-          <div className="mx-auto mb-4 flex w-fit items-center gap-3 text-[#c49a5e]">
-            <span className="h-px w-10 bg-current" />
-            <span className="h-2.5 w-2.5 rotate-45 bg-current" />
-            <span className="h-px w-10 bg-current" />
-          </div>
-          <p className="text-xs font-semibold uppercase tracking-[0.24em] text-[#9a8068]">
-            Your History
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/45">
+            Be Radiant By Nancy
           </p>
-          <h1 className="mt-3 font-serif text-5xl leading-none sm:text-6xl lg:text-7xl">
+          <h1 className="mt-3 text-5xl font-black uppercase leading-none sm:text-6xl lg:text-7xl">
             My Orders
           </h1>
-          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-[#7d6756] sm:text-lg">
-            Track your Levon scents from placement to delivery.
+          <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-black/55 sm:text-lg">
+            Track your Be Radiant orders from placement to delivery.
           </p>
         </div>
 
@@ -143,31 +144,31 @@ const Orders = () => {
               const statusStyle = getStatusStyle(status);
               const orderNumber = order._id
                 ? `#${String(order._id).slice(-6).toUpperCase()}`
-                : `#LV-${String(index + 1).padStart(4, "0")}`;
+                : `#BR-${String(index + 1).padStart(4, "0")}`;
 
               return (
                 <article
                   key={order._id || index}
-                  className="rounded-md border border-[#eadfd2] bg-white/64 p-5 shadow-[0_18px_45px_rgba(62,45,28,0.08)] sm:p-6"
+                  className="border border-black/15 bg-white p-5 sm:p-6"
                 >
-                  <div className="flex flex-col gap-4 border-b border-[#eadfd2] pb-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex flex-col gap-4 border-b border-black/15 pb-5 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9a8068]">
+                      <p className="text-xs font-bold uppercase tracking-[0.18em] text-black/50">
                         Order {orderNumber}
                       </p>
-                      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-[#7d6756]">
+                      <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-black/55">
                         <span className="inline-flex items-center gap-2">
-                          <FiClock className="h-4 w-4 text-[#c49a5e]" />
+                          <FiClock className="h-4 w-4 text-black" />
                           {formatDate(order.date)}
                         </span>
-                        <span className="text-[#d8c8b5]">/</span>
+                        <span>/</span>
                         <span>{order.paymentMethod || "COD"}</span>
                       </div>
                     </div>
 
                     <div className="flex flex-wrap items-center gap-3">
                       <span
-                        className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] ${statusStyle.pill}`}
+                        className={`inline-flex items-center gap-2 border px-3 py-1 text-xs font-bold uppercase tracking-[0.12em] ${statusStyle.pill}`}
                       >
                         <span className={`h-2 w-2 rounded-full ${statusStyle.dot}`} />
                         {status}
@@ -175,7 +176,7 @@ const Orders = () => {
                       <button
                         type="button"
                         onClick={loadOrderData}
-                        className="inline-flex items-center gap-2 rounded-full border border-[#dfd1c1] bg-[#fffaf4] px-4 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-[#1f1b17] transition hover:border-[#c49a5e]"
+                        className="inline-flex items-center gap-2 border border-black/25 bg-white px-4 py-2 text-xs font-bold uppercase tracking-[0.14em] text-black transition hover:border-black hover:bg-black hover:text-white"
                       >
                         <FiRefreshCw className="h-4 w-4" />
                         Track
@@ -187,49 +188,46 @@ const Orders = () => {
                     {(order.items || []).map((item, itemIndex) => {
                       const qty = Number(item.qty ?? item.quantity ?? 1);
                       const price = Number(item.unitPrice ?? item.price ?? 0);
-                      const title = item.title || item.name || "Levon item";
+                      const title = item.title || item.name || "Be Radiant item";
 
                       return (
                         <div
                           key={`${title}-${itemIndex}`}
-                          className="flex flex-col gap-4 rounded-md border border-[#eadfd2] bg-[#fffaf4] p-3 sm:flex-row sm:items-center"
+                          className="flex flex-col gap-4 border border-black/15 bg-white p-3 sm:flex-row sm:items-center"
                         >
-                          <div className="h-24 w-24 flex-none overflow-hidden rounded-md bg-[#eadfd2]">
+                          <div className="h-24 w-24 flex-none overflow-hidden bg-white">
                             <ShimmerImage
                               src={pickOrderImage(item.image) || "/placeholder.png"}
                               alt={title}
                               className="h-full w-full object-cover"
                               wrapperClassName="h-full w-full"
-                              skeletonClassName="bg-[#E9DFD3]"
+                              skeletonClassName="bg-[#EAEAEA]"
                             />
                           </div>
 
                           <div className="min-w-0 flex-1">
-                            <p className="font-serif text-2xl leading-tight text-[#1f1b17]">
+                            <p className="text-xl font-black uppercase leading-tight text-black">
                               {title}
                             </p>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              {item.size && (
-                                <span className="rounded-full border border-[#dfd1c1] bg-white/58 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#746657]">
-                                  {item.size}
-                                </span>
-                              )}
-                              {item.color && (
-                                <span className="rounded-full border border-[#dfd1c1] bg-white/58 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#746657]">
-                                  {item.color}
-                                </span>
-                              )}
-                              <span className="rounded-full border border-[#dfd1c1] bg-white/58 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.1em] text-[#746657]">
-                                Qty {qty}
-                              </span>
+                              {[item.perfumeType || item.concentration, item.size, item.color, `Qty ${qty}`]
+                                .filter(Boolean)
+                                .map((label) => (
+                                  <span
+                                    key={label}
+                                    className="border border-black/20 bg-white px-3 py-1 text-[10px] font-bold uppercase tracking-[0.1em] text-black/65"
+                                  >
+                                    {label}
+                                  </span>
+                                ))}
                             </div>
                           </div>
 
                           <div className="text-left sm:text-right">
-                            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-[#9a8068]">
+                            <p className="text-xs font-bold uppercase tracking-[0.16em] text-black/45">
                               Price
                             </p>
-                            <p className="mt-1 text-lg font-semibold text-[#1f1b17]">
+                            <p className="mt-1 text-lg font-bold text-black">
                               {formatPrice(price, currency)}
                             </p>
                           </div>
@@ -238,9 +236,9 @@ const Orders = () => {
                     })}
                   </div>
 
-                  <div className="mt-5 grid gap-4 border-t border-[#eadfd2] pt-5 lg:grid-cols-[1fr_320px]">
-                    <div className="rounded-md bg-[#fffaf4]/70 p-4 text-sm leading-7 text-[#7d6756]">
-                      <p className="font-semibold uppercase tracking-[0.14em] text-[#1f1b17]">
+                  <div className="mt-5 grid gap-4 border-t border-black/15 pt-5 lg:grid-cols-[1fr_320px]">
+                    <div className="bg-white p-4 text-sm leading-7 text-black/55">
+                      <p className="font-bold uppercase tracking-[0.14em] text-black">
                         Delivery
                       </p>
                       <p className="mt-1">
@@ -256,33 +254,33 @@ const Orders = () => {
                     </div>
 
                     <div className="space-y-2 text-sm">
-                      <div className="flex items-center justify-between text-[#7d6756]">
+                      <div className="flex items-center justify-between text-black/55">
                         <span>Subtotal</span>
-                        <span className="font-semibold text-[#1f1b17]">
+                        <span className="font-bold text-black">
                           {formatPrice(order.subtotal ?? 0, currency)}
                         </span>
                       </div>
                       {Number(order.discount || 0) > 0 && (
                         <div className="flex items-center justify-between text-green-700">
                           <span>Discount</span>
-                          <span className="font-semibold">
+                          <span className="font-bold">
                             - {formatPrice(order.discount, currency)}
                           </span>
                         </div>
                       )}
                       {Number(order.shipping || 0) > 0 && (
-                        <div className="flex items-center justify-between text-[#7d6756]">
+                        <div className="flex items-center justify-between text-black/55">
                           <span>Delivery</span>
-                          <span className="font-semibold text-[#1f1b17]">
+                          <span className="font-bold text-black">
                             {formatPrice(order.shipping, currency)}
                           </span>
                         </div>
                       )}
-                      <div className="mt-3 flex items-end justify-between border-t border-[#eadfd2] pt-3">
-                        <span className="text-xs font-semibold uppercase tracking-[0.18em] text-[#9a8068]">
+                      <div className="mt-3 flex items-end justify-between border-t border-black/15 pt-3">
+                        <span className="text-xs font-bold uppercase tracking-[0.18em] text-black/45">
                           Total
                         </span>
-                        <span className="font-serif text-3xl text-[#1f1b17]">
+                        <span className="text-3xl font-black text-black">
                           {formatPrice(order.amount ?? 0, currency)}
                         </span>
                       </div>
@@ -293,8 +291,6 @@ const Orders = () => {
             })}
           </div>
         )}
-
-        <LevonOrnament className="mt-10" />
       </section>
     </main>
   );

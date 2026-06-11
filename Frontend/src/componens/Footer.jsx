@@ -1,134 +1,443 @@
-// eslint-disable-next-line no-unused-vars
-import React from "react";
-import { FaFacebookF, FaInstagram } from "react-icons/fa";
-import { FiMail, FiPhone } from "react-icons/fi";
+/* eslint-disable react/prop-types */
+import { useContext, useMemo, useState } from "react";
+import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
+import { FiChevronDown, FiSend, FiStar } from "react-icons/fi";
 import { Link } from "react-router-dom";
-import letsdwebsLogo from "../assets/letsdwebs_logo.png";
+import { customerPreviewLocked } from "../lib/customerPreview";
+import { useContactForm } from "../lib/useContactForm";
+import { ShopContext } from "../context/ShopContext";
+
+const footerLinks = {
+  account: [
+    { label: "Login", to: "/login?mode=login", scrollToTop: true },
+    { label: "Sign up", to: "/login?mode=signup", scrollToTop: true },
+  ],
+  info: [
+    { label: "Contact", to: "/contact" },
+    { label: "Shipping info", to: "/shippingpolicy" },
+  ],
+  more: [
+    { label: "Ratings", to: "/ratings" },
+    { label: "Terms and Conditions", to: "/terms" },
+    { label: "Privacy Policy", to: "/privacy-policy" },
+  ],
+};
+
+const getBrandSocialLinks = (settings = {}) => {
+  const socialLinks = settings.socialLinks || {};
+  return [
+    {
+      label: "Be Radiant by Nancy on Instagram",
+      href: socialLinks.instagram || "https://www.instagram.com/radiant_bynancy?igsh=MWY3YmwxcjNyYTNjcg==",
+      icon: FaInstagram,
+    },
+    {
+      label: "Be Radiant by Nancy on Facebook",
+      href: socialLinks.facebook || "https://www.facebook.com/share/18oAYDyvZt/",
+      icon: FaFacebookF,
+    },
+    {
+      label: "Be Radiant by Nancy on TikTok",
+      href: socialLinks.tiktok || "https://www.tiktok.com/@radiant.nancy?_r=1&_t=ZS-96qoZYlR9xF",
+      icon: FaTiktok,
+    },
+  ].filter((item) => item.href);
+};
+
+const SocialLinks = ({ links }) => (
+  <div className="mt-4 flex gap-5 text-lg">
+    {links.map(({ label, href, icon: Icon }) => (
+      <a
+        key={label}
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={label}
+        className="transition hover:text-white/60"
+      >
+        <Icon />
+      </a>
+    ))}
+  </div>
+);
+
+const getReviewCount = (product) =>
+  Math.max(
+    0,
+    Number(product?.reviewCount ?? product?.reviewsCount ?? product?.reviews?.length) || 0
+  );
+
+const FooterReviewsDropdown = ({ products = [], compact = false }) => {
+  const [open, setOpen] = useState(false);
+  const reviewSummary = useMemo(() => {
+    const reviewed = products
+      .filter((product) => product?.active !== false)
+      .map((product) => ({
+        ...product,
+        _reviewCount: getReviewCount(product),
+        _rating: Math.max(0, Math.min(5, Number(product?.rating) || 0)),
+      }))
+      .filter((product) => product._reviewCount > 0)
+      .sort((a, b) => {
+        if (b._rating !== a._rating) return b._rating - a._rating;
+        return b._reviewCount - a._reviewCount;
+      });
+
+    const totalReviews = reviewed.reduce((total, product) => total + product._reviewCount, 0);
+    const weightedRating = reviewed.reduce(
+      (total, product) => total + product._rating * product._reviewCount,
+      0
+    );
+
+    return {
+      reviewed,
+      totalReviews,
+      average: totalReviews ? weightedRating / totalReviews : 0,
+    };
+  }, [products]);
+
+  return (
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className={`flex w-full items-center justify-between gap-3 text-left transition hover:text-white ${
+          compact
+            ? "text-base font-light text-white/80"
+            : "text-[11px] font-bold uppercase tracking-[0.2em] text-white"
+        }`}
+        aria-expanded={open}
+      >
+        <span>
+          Total Reviews
+          {reviewSummary.totalReviews > 0 && (
+            <span className="ml-2 font-light text-white/55">
+              {reviewSummary.totalReviews}
+            </span>
+          )}
+        </span>
+        <FiChevronDown className={`h-4 w-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ${
+          open ? "grid-rows-[1fr] pt-4 opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">
+          <div className="border border-white/15 p-4">
+            <div className="flex items-end justify-between gap-4">
+              <div>
+                <p className="text-3xl font-light leading-none">
+                  {reviewSummary.average ? reviewSummary.average.toFixed(1) : "0.0"}
+                </p>
+                <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-white/45">
+                  Average rating
+                </p>
+              </div>
+              <div className="flex gap-1 text-white">
+                {Array.from({ length: 5 }).map((_, index) => (
+                  <FiStar
+                    key={index}
+                    className={`h-4 w-4 ${
+                      index < Math.round(reviewSummary.average)
+                        ? "fill-white text-white"
+                        : "text-white/25"
+                    }`}
+                  />
+                ))}
+              </div>
+            </div>
+
+            {reviewSummary.reviewed.length ? (
+              <div className="mt-5 space-y-3">
+                {reviewSummary.reviewed.slice(0, 3).map((product) => (
+                  <Link
+                    key={product._id}
+                    to={`/Product/${product._id}`}
+                    onClick={(event) => {
+                      if (customerPreviewLocked) {
+                        event.preventDefault();
+                        return;
+                      }
+                      setOpen(false);
+                    }}
+                    className="flex items-center justify-between gap-4 border-t border-white/10 pt-3 text-white/80 transition hover:text-white"
+                  >
+                    <span className="min-w-0 truncate text-sm font-light">{product.name}</span>
+                    <span className="shrink-0 text-xs text-white/55">
+                      {product._rating.toFixed(1)} / {product._reviewCount}
+                    </span>
+                  </Link>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-5 border-t border-white/10 pt-3 text-sm font-light text-white/55">
+                Reviews will appear after customers rate products.
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const LetsDwebsCredit = () => (
+  <a
+    href="https://www.instagram.com/letsdwebs/"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="inline-flex items-center gap-2 text-white/70 transition hover:text-white"
+    aria-label="LetsDwebs on Instagram"
+  >
+    Created by LetsDwebs
+    <FaInstagram className="h-3.5 w-3.5" />
+  </a>
+);
+
+const FooterLebanonSelector = () => {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="relative inline-block text-left">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        className="inline-flex items-center gap-2 text-white/75 transition hover:text-white"
+        aria-expanded={open}
+      >
+        Lebanon (USD $)
+        <FiChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? "rotate-180" : ""}`} />
+      </button>
+      <div
+        className={`absolute bottom-full left-0 mb-3 min-w-48 border border-white/15 bg-black p-2 text-white shadow-[0_18px_40px_rgba(0,0,0,0.35)] transition-all duration-200 ${
+          open ? "pointer-events-auto translate-y-0 opacity-100" : "pointer-events-none translate-y-1 opacity-0"
+        }`}
+      >
+        <button
+          type="button"
+          onClick={() => setOpen(false)}
+          className="flex w-full items-center justify-between px-3 py-3 text-left text-[10px] font-bold uppercase tracking-[0.16em]"
+        >
+          Lebanon (USD $)
+          <span className="h-1.5 w-1.5 rounded-full bg-white" />
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const LinkList = ({ links }) => (
+  <ul className="space-y-3 text-base font-light text-white/80 lg:space-y-2.5 lg:text-sm">
+    {links.map((link) => (
+      <li key={link.label}>
+        <Link
+          to={link.to}
+          onClick={(event) => {
+            if (customerPreviewLocked) {
+              event.preventDefault();
+              return;
+            }
+            if (link.scrollToTop) window.scrollTo({ top: 0, behavior: "smooth" });
+          }}
+          className="transition hover:text-white"
+        >
+          {link.label === "Shipping info" ? (
+            <>
+              <span className="underline underline-offset-4">Shipping</span> info
+            </>
+          ) : (
+            link.label
+          )}
+        </Link>
+      </li>
+    ))}
+  </ul>
+);
+
+const FooterContactForm = () => {
+  const { form, status, handleChange, handleSubmit } = useContactForm();
+  const fieldClass =
+    "w-full border-b border-white/55 bg-transparent py-2 text-sm text-white outline-none transition placeholder:text-white/40 focus:border-white";
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-2.5">
+      <input
+        name="name"
+        type="text"
+        value={form.name}
+        onChange={handleChange}
+        placeholder="Name"
+        className={fieldClass}
+        required
+      />
+      <input
+        name="email"
+        type="email"
+        value={form.email}
+        onChange={handleChange}
+        placeholder="Email"
+        className={fieldClass}
+        required
+      />
+      <div className="relative">
+        <textarea
+          name="message"
+          value={form.message}
+          onChange={handleChange}
+          placeholder="How can we help?"
+          rows="2"
+          className={`${fieldClass} resize-none pr-10`}
+          required
+        />
+        <button
+          type="submit"
+          disabled={status === "sending"}
+          className="absolute bottom-2 right-0 grid h-8 w-8 place-items-center text-white transition hover:text-white/65 disabled:opacity-40"
+          aria-label="Send contact message"
+        >
+          <FiSend className="h-4 w-4" />
+        </button>
+      </div>
+
+      {status === "sent" && (
+        <p className="text-xs text-white/70">Message sent successfully.</p>
+      )}
+      {status === "error" && (
+        <p className="text-xs text-red-300">Message failed. Please try again.</p>
+      )}
+    </form>
+  );
+};
+
+const MobileAccordion = ({ id, title, openId, setOpenId, children }) => {
+  const open = openId === id;
+
+  return (
+    <section className="border-b border-white/75">
+      <button
+        type="button"
+        onClick={() => setOpenId(open ? "" : id)}
+        className="flex w-full items-center justify-between py-5 text-left text-xs font-bold uppercase tracking-[0.24em] text-white"
+        aria-expanded={open}
+      >
+        {title}
+        <FiChevronDown
+          className={`h-5 w-5 shrink-0 text-white transition-transform duration-300 ${open ? "rotate-180" : ""}`}
+        />
+      </button>
+      <div
+        className={`grid transition-[grid-template-rows,opacity] duration-300 ${
+          open ? "grid-rows-[1fr] pb-6 opacity-100" : "grid-rows-[0fr] opacity-0"
+        }`}
+      >
+        <div className="overflow-hidden">{children}</div>
+      </div>
+    </section>
+  );
+};
 
 const Footer = () => {
+  const [openId, setOpenId] = useState("contact");
+  const { siteSettings, products } = useContext(ShopContext);
+  const brandEmail = siteSettings?.brandEmail || siteSettings?.socialLinks?.email || "beradiantnancy@gmail.com";
+  const brandSocialLinks = getBrandSocialLinks(siteSettings);
+
   return (
-    <footer className="mt-8 w-full bg-[#E9DFD3] text-[#2F2F2F]">
-      <div className="h-px bg-gradient-to-r from-transparent via-[#C7A96B] to-transparent" />
+    <footer className="w-full bg-black text-white">
+      <div className="px-5 pb-8 pt-2 lg:hidden">
+        <MobileAccordion id="contact" title="Contact Us" openId={openId} setOpenId={setOpenId}>
+          <a
+            href={`mailto:${brandEmail}`}
+            className="mb-6 inline-block border-b border-white/70 text-lg font-light text-white/85"
+          >
+            {brandEmail}
+          </a>
+          <FooterContactForm />
+        </MobileAccordion>
 
-      <div className="mx-auto max-w-[1400px] px-6 py-14">
-        <div className="mx-auto mb-10 flex w-fit items-center gap-4 text-[#c49a5e]">
-          <span className="h-px w-16 bg-current" />
-          <span className="h-3 w-3 rotate-45 bg-current" />
-          <span className="h-px w-16 bg-current" />
-        </div>
+        <MobileAccordion id="account" title="My Account" openId={openId} setOpenId={setOpenId}>
+          <LinkList links={footerLinks.account} />
+        </MobileAccordion>
 
-        <div className="grid grid-cols-1 gap-10 sm:grid-cols-[3fr_1fr_1fr]">
-          <div>
-            <Link
-              to="/"
-              className="mb-5 block font-serif text-3xl tracking-[0.22em] text-[#1f1b17]"
-            >
-              LEVON
-            </Link>
-            <p className="max-w-sm text-[#2F2F2F]/80 leading-6">
-              Discover refined perfumes, extrait blends, and gift-ready
-              fragrance rituals curated with care and quiet elegance.
+        <MobileAccordion id="info" title="Info" openId={openId} setOpenId={setOpenId}>
+          <LinkList links={footerLinks.info} />
+        </MobileAccordion>
+
+        <MobileAccordion id="more" title="More" openId={openId} setOpenId={setOpenId}>
+          <LinkList links={footerLinks.more} />
+        </MobileAccordion>
+
+        <MobileAccordion id="reviews" title="Total Reviews" openId={openId} setOpenId={setOpenId}>
+          <FooterReviewsDropdown products={products} compact />
+        </MobileAccordion>
+
+        <div className="pt-7">
+          <p className="text-xs font-bold uppercase tracking-[0.2em]">
+            Follow Be Radiant By Nancy
+          </p>
+          <SocialLinks links={brandSocialLinks} />
+
+          <div className="mt-8 space-y-3 border-t border-white/75 pt-5 text-xs font-light">
+            <FooterLebanonSelector />
+            <p className="text-white/60">
+              © {new Date().getFullYear()} BE RADIANT BY NANCY. All rights reserved.
             </p>
-
-            <div className="mt-5 flex gap-3 text-lg">
-              <a
-                href="https://www.instagram.com/velor_lb?igsh=bzd4eGV3ZGRsdTcy"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Instagram"
-                className="grid h-10 w-10 place-items-center rounded-full border border-[#c7a96b]/50 bg-white/45 text-[#2F2F2F] transition hover:bg-[#1f1b17] hover:text-white"
-              >
-                <FaInstagram />
-              </a>
-              <a
-                href="https://www.facebook.com/share/1DSWbsYdzx/"
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label="Facebook"
-                className="grid h-10 w-10 place-items-center rounded-full border border-[#c7a96b]/50 bg-white/45 text-[#2F2F2F] transition hover:bg-[#1f1b17] hover:text-white"
-              >
-                <FaFacebookF />
-              </a>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[#1f1b17]">
-              Company
-            </h3>
-            <ul className="space-y-2 text-sm text-[#2F2F2F]/80">
-              <li>
-                <Link to="/" className="transition hover:text-[#C7A96B]">
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link to="/about" className="transition hover:text-[#C7A96B]">
-                  About us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  to="/shippingpolicy"
-                  className="transition hover:text-[#C7A96B]"
-                >
-                  Shipping Policy
-                </Link>
-              </li>
-              <li>
-                <Link to="/contact" className="transition hover:text-[#C7A96B]">
-                  Contact us
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          <div>
-            <h3 className="mb-4 text-xs font-semibold uppercase tracking-[0.22em] text-[#1f1b17]">
-              Get in Touch
-            </h3>
-            <ul className="space-y-3 text-sm text-[#2F2F2F]/80">
-              <li>
-                <a
-                  href="mailto:levonfragrance@gmail.com"
-                  className="flex items-center gap-2 transition hover:text-[#C7A96B]"
-                >
-                  <FiMail className="text-[#C7A96B]" />
-                  levonfragrance@gmail.com
-                </a>
-              </li>
-              <li>
-                <a
-                  href="tel:+96171023261"
-                  className="flex items-center gap-2 transition hover:text-[#C7A96B]"
-                >
-                  <FiPhone className="text-[#C7A96B]" />
-                  +961 71 023 261
-                </a>
-              </li>
-            </ul>
+            <LetsDwebsCredit />
           </div>
         </div>
       </div>
 
-      <div className="border-t border-[#2F2F2F]/15" />
-      <div className="mx-auto flex max-w-[1400px] flex-col items-center justify-between gap-4 px-6 py-6 text-center text-sm text-[#2F2F2F]/80 md:flex-row md:text-left">
-        <p>© {new Date().getFullYear()} LEVON. All Rights Reserved.</p>
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <span>Created by</span>
-          <img
-            src={letsdwebsLogo}
-            alt="LetsDwebs"
-            className="h-9 w-9 rounded-sm bg-white object-contain p-1"
-            loading="lazy"
-          />
-          <span className="font-medium text-[#1f1b17]">LetsDwebs</span>
-          <a
-            href="tel:+96171023261"
-            className="font-medium text-[#C7A96B] hover:underline"
-          >
-            +961 71 023 261
-          </a>
+      <div className="mx-auto hidden max-w-[1500px] px-12 pb-7 pt-16 lg:block xl:px-16">
+        <div className="grid grid-cols-[0.9fr_0.9fr_0.9fr_1.25fr_1.55fr] gap-10 xl:gap-16">
+          <section>
+            <h2 className="text-[11px] font-bold uppercase tracking-[0.2em]">Contact Us</h2>
+            <a
+              href={`mailto:${brandEmail}`}
+              className="mt-7 inline-block border-b border-white/65 text-sm font-light text-white/85"
+            >
+              {brandEmail}
+            </a>
+          </section>
+
+          <section>
+            <h2 className="mb-7 text-[11px] font-bold uppercase tracking-[0.2em]">My Account</h2>
+            <LinkList links={footerLinks.account} />
+          </section>
+
+          <section>
+            <h2 className="mb-7 text-[11px] font-bold uppercase tracking-[0.2em]">Info</h2>
+            <LinkList links={footerLinks.info} />
+          </section>
+
+          <section>
+            <h2 className="mb-7 text-[11px] font-bold uppercase tracking-[0.2em]">More</h2>
+            <LinkList links={footerLinks.more} />
+            <div className="mt-8">
+              <FooterReviewsDropdown products={products} />
+            </div>
+          </section>
+
+          <section>
+            <h2 className="mb-4 text-[11px] font-bold uppercase tracking-[0.2em]">
+              Send Us A Message
+            </h2>
+            <FooterContactForm />
+
+            <p className="mt-7 text-[11px] font-bold uppercase tracking-[0.2em]">
+              Follow Be Radiant By Nancy
+            </p>
+            <SocialLinks links={brandSocialLinks} />
+          </section>
+        </div>
+
+        <div className="mt-20 flex items-end justify-between gap-8 text-xs font-light text-white/70">
+          <p>© {new Date().getFullYear()} BE RADIANT BY NANCY. All rights reserved.</p>
+          <div className="flex items-end gap-8">
+            <LetsDwebsCredit />
+            <FooterLebanonSelector />
+          </div>
         </div>
       </div>
     </footer>
