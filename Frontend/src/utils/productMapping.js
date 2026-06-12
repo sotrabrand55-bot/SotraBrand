@@ -1,5 +1,5 @@
 export const perfumeSizeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
-export const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Perfume"];
+export const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Parfum"];
 
 const normalizePerfumeSize = (value) => {
   const text = String(value || "").replace(/\s+/g, " ").trim();
@@ -33,7 +33,7 @@ export const normalizePerfumeType = (value) => {
   if (!compact || compact === "default") return "";
   if (["eaudeparfum", "eaudeperfume", "edp"].includes(compact)) return "Eau de Parfum";
   if (["eaudetoilette", "edt"].includes(compact)) return "Eau de Toilette";
-  if (compact === "perfume") return "Perfume";
+  if (["perfume", "parfum"].includes(compact)) return "Parfum";
 
   return text;
 };
@@ -74,6 +74,13 @@ const parseImageArray = (value) => {
 
 const unique = (items) => [...new Set(items.filter(Boolean))];
 
+const sortMediaItems = (items = []) =>
+  [...items].sort((a, b) => {
+    const aOrder = Number.isFinite(Number(a?.order)) ? Number(a.order) : 9999;
+    const bOrder = Number.isFinite(Number(b?.order)) ? Number(b.order) : 9999;
+    return aOrder - bOrder;
+  });
+
 const parseNumber = (value, fallback = undefined) => {
   if (value === undefined || value === null || value === "") return fallback;
   const number = Number(value);
@@ -88,8 +95,8 @@ const parseBool = (value, fallback = false) => {
 
 export const getProductImages = (product = {}) =>
   unique([
-    ...parseImageArray(product.storyImages?.map?.((item) => item?.image) || []),
-    ...parseImageArray(product.shadeOptions?.map?.((item) => item?.image) || []),
+    ...parseImageArray(sortMediaItems(product.storyImages).map((item) => item?.image)),
+    ...parseImageArray(sortMediaItems(product.shadeOptions).map((item) => item?.image)),
     ...parseImageArray(product.image),
     ...parseImageArray(product.images),
     parseImageValue(product.image1),

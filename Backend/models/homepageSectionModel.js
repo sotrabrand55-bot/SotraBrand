@@ -12,6 +12,8 @@ const homepageSectionItemSchema = new mongoose.Schema(
     posterFileId: { type: String, default: "" },
     alt: { type: String, default: "" },
     label: { type: String, default: "" },
+    buttonLabel: { type: String, default: "" },
+    productId: { type: String, default: "" },
     order: { type: Number, default: 0 },
     active: { type: Boolean, default: true },
   },

@@ -27,7 +27,7 @@ const buttonBlack =
 
 const money = (value) => `$${(Number(value) || 0).toFixed(2)} USD`;
 const volumeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
-const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Perfume"];
+const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Parfum"];
 const defaultNancyAdvice =
   "Nancy's smile tip: apply a small amount first, let it settle with your skin, then build softly where you want more glow and comfort.";
 const defaultNancyDetails = [
@@ -59,32 +59,41 @@ const emptyPage = (subcategory) => ({
 const mediaImage = (item) =>
   item?._preview || item?._filePreview || item?.image || item?.url || "";
 
+const sortMediaByOrder = (items = []) =>
+  [...items].sort((a, b) => {
+    const aOrder = Number.isFinite(Number(a?.order)) ? Number(a.order) : 9999;
+    const bOrder = Number.isFinite(Number(b?.order)) ? Number(b.order) : 9999;
+    return aOrder - bOrder;
+  });
+
 const firstProductImage = (product) =>
-  mediaImage(product?.storyImages?.find((item) => mediaImage(item))) ||
-  mediaImage(product?.shadeOptions?.find((item) => mediaImage(item))) ||
+  mediaImage(sortMediaByOrder(product?.storyImages).find((item) => mediaImage(item))) ||
+  mediaImage(sortMediaByOrder(product?.shadeOptions).find((item) => mediaImage(item))) ||
   (Array.isArray(product?.image) ? product.image[0] : product?.image) ||
   (Array.isArray(product?.images) ? product.images[0] : product?.images) ||
   "";
 
 const getProductPreviewImages = (product) => {
   const shadeImages = Array.isArray(product?.shadeOptions)
-    ? product.shadeOptions
+    ? sortMediaByOrder(product.shadeOptions)
         .map((option, index) => ({
           id: `shade-${option.id || index}`,
           image: mediaImage(option),
           alt: option.label || product?.name || "",
           source: "shade",
           optionId: option.id || "",
+          order: option.order ?? index + 1,
         }))
         .filter((item) => item.image)
     : [];
   const storyImages = Array.isArray(product?.storyImages)
-    ? product.storyImages
+    ? sortMediaByOrder(product.storyImages)
         .map((story, index) => ({
           id: `story-${story.id || index}`,
           image: mediaImage(story),
           alt: story.alt || product?.name || "",
           source: "story",
+          order: story.order ?? index + 1,
         }))
         .filter((item) => item.image)
     : [];
@@ -101,7 +110,7 @@ const getProductPreviewImages = (product) => {
     }));
 
   const seen = new Set();
-  return [...shadeImages, ...storyImages, ...productImages].filter((item) => {
+  return [...storyImages, ...shadeImages, ...productImages].filter((item) => {
     if (!item.image || seen.has(item.image)) return false;
     seen.add(item.image);
     return true;
@@ -356,24 +365,26 @@ const SubcategoryStudio = ({ token }) => {
             id: item.id || `shade-${featuredProduct?._id || "product"}-${index}`,
             label: item.label || "",
             cartValue: item.cartValue || item.label || "",
-            description: item.description || "",
-            image: item.image || "",
-            fileId: item.fileId || "",
-            _file: null,
-            _preview: "",
-          }))
+        description: item.description || "",
+        image: item.image || "",
+        fileId: item.fileId || "",
+        order: item.order ?? index + 1,
+        _file: null,
+        _preview: "",
+      }))
         : []
     );
     setStoryImages(
       Array.isArray(featuredProduct?.storyImages)
         ? featuredProduct.storyImages.map((item, index) => ({
             id: item.id || `story-${featuredProduct?._id || "product"}-${index}`,
-            alt: item.alt || "",
-            image: item.image || "",
-            fileId: item.fileId || "",
-            _file: null,
-            _preview: "",
-          }))
+        alt: item.alt || "",
+        image: item.image || "",
+        fileId: item.fileId || "",
+        order: item.order ?? index + 1,
+        _file: null,
+        _preview: "",
+      }))
         : []
     );
   }, [featuredProduct?._id, selectedSubcategory?.groupLabel, selectedSubcategory?.label]);

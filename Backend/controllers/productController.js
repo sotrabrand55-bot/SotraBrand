@@ -51,7 +51,7 @@ const normalizePerfumeType = (value) => {
   if (!compact || compact === 'default') return '';
   if (['eaudeparfum', 'eaudeperfume', 'edp'].includes(compact)) return 'Eau de Parfum';
   if (['eaudetoilette', 'edt'].includes(compact)) return 'Eau de Toilette';
-  if (compact === 'perfume') return 'Perfume';
+  if (['perfume', 'parfum'].includes(compact)) return 'Parfum';
 
   return text;
 };
@@ -105,9 +105,14 @@ const normalizeMediaOptions = async ({ rawItems, files, prefix, fallbackName, al
     items[index].cartValue = items[index].cartValue || items[index].label || "";
     items[index].description = items[index].description || "";
     items[index].alt = items[index].alt || items[index].label || "";
+    items[index].order = Number.isFinite(Number(items[index].order))
+      ? Number(items[index].order)
+      : index + 1;
   }
 
-  return items.filter((item) => item.image || (allowTextOnly && (item.label || item.cartValue)));
+  return items
+    .filter((item) => item.image || (allowTextOnly && (item.label || item.cartValue)))
+    .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
 };
 
 const mediaAssets = (items = []) =>
@@ -227,7 +232,7 @@ const addProduct = async (req, res) => {
       shadeOptions: parsedShadeOptions,
       storyImages: parsedStoryImages,
 
-      image: deriveProductImages(parsedShadeOptions, parsedStoryImages),
+      image: deriveProductImages(parsedStoryImages, parsedShadeOptions),
       imageMeta: [],
       date: Date.now(), // that shhould return the date of now
     };
@@ -419,7 +424,7 @@ const updateProduct = async (req, res) => {
       await deleteImageKitAssets(removedMediaAssets(product.storyImages, next.storyImages));
     }
 
-    const nextProductImages = deriveProductImages(next.shadeOptions, next.storyImages);
+    const nextProductImages = deriveProductImages(next.storyImages, next.shadeOptions);
     await deleteImageKitAssets(unusedGalleryAssets(product, nextProductImages));
 
     // 4) Persist all updates

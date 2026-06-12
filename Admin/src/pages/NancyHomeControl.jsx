@@ -20,6 +20,20 @@ const mediaSections = [
     hint: "9:16 videos or images. Storefront videos show as 15-second presentation clips.",
   },
   {
+    key: "featured-set-1",
+    label: "Featured Set Picture 1",
+    hint: "Single set image. Mobile: 9:16 vertical. Laptop: wide 2:1. Link it to the product opened by See Full Set.",
+    singleItem: true,
+    allowProductLink: true,
+  },
+  {
+    key: "featured-set-2",
+    label: "Featured Set Picture 2",
+    hint: "Single set image. Mobile: 9:16 vertical. Laptop: wide 2:1. Link it to the product opened by See Full Set.",
+    singleItem: true,
+    allowProductLink: true,
+  },
+  {
     key: "single-campaign",
     label: "Single Campaign Video",
     hint: "Use one 9:16 mobile media file. Optional desktop file should be 2:1 wide.",
@@ -31,10 +45,10 @@ const mediaSections = [
   },
 ];
 
-const featuredSlots = [1, 2, 3, 4];
+const featuredSlots = [1, 4];
 const maxHeaderSlides = 4;
 const volumeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
-const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Perfume"];
+const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Parfum"];
 
 const emptySettings = {
   delivery_fee: 3,
@@ -122,6 +136,8 @@ const cloneSection = (section) => ({
     posterFileId: item.posterFileId || "",
     alt: item.alt || "",
     label: item.label || "",
+    buttonLabel: item.buttonLabel ?? "See Full Set",
+    productId: item.productId || "",
     order: Number.isFinite(Number(item.order)) ? Number(item.order) : index,
     active: item.active !== false,
   })),
@@ -138,6 +154,8 @@ const newMediaItem = (key, index) => ({
   posterFileId: "",
   alt: "",
   label: "",
+  buttonLabel: "See Full Set",
+  productId: "",
   order: index,
   active: true,
   _file: null,
@@ -169,31 +187,40 @@ const getImages = (product) => {
 const mediaImage = (item) =>
   item?._preview || item?._filePreview || item?.image || item?.url || "";
 
+const sortMediaByOrder = (items = []) =>
+  [...items].sort((a, b) => {
+    const aOrder = Number.isFinite(Number(a?.order)) ? Number(a.order) : 9999;
+    const bOrder = Number.isFinite(Number(b?.order)) ? Number(b.order) : 9999;
+    return aOrder - bOrder;
+  });
+
 const firstProductImage = (product) => {
-  const story = mediaImage(product?.storyImages?.find((item) => mediaImage(item)));
-  const shade = mediaImage(product?.shadeOptions?.find((item) => mediaImage(item)));
+  const story = mediaImage(sortMediaByOrder(product?.storyImages).find((item) => mediaImage(item)));
+  const shade = mediaImage(sortMediaByOrder(product?.shadeOptions).find((item) => mediaImage(item)));
   return story || shade || getImages(product)[0] || "";
 };
 
 const getProductPreviewImages = (product) => {
   const shadeImages = Array.isArray(product?.shadeOptions)
-    ? product.shadeOptions
+    ? sortMediaByOrder(product.shadeOptions)
         .map((option, index) => ({
           id: `shade-${option.id || index}`,
           image: mediaImage(option),
           alt: option.label || product?.name || "",
           source: "shade",
           optionId: option.id || "",
+          order: option.order ?? index + 1,
         }))
         .filter((item) => item.image)
     : [];
   const storyImages = Array.isArray(product?.storyImages)
-    ? product.storyImages
+    ? sortMediaByOrder(product.storyImages)
         .map((story, index) => ({
           id: `story-${story.id || index}`,
           image: mediaImage(story),
           alt: story.alt || product?.name || "",
           source: "story",
+          order: story.order ?? index + 1,
         }))
         .filter((item) => item.image)
     : [];
@@ -205,7 +232,7 @@ const getProductPreviewImages = (product) => {
   }));
 
   const seen = new Set();
-  return [...shadeImages, ...storyImages, ...productImages].filter((item) => {
+  return [...storyImages, ...shadeImages, ...productImages].filter((item) => {
     if (!item.image || seen.has(item.image)) return false;
     seen.add(item.image);
     return true;
@@ -271,6 +298,7 @@ const productToMediaDraft = (product) => ({
         description: item.description || "",
         image: item.image || "",
         fileId: item.fileId || "",
+        order: item.order ?? index + 1,
         _file: null,
         _preview: "",
       }))
@@ -281,6 +309,7 @@ const productToMediaDraft = (product) => ({
         alt: item.alt || "",
         image: item.image || "",
         fileId: item.fileId || "",
+        order: item.order ?? index + 1,
         _file: null,
         _preview: "",
       }))
@@ -292,6 +321,40 @@ const sortByOrder = (items = []) =>
 
 const getMediaPreviewSrc = (item) =>
   item?._filePreview || item?.src || item?._posterPreview || item?.poster || "";
+
+const SetPicturePreview = ({ entry, section, products = [] }) => {
+  const orderedItems = sortByOrder(section?.items || []);
+  const item =
+    orderedItems.find((media) => media.active !== false && getMediaPreviewSrc(media)) ||
+    orderedItems.find((media) => media.active !== false) ||
+    orderedItems[0];
+  const linkedProduct = products.find((product) => product._id === item?.productId);
+  const buttonLabel = String(item?.buttonLabel ?? "See Full Set").trim();
+
+  return (
+    <section className="bg-white px-3 py-7">
+      <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
+        {entry.label}
+      </p>
+      <div className="relative mt-4 overflow-hidden bg-[#EAEAEA]">
+        <MiniMedia item={item} className="aspect-[9/16] w-full md:aspect-[2/1]" />
+        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/45 to-transparent p-4 text-white">
+          <p className="text-xs font-bold uppercase tracking-[0.18em]">
+            {item?.label || "Be Radiant Set"}
+          </p>
+          {buttonLabel && (
+            <p className="mt-2 inline-flex border-b border-white pb-1 text-[10px] font-bold uppercase tracking-[0.18em]">
+              {buttonLabel}
+            </p>
+          )}
+        </div>
+      </div>
+      <p className="mt-2 text-xs text-black/45">
+        Link: {linkedProduct?.name || "Choose a product"}
+      </p>
+    </section>
+  );
+};
 
 const MiniMedia = ({ item, className = "" }) => {
   const src = getMediaPreviewSrc(item);
@@ -386,11 +449,17 @@ const HomeSimulator = ({ settings, slides, products, sections }) => {
   const activeSlides = sortByOrder(slides).filter((slide) => slide.active !== false && slide.image);
   const hero = activeSlides[0];
   const heroImage = hero?.desktopImage || hero?.image || "";
-  const featureProducts = featuredSlots.reduce((entries, slot) => {
+  const featureProducts = [1, 4].reduce((entries, slot) => {
     entries[slot] = products.find((item) => Number(item.featuredSlot) === slot) || null;
     return entries;
   }, {});
   const luxuryItems = sortByOrder(sections["luxury-gallery"]?.items || []).filter(
+    (item) => item.active !== false && getMediaPreviewSrc(item)
+  );
+  const setOneItem = sortByOrder(sections["featured-set-1"]?.items || []).find(
+    (item) => item.active !== false && getMediaPreviewSrc(item)
+  );
+  const setTwoItem = sortByOrder(sections["featured-set-2"]?.items || []).find(
     (item) => item.active !== false && getMediaPreviewSrc(item)
   );
   const singleItem = sortByOrder(sections["single-campaign"]?.items || []).find(
@@ -421,13 +490,19 @@ const HomeSimulator = ({ settings, slides, products, sections }) => {
         </p>
       </div>
 
-      {[1, 2, 3].map((slot) => (
-        <MiniProduct
-          key={slot}
-          product={featureProducts[slot]}
-          title={`Featured Product ${slot}`}
-        />
-      ))}
+      <MiniProduct product={featureProducts[1]} title="Featured Product 1" />
+
+      <SetPicturePreview
+        entry={mediaSections.find((entry) => entry.key === "featured-set-1")}
+        section={{ items: setOneItem ? [setOneItem] : [] }}
+        products={products}
+      />
+
+      <SetPicturePreview
+        entry={mediaSections.find((entry) => entry.key === "featured-set-2")}
+        section={{ items: setTwoItem ? [setTwoItem] : [] }}
+        products={products}
+      />
 
       <section className="bg-white px-3 py-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
@@ -528,10 +603,14 @@ const FeaturedLivePreview = ({ product, title }) => (
   </div>
 );
 
-const MediaSectionLivePreview = ({ entry, section }) => {
+const MediaSectionLivePreview = ({ entry, section, products }) => {
   const items = sortByOrder(section?.items || []).filter(
     (item) => item.active !== false && getMediaPreviewSrc(item)
   );
+
+  if (entry.allowProductLink) {
+    return <SetPicturePreview entry={entry} section={section} products={products} />;
+  }
 
   if (entry.key === "single-campaign") {
     return (
@@ -1139,6 +1218,7 @@ const NancyHomeControl = ({ token }) => {
 
   const chooseSectionFile = (key, index, field, file) => {
     if (!file) return;
+    const sectionEntry = mediaSections.find((entry) => entry.key === key);
     const previewField = {
       _file: "_filePreview",
       _desktopFile: "_desktopPreview",
@@ -1147,7 +1227,9 @@ const NancyHomeControl = ({ token }) => {
     updateItem(key, index, {
       [field]: file,
       [previewField]: URL.createObjectURL(file),
-      ...(field === "_file" ? { type: file.type.startsWith("video/") ? "video" : "image" } : {}),
+      ...(field === "_file"
+        ? { type: sectionEntry?.singleItem ? "image" : file.type.startsWith("video/") ? "video" : "image" }
+        : {}),
     });
   };
 
@@ -1170,13 +1252,17 @@ const NancyHomeControl = ({ token }) => {
     if (!section) return;
     setSaving(`section-${key}`);
     try {
+      const sectionEntry = mediaSections.find((entry) => entry.key === key);
+      const sectionItems = sectionEntry?.singleItem
+        ? (section.items || []).slice(0, 1).map((item) => ({ ...item, type: "image" }))
+        : section.items || [];
       const form = new FormData();
       form.append("title", section.title || "");
       form.append("active", String(section.active !== false));
       form.append("preferredSizeNote", section.preferredSizeNote || "");
-      form.append("items", JSON.stringify((section.items || []).map(stripPrivateMedia)));
+      form.append("items", JSON.stringify(sectionItems.map(stripPrivateMedia)));
 
-      (section.items || []).forEach((item, index) => {
+      sectionItems.forEach((item, index) => {
         if (item._file) form.append(`itemFile${index}`, item._file);
         if (item._desktopFile) form.append(`desktopFile${index}`, item._desktopFile);
         if (item._posterFile) form.append(`posterFile${index}`, item._posterFile);
@@ -1366,7 +1452,7 @@ const NancyHomeControl = ({ token }) => {
           </section>
         </StudioSection>
 
-        {featuredSlots.slice(0, 3).map((slot) => (
+        {[1].map((slot) => (
           <StudioSection
             key={slot}
             eyebrow="Editable Product"
@@ -1397,17 +1483,20 @@ const NancyHomeControl = ({ token }) => {
           </StudioSection>
         ))}
 
-        {mediaSections.slice(0, 1).map((entry) => (
+        {["featured-set-1", "featured-set-2", "luxury-gallery"].map((key) => {
+          const entry = mediaSections.find((item) => item.key === key);
+          return (
           <StudioSection
             key={entry.key}
             eyebrow="Editable Media"
             title={entry.label}
             note={entry.hint}
-            preview={<MediaSectionLivePreview entry={entry} section={sections[entry.key]} />}
+            preview={<MediaSectionLivePreview entry={entry} section={sections[entry.key]} products={products} />}
           >
             <MediaSectionEditor
               entry={entry}
               section={sections[entry.key]}
+              products={products}
               saving={saving === `section-${entry.key}`}
               onSectionChange={(patch) => updateSection(entry.key, patch)}
               onItemChange={(index, patch) => updateItem(entry.key, index, patch)}
@@ -1417,14 +1506,15 @@ const NancyHomeControl = ({ token }) => {
               onSave={() => saveSection(entry.key)}
             />
           </StudioSection>
-        ))}
+          );
+        })}
 
         {[4].map((slot) => (
           <StudioSection
             key={slot}
             eyebrow="Editable Product"
             title={`Featured Product ${slot}`}
-            note="This is the featured section that appears after Luxury Video, replacing the old second-feature position."
+            note="Feature Product 4 stays as a full product section after the set pictures and Luxury Video."
             preview={<ProductFeaturePreview product={featuredPreviewProducts[slot]} title={`Featured Product ${slot}`} />}
           >
             <FeaturedEditor
@@ -1450,17 +1540,20 @@ const NancyHomeControl = ({ token }) => {
           </StudioSection>
         ))}
 
-        {mediaSections.slice(1).map((entry) => (
+        {mediaSections
+          .filter((entry) => !["featured-set-1", "luxury-gallery", "featured-set-2"].includes(entry.key))
+          .map((entry) => (
           <StudioSection
             key={entry.key}
             eyebrow="Editable Media"
             title={entry.label}
             note={entry.hint}
-            preview={<MediaSectionLivePreview entry={entry} section={sections[entry.key]} />}
+            preview={<MediaSectionLivePreview entry={entry} section={sections[entry.key]} products={products} />}
           >
             <MediaSectionEditor
               entry={entry}
               section={sections[entry.key]}
+              products={products}
               saving={saving === `section-${entry.key}`}
               onSectionChange={(patch) => updateSection(entry.key, patch)}
               onItemChange={(index, patch) => updateItem(entry.key, index, patch)}
@@ -2081,6 +2174,7 @@ const ProductFeaturePreview = ({ product, title = "Featured Product" }) => {
 const MediaSectionEditor = ({
   entry,
   section,
+  products = [],
   saving,
   onSectionChange,
   onItemChange,
@@ -2089,15 +2183,22 @@ const MediaSectionEditor = ({
   onRemove,
   onSave,
 }) => {
-  const items = section?.items || [];
+  const items = (section?.items || []).length
+    ? section.items
+    : entry.singleItem
+      ? [newMediaItem(entry.key, 0)]
+      : [];
+  const [productChooserOpen, setProductChooserOpen] = useState({});
 
   return (
     <section className={panelClass}>
       <SectionTitle eyebrow="Editable Media" title={entry.label}>
         <div className="flex flex-wrap gap-2">
-          <button type="button" onClick={onAdd} className={buttonLine}>
-            Add Media
-          </button>
+          {!entry.singleItem && (
+            <button type="button" onClick={onAdd} className={buttonLine}>
+              Add Media
+            </button>
+          )}
         </div>
       </SectionTitle>
       <p className="mb-4 text-xs leading-5 text-black/55">{entry.hint}</p>
@@ -2115,13 +2216,31 @@ const MediaSectionEditor = ({
           <input className={fieldClass} value={section?.preferredSizeNote || ""} onChange={(event) => onSectionChange({ preferredSizeNote: event.target.value })} />
         </div>
       </div>
+      {entry.allowProductLink && (
+        <div className="mb-5 border border-black/10 bg-white p-3">
+          <p className="mb-2 text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
+            Live Picture Preview
+          </p>
+          <SetPicturePreview
+            entry={entry}
+            section={{ ...(section || {}), items }}
+            products={products}
+          />
+        </div>
+      )}
       <div className="space-y-3">
         {items.map((item, index) => (
-          <article key={item.id || index} className="grid gap-3 border border-black/10 p-3 lg:grid-cols-[74px_120px_1fr_1fr_86px]">
+          <React.Fragment key={item.id || index}>
+          <article className="grid gap-3 border border-black/10 p-3 lg:grid-cols-[74px_120px_1fr_1fr_86px]">
             <MiniMedia item={item} className="aspect-[9/16] w-full" />
             <div>
               <label className={labelClass}>Type</label>
-              <select className={fieldClass} value={item.type} onChange={(event) => onItemChange(index, { type: event.target.value })}>
+              <select
+                className={fieldClass}
+                value={entry.singleItem ? "image" : item.type}
+                disabled={entry.singleItem}
+                onChange={(event) => onItemChange(index, { type: event.target.value })}
+              >
                 <option value="image">Image</option>
                 <option value="video">Video</option>
               </select>
@@ -2135,9 +2254,19 @@ const MediaSectionEditor = ({
                 <label className={labelClass}>Label</label>
                 <input className={fieldClass} value={item.label} onChange={(event) => onItemChange(index, { label: event.target.value })} />
               </div>
+              {entry.allowProductLink && (
+                <div>
+                  <label className={labelClass}>Button Label</label>
+                  <input
+                    className={fieldClass}
+                    value={item.buttonLabel ?? ""}
+                    onChange={(event) => onItemChange(index, { buttonLabel: event.target.value })}
+                  />
+                </div>
+              )}
               <div>
                 <label className={labelClass}>Main File</label>
-                <input type="file" accept="image/*,video/*" className={fieldClass} onChange={(event) => onFile(index, "_file", event.target.files?.[0])} />
+                <input type="file" accept={entry.singleItem ? "image/*" : "image/*,video/*"} className={fieldClass} onChange={(event) => onFile(index, "_file", event.target.files?.[0])} />
               </div>
             </div>
             <div className="grid gap-3">
@@ -2145,15 +2274,49 @@ const MediaSectionEditor = ({
                 <label className={labelClass}>Alt Text</label>
                 <input className={fieldClass} value={item.alt} onChange={(event) => onItemChange(index, { alt: event.target.value })} />
               </div>
+              {entry.allowProductLink && (
+                <div className="sm:col-span-2">
+                  <label className={labelClass}>Linked Product</label>
+                  <SelectedProductSummary
+                    product={products.find((product) => product._id === item.productId)}
+                    emptyText="Choose the product opened by See Full Set."
+                  />
+                  <div className="mt-3 flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setProductChooserOpen((current) => ({
+                          ...current,
+                          [index]: !current[index],
+                        }))
+                      }
+                      className={buttonBlack}
+                    >
+                      {productChooserOpen[index] ? "Close Products" : "Choose Product"}
+                    </button>
+                    {item.productId && (
+                      <button
+                        type="button"
+                        onClick={() => onItemChange(index, { productId: "" })}
+                        className={buttonLine}
+                      >
+                        Clear Link
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
               <div className="grid gap-2 sm:grid-cols-2">
                 <div>
                   <label className={labelClass}>Desktop</label>
-                  <input type="file" accept="image/*,video/*" className={fieldClass} onChange={(event) => onFile(index, "_desktopFile", event.target.files?.[0])} />
+                  <input type="file" accept={entry.singleItem ? "image/*" : "image/*,video/*"} className={fieldClass} onChange={(event) => onFile(index, "_desktopFile", event.target.files?.[0])} />
                 </div>
-                <div>
+                {!entry.singleItem && (
+                  <div>
                   <label className={labelClass}>Poster</label>
                   <input type="file" accept="image/*" className={fieldClass} onChange={(event) => onFile(index, "_posterFile", event.target.files?.[0])} />
-                </div>
+                  </div>
+                )}
               </div>
             </div>
             <div className="grid content-between gap-3">
@@ -2166,6 +2329,19 @@ const MediaSectionEditor = ({
               </button>
             </div>
           </article>
+          {entry.allowProductLink && productChooserOpen[index] && (
+            <div className="border border-black/10 p-3">
+              <ProductChoiceGrid
+                products={products}
+                selectedId={item.productId || ""}
+                onSelect={(productId) => {
+                  onItemChange(index, { productId });
+                  setProductChooserOpen((current) => ({ ...current, [index]: false }));
+                }}
+              />
+            </div>
+          )}
+          </React.Fragment>
         ))}
         {!items.length && (
           <div className="border border-dashed border-black/20 py-10 text-center text-sm text-black/45">

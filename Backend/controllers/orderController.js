@@ -80,7 +80,7 @@ function normalizePerfumeType(value) {
   if (!compact || compact === 'default') return ''
   if (['eaudeparfum', 'eaudeperfume', 'edp'].includes(compact)) return 'Eau de Parfum'
   if (['eaudetoilette', 'edt'].includes(compact)) return 'Eau de Toilette'
-  if (compact === 'perfume') return 'Perfume'
+  if (['perfume', 'parfum'].includes(compact)) return 'Parfum'
 
   return text
 }

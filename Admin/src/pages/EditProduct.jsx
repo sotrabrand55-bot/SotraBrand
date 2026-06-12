@@ -24,7 +24,7 @@ const labelClass =
   "mb-1.5 block text-[10px] font-semibold uppercase leading-4 tracking-[0.14em] text-[#4b5563]";
 
 const volumeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
-const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Perfume"];
+const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Parfum"];
 
 const placementOptions = [
   {
@@ -170,6 +170,7 @@ export default function EditProduct({ token }) {
             image: item.image || "",
             fileId: item.fileId || "",
             description: item.description || "",
+            order: item.order ?? index + 1,
             _file: null,
             _preview: "",
           }))
@@ -182,6 +183,7 @@ export default function EditProduct({ token }) {
             image: item.image || item.url || "",
             fileId: item.fileId || "",
             alt: item.alt || "",
+            order: item.order ?? index + 1,
             _file: null,
             _preview: "",
           }))
@@ -546,7 +548,7 @@ export default function EditProduct({ token }) {
           <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
             <label className={labelClass}>Perfume Type</label>
             <p className="mb-3 text-xs leading-5 text-[#4b5563]">
-              Optional. Select when this product should display Eau de Parfum, Eau de Toilette, or Perfume.
+              Optional. Select when this product should display Eau de Parfum, Eau de Toilette, or Parfum.
             </p>
             <div className="flex flex-wrap gap-2">
               {perfumeTypeOptions.map((type) => (
@@ -593,7 +595,7 @@ export default function EditProduct({ token }) {
             <div className="mb-3">
               <p className={labelClass}>Featured Product Placement</p>
               <p className="text-xs leading-5 text-[#4b5563]">
-                Slots 1-3 appear together before Luxury Video. Slot 4 appears after Luxury Video.
+                Slot 1 and Slot 4 control the homepage featured product sections. Feature 2 and 3 are set pictures in Home Studio.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-[220px_1fr]">
@@ -604,8 +606,6 @@ export default function EditProduct({ token }) {
               >
                 <option value="">No featured slot</option>
                 <option value="1">FeaturedProducts 1</option>
-                <option value="2">FeaturedProducts 2</option>
-                <option value="3">FeaturedProducts 3</option>
                 <option value="4">FeaturedProducts 4</option>
               </select>
             </div>

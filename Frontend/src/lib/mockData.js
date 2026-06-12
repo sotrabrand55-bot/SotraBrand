@@ -320,6 +320,48 @@ export const mockHomepageSections = [
     ],
   },
   {
+    key: "featured-set-1",
+    title: "Featured Set Picture 1",
+    active: true,
+    preferredSizeNote: "Single image section. Mobile: 9:16 vertical. Laptop: wide 2:1 set image.",
+    items: [
+      {
+        id: "featured-set-1-image",
+        type: "image",
+        src: "https://ik.imagekit.io/aovmyygbb/pheromone-gift-box-products-BE6BUSY_.jpeg",
+        desktopSrc: "",
+        poster: "",
+        alt: "Pheromone Touch set by Nancy",
+        label: "Pheromone Touch Set",
+        buttonLabel: "See Full Set",
+        productId: "",
+        order: 0,
+        active: true,
+      },
+    ],
+  },
+  {
+    key: "featured-set-2",
+    title: "Featured Set Picture 2",
+    active: true,
+    preferredSizeNote: "Single image section. Mobile: 9:16 vertical. Laptop: wide 2:1 set image.",
+    items: [
+      {
+        id: "featured-set-2-image",
+        type: "image",
+        src: "https://ik.imagekit.io/aovmyygbb/mystique-gift-box-CVlljw8t.jpeg",
+        desktopSrc: "",
+        poster: "",
+        alt: "Mystique set by Nancy",
+        label: "Mystique Set",
+        buttonLabel: "See Full Set",
+        productId: "",
+        order: 0,
+        active: true,
+      },
+    ],
+  },
+  {
     key: "from-the-gram",
     title: "From The Gram",
     active: true,
@@ -381,6 +423,8 @@ export const getMockHomepageSectionItems = (key) =>
       poster: item.poster || "",
       alt: item.alt || item.label || "Be Radiant by Nancy media",
       label: item.label || item.alt || "Be Radiant by Nancy media",
+      buttonLabel: item.buttonLabel ?? "See Full Set",
+      productId: item.productId || "",
     }));
 
 export const mockSettings = {

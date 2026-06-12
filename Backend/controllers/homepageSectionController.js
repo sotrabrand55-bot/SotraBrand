@@ -15,6 +15,16 @@ const sectionDefaults = {
     preferredSizeNote:
       "Mobile: 9:16 vertical. Laptop: wide 2:1 media matching the header width.",
   },
+  "featured-set-1": {
+    title: "Featured Set Picture 1",
+    preferredSizeNote:
+      "Single image section. Mobile: 9:16 vertical. Laptop: wide 2:1 set image.",
+  },
+  "featured-set-2": {
+    title: "Featured Set Picture 2",
+    preferredSizeNote:
+      "Single image section. Mobile: 9:16 vertical. Laptop: wide 2:1 set image.",
+  },
   "from-the-gram": {
     title: "From The Gram",
     preferredSizeNote:
@@ -98,6 +108,11 @@ const normalizeSectionItems = async ({ rawItems, files, key }) => {
     items[index].type = items[index].type === "video" ? "video" : "image";
     items[index].label = items[index].label || items[index].alt || "";
     items[index].alt = items[index].alt || items[index].label || "";
+    items[index].buttonLabel =
+      items[index].buttonLabel === undefined || items[index].buttonLabel === null
+        ? "See Full Set"
+        : String(items[index].buttonLabel);
+    items[index].productId = items[index].productId || "";
     items[index].order = Number.isFinite(Number(items[index].order))
       ? Number(items[index].order)
       : index;

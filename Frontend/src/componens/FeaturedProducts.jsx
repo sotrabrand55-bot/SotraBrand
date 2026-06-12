@@ -37,7 +37,12 @@ const getImages = (item) => {
 
 const getShadeOptions = (item) => {
   if (Array.isArray(item?.shadeOptions) && item.shadeOptions.length) {
-    return item.shadeOptions
+    return [...item.shadeOptions]
+      .sort((a, b) => {
+        const aOrder = Number.isFinite(Number(a?.order)) ? Number(a.order) : 9999;
+        const bOrder = Number.isFinite(Number(b?.order)) ? Number(b.order) : 9999;
+        return aOrder - bOrder;
+      })
       .filter((option) => option?.image || option?.label || option?.cartValue)
       .map((option, index) => ({
         id: option.id || `${item._id}-shade-${index}`,
@@ -45,6 +50,7 @@ const getShadeOptions = (item) => {
         cartValue: option.cartValue || option.label || getOptionLabel(item, index),
         image: option.image || "",
         description: option.description || item.description,
+        order: option.order ?? index + 1,
       }));
   }
 
@@ -66,6 +72,7 @@ const normalizeStoryImage = (story, index) => {
     image: story?.image || story?.url || "",
     alt: story?.alt || "",
     source: "story",
+    order: story?.order ?? index + 1,
   };
 };
 
@@ -78,6 +85,7 @@ const getStoryImages = (product, shadeOptions) => {
       alt: option.label,
       source: "shade",
       shadeOptionId: option.id,
+      order: option.order ?? index + 1,
     }));
 
   const standaloneStories = (Array.isArray(product?.storyImages)
@@ -87,16 +95,22 @@ const getStoryImages = (product, shadeOptions) => {
       : []
   )
     .map(normalizeStoryImage)
+    .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0))
     .filter((story) => story.image);
 
-  const seen = new Set(shadeStories.map((story) => story.image));
+  const seen = new Set();
   const uniqueStandaloneStories = standaloneStories.filter((story) => {
     if (seen.has(story.image)) return false;
     seen.add(story.image);
     return true;
   });
+  const uniqueShadeStories = shadeStories.filter((story) => {
+    if (seen.has(story.image)) return false;
+    seen.add(story.image);
+    return true;
+  });
 
-  const stories = [...shadeStories, ...uniqueStandaloneStories];
+  const stories = [...uniqueStandaloneStories, ...uniqueShadeStories];
   return stories.length
     ? stories
     : getImages(product).map((image, index) => ({
@@ -172,7 +186,7 @@ const StoryImageViewer = ({ product, images, initialIndex, onClose }) => {
         <FiX className="h-5 w-5" />
       </button>
 
-      <div className="mx-auto w-full max-w-[52rem] bg-white">
+      <div className="mx-auto w-full max-w-[52rem] space-y-7 bg-white py-7 sm:space-y-10 sm:py-10">
         {images.map((image, index) => (
           <div
             key={image.id || `${image.image}-${index}`}
@@ -229,7 +243,7 @@ const ProductGallery = ({ product, storyImages, targetIndex, targetVersion }) =>
   }
 
   return (
-    <div className="relative bg-white lg:flex lg:min-h-[42rem] lg:items-center lg:justify-center">
+    <div className="relative bg-white py-4 lg:flex lg:min-h-[42rem] lg:items-center lg:justify-center lg:py-8">
       <Link
         to={`/Product/${product._id}`}
         onClick={(event) => {
