@@ -22,6 +22,7 @@ const navGroups = [
       { to: "/nancy-home", label: "Home Studio", icon: "HS" },
       { to: "/subcategory-studio", label: "Subcategory Studio", icon: "SS" },
       { to: "/categories", label: "Categories", icon: "CA" },
+      { to: "/page-images", label: "Page Images", icon: "PI" },
     ],
   },
   {

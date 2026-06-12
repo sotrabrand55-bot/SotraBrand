@@ -15,7 +15,7 @@ import SearchBar from "../componens/SearchBar";
 import { CollectionGridSkeleton } from "../componens/Skeletons";
 import { getEffectiveProductPrice } from "../utils/productMapping";
 import { subcategoryGroups as fallbackSubcategoryGroups } from "../lib/subcategoryCatalog";
-const concentrationOptions = ["Eau de Parfum", "Eau de Toilette"];
+const concentrationOptions = ["Eau de Parfum", "Eau de Toilette", "Perfume"];
 const lowStockLimit = 5;
 
 const matchesCategoryGroup = (item, categoryName, categorySubcategories) => {

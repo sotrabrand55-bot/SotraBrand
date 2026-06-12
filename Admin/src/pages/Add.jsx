@@ -21,8 +21,8 @@ const fieldClass =
 const labelClass =
   "mb-1.5 block text-[10px] font-semibold uppercase leading-4 tracking-[0.14em] text-[#4b5563]";
 
-const volumeOptions = ["100ML", "30ML", "50ML", "10ML"];
-const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette"];
+const volumeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
+const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Perfume"];
 
 const placementOptions = [
   {
@@ -481,7 +481,7 @@ const Add = ({ token }) => {
             <div className="mb-3">
               <p className={labelClass}>Featured Product Placement</p>
               <p className="text-xs leading-5 text-[#4b5563]">
-                Slot 1 controls FeaturedProducts. Slot 2 controls FeaturedProducts2.
+                Slots 1-3 appear together before Luxury Video. Slot 4 appears after Luxury Video.
               </p>
             </div>
             <div className="grid gap-3 sm:grid-cols-[220px_1fr]">
@@ -493,6 +493,8 @@ const Add = ({ token }) => {
                 <option value="">No featured slot</option>
                 <option value="1">FeaturedProducts 1</option>
                 <option value="2">FeaturedProducts 2</option>
+                <option value="3">FeaturedProducts 3</option>
+                <option value="4">FeaturedProducts 4</option>
               </select>
             </div>
           </div>
@@ -508,7 +510,7 @@ const Add = ({ token }) => {
             <div className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
               <label className={labelClass}>Perfume Type</label>
               <p className="mb-3 text-xs leading-5 text-[#4b5563]">
-                Optional. Select when this product should display Eau de Parfum or Eau de Toilette.
+                Optional. Select when this product should display Eau de Parfum, Eau de Toilette, or Perfume.
               </p>
               <div className="flex flex-wrap gap-2">
                 {perfumeTypeOptions.map((type) => (

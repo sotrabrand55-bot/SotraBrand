@@ -31,9 +31,10 @@ const mediaSections = [
   },
 ];
 
+const featuredSlots = [1, 2, 3, 4];
 const maxHeaderSlides = 4;
-const volumeOptions = ["100ML", "30ML", "50ML", "10ML"];
-const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette"];
+const volumeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
+const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Perfume"];
 
 const emptySettings = {
   delivery_fee: 3,
@@ -217,6 +218,8 @@ const normalizeProductSize = (value) => {
 
   if (!compact || compact === "default") return "";
   if (compact === "100ml") return "100ML";
+  if (compact === "120ml") return "120ML";
+  if (compact === "150ml") return "150ML";
   if (compact === "50ml") return "50ML";
   if (compact === "30ml") return "30ML";
   if (compact === "10ml") return "10ML";
@@ -383,8 +386,10 @@ const HomeSimulator = ({ settings, slides, products, sections }) => {
   const activeSlides = sortByOrder(slides).filter((slide) => slide.active !== false && slide.image);
   const hero = activeSlides[0];
   const heroImage = hero?.desktopImage || hero?.image || "";
-  const featureOne = products.find((item) => Number(item.featuredSlot) === 1) || null;
-  const featureTwo = products.find((item) => Number(item.featuredSlot) === 2) || null;
+  const featureProducts = featuredSlots.reduce((entries, slot) => {
+    entries[slot] = products.find((item) => Number(item.featuredSlot) === slot) || null;
+    return entries;
+  }, {});
   const luxuryItems = sortByOrder(sections["luxury-gallery"]?.items || []).filter(
     (item) => item.active !== false && getMediaPreviewSrc(item)
   );
@@ -416,7 +421,13 @@ const HomeSimulator = ({ settings, slides, products, sections }) => {
         </p>
       </div>
 
-      <MiniProduct product={featureOne} title="Featured Product 1" />
+      {[1, 2, 3].map((slot) => (
+        <MiniProduct
+          key={slot}
+          product={featureProducts[slot]}
+          title={`Featured Product ${slot}`}
+        />
+      ))}
 
       <section className="bg-white px-3 py-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
@@ -432,7 +443,7 @@ const HomeSimulator = ({ settings, slides, products, sections }) => {
         </div>
       </section>
 
-      <MiniProduct product={featureTwo} title="Featured Product 2" />
+      <MiniProduct product={featureProducts[4]} title="Featured Product 4" />
 
       <section className="bg-white px-3 py-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
@@ -609,12 +620,15 @@ const NancyHomeControl = ({ token }) => {
   const [slideDraft, setSlideDraft] = useState(emptySlideDraft);
   const [products, setProducts] = useState([]);
   const [categoryGroups, setCategoryGroups] = useState(defaultCategoryGroups);
-  const [featuredSelections, setFeaturedSelections] = useState({ 1: "", 2: "" });
-  const [productDrafts, setProductDrafts] = useState({ 1: productToDraft(null), 2: productToDraft(null) });
-  const [featuredMediaDrafts, setFeaturedMediaDrafts] = useState({
-    1: emptyProductMediaDraft(),
-    2: emptyProductMediaDraft(),
-  });
+  const [featuredSelections, setFeaturedSelections] = useState(() =>
+    featuredSlots.reduce((entries, slot) => ({ ...entries, [slot]: "" }), {})
+  );
+  const [productDrafts, setProductDrafts] = useState(() =>
+    featuredSlots.reduce((entries, slot) => ({ ...entries, [slot]: productToDraft(null) }), {})
+  );
+  const [featuredMediaDrafts, setFeaturedMediaDrafts] = useState(() =>
+    featuredSlots.reduce((entries, slot) => ({ ...entries, [slot]: emptyProductMediaDraft() }), {})
+  );
   const [sections, setSections] = useState({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState("");
@@ -654,20 +668,19 @@ const NancyHomeControl = ({ token }) => {
       if (productsRes.data?.success) {
         const nextProducts = productsRes.data.products || [];
         setProducts(nextProducts);
-        const slotOne = nextProducts.find((item) => Number(item.featuredSlot) === 1);
-        const slotTwo = nextProducts.find((item) => Number(item.featuredSlot) === 2);
-        setFeaturedSelections({
-          1: slotOne?._id || nextProducts[0]?._id || "",
-          2: slotTwo?._id || nextProducts[1]?._id || nextProducts[0]?._id || "",
+        const nextSelections = {};
+        const nextDrafts = {};
+        const nextMediaDrafts = {};
+        featuredSlots.forEach((slot, index) => {
+          const slotProduct = nextProducts.find((item) => Number(item.featuredSlot) === slot);
+          const fallbackProduct = slotProduct || nextProducts[index] || nextProducts[0] || null;
+          nextSelections[slot] = fallbackProduct?._id || "";
+          nextDrafts[slot] = productToDraft(fallbackProduct);
+          nextMediaDrafts[slot] = productToMediaDraft(fallbackProduct);
         });
-        setProductDrafts({
-          1: productToDraft(slotOne || nextProducts[0]),
-          2: productToDraft(slotTwo || nextProducts[1] || nextProducts[0]),
-        });
-        setFeaturedMediaDrafts({
-          1: productToMediaDraft(slotOne || nextProducts[0]),
-          2: productToMediaDraft(slotTwo || nextProducts[1] || nextProducts[0]),
-        });
+        setFeaturedSelections(nextSelections);
+        setProductDrafts(nextDrafts);
+        setFeaturedMediaDrafts(nextMediaDrafts);
       }
 
       if (sectionsRes.data?.success) {
@@ -715,26 +728,21 @@ const NancyHomeControl = ({ token }) => {
     _desktopPreview: "",
   });
 
-  const selectedProducts = {
-    1: products.find((item) => item._id === featuredSelections[1]) || null,
-    2: products.find((item) => item._id === featuredSelections[2]) || null,
-  };
-  const featuredPreviewProducts = {
-    1: selectedProducts[1]
+  const selectedProducts = featuredSlots.reduce((entries, slot) => {
+    entries[slot] = products.find((item) => item._id === featuredSelections[slot]) || null;
+    return entries;
+  }, {});
+  const featuredPreviewProducts = featuredSlots.reduce((entries, slot) => {
+    const product = selectedProducts[slot];
+    entries[slot] = product
       ? {
-          ...selectedProducts[1],
-          ...(productDrafts[1] || {}),
-          ...(featuredMediaDrafts[1] || emptyProductMediaDraft()),
+          ...product,
+          ...(productDrafts[slot] || {}),
+          ...(featuredMediaDrafts[slot] || emptyProductMediaDraft()),
         }
-      : null,
-    2: selectedProducts[2]
-      ? {
-          ...selectedProducts[2],
-          ...(productDrafts[2] || {}),
-          ...(featuredMediaDrafts[2] || emptyProductMediaDraft()),
-        }
-      : null,
-  };
+      : null;
+    return entries;
+  }, {});
 
   const updateSetting = (key, value) =>
     setSettings((current) => ({ ...current, [key]: value }));
@@ -1358,7 +1366,7 @@ const NancyHomeControl = ({ token }) => {
           </section>
         </StudioSection>
 
-        {[1, 2].map((slot) => (
+        {featuredSlots.slice(0, 3).map((slot) => (
           <StudioSection
             key={slot}
             eyebrow="Editable Product"
@@ -1389,7 +1397,60 @@ const NancyHomeControl = ({ token }) => {
           </StudioSection>
         ))}
 
-        {mediaSections.map((entry) => (
+        {mediaSections.slice(0, 1).map((entry) => (
+          <StudioSection
+            key={entry.key}
+            eyebrow="Editable Media"
+            title={entry.label}
+            note={entry.hint}
+            preview={<MediaSectionLivePreview entry={entry} section={sections[entry.key]} />}
+          >
+            <MediaSectionEditor
+              entry={entry}
+              section={sections[entry.key]}
+              saving={saving === `section-${entry.key}`}
+              onSectionChange={(patch) => updateSection(entry.key, patch)}
+              onItemChange={(index, patch) => updateItem(entry.key, index, patch)}
+              onFile={(index, field, file) => chooseSectionFile(entry.key, index, field, file)}
+              onAdd={() => addMediaItem(entry.key)}
+              onRemove={(index) => removeMediaItem(entry.key, index)}
+              onSave={() => saveSection(entry.key)}
+            />
+          </StudioSection>
+        ))}
+
+        {[4].map((slot) => (
+          <StudioSection
+            key={slot}
+            eyebrow="Editable Product"
+            title={`Featured Product ${slot}`}
+            note="This is the featured section that appears after Luxury Video, replacing the old second-feature position."
+            preview={<ProductFeaturePreview product={featuredPreviewProducts[slot]} title={`Featured Product ${slot}`} />}
+          >
+            <FeaturedEditor
+              slot={slot}
+              products={products}
+              selectedProduct={selectedProducts[slot]}
+              selectedId={featuredSelections[slot]}
+              draft={productDrafts[slot]}
+              saving={saving === `product-${slot}`}
+              onSelect={(productId) => selectFeaturedProduct(slot, productId)}
+              onChange={(key, value) => updateProductDraft(slot, key, value)}
+              onCategoryChange={(category) => changeFeaturedProductCategory(slot, category)}
+              onToggleSize={(size) => toggleFeaturedProductSize(slot, size)}
+              onTogglePerfumeType={(type) => toggleFeaturedProductPerfumeType(slot, type)}
+              categoryGroups={categoryGroups}
+              onSave={() => saveFeaturedProduct(slot)}
+              onClear={() => clearFeaturedProduct(slot)}
+              clearing={saving === `product-clear-${slot}`}
+              mediaDraft={featuredMediaDrafts[slot] || emptyProductMediaDraft()}
+              setShadeOptions={(updater) => setFeaturedShadeOptions(slot, updater)}
+              setStoryImages={(updater) => setFeaturedStoryImages(slot, updater)}
+            />
+          </StudioSection>
+        ))}
+
+        {mediaSections.slice(1).map((entry) => (
           <StudioSection
             key={entry.key}
             eyebrow="Editable Media"

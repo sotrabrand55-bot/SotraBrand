@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { AdminProductsSkeleton } from "../components/AdminSkeletons";
 
-const perfumeSizeOptions = ["100ML", "30ML", "50ML", "10ML"];
+const perfumeSizeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
 
 const statClass =
   "rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4 shadow-[0_14px_34px_rgba(62,45,28,0.06)]";
@@ -17,6 +17,8 @@ const normalizeSize = (value) => {
   if (compact === "30ml") return "30ML";
   if (compact === "50ml") return "50ML";
   if (compact === "100ml") return "100ML";
+  if (compact === "120ml") return "120ML";
+  if (compact === "150ml") return "150ML";
   if (compact === "10ml") return "10ML";
   if (compact === "default") return "";
 

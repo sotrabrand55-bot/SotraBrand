@@ -1,5 +1,5 @@
-export const perfumeSizeOptions = ["100ML", "30ML", "50ML", "10ML"];
-export const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette"];
+export const perfumeSizeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
+export const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Perfume"];
 
 const normalizePerfumeSize = (value) => {
   const text = String(value || "").replace(/\s+/g, " ").trim();
@@ -8,6 +8,8 @@ const normalizePerfumeSize = (value) => {
   if (compact === "30ml") return "30ML";
   if (compact === "50ml") return "50ML";
   if (compact === "100ml") return "100ML";
+  if (compact === "120ml") return "120ML";
+  if (compact === "150ml") return "150ML";
   if (compact === "10ml") return "10ML";
   if (compact === "default") return "";
 
@@ -31,6 +33,7 @@ export const normalizePerfumeType = (value) => {
   if (!compact || compact === "default") return "";
   if (["eaudeparfum", "eaudeperfume", "edp"].includes(compact)) return "Eau de Parfum";
   if (["eaudetoilette", "edt"].includes(compact)) return "Eau de Toilette";
+  if (compact === "perfume") return "Perfume";
 
   return text;
 };

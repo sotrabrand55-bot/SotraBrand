@@ -15,6 +15,7 @@ import Dashboard from './pages/Dashboard';
 import NancyHomeControl from './pages/NancyHomeControl';
 import CategoriesManager from './pages/CategoriesManager';
 import SubcategoryStudio from './pages/SubcategoryStudio';
+import PageImagesManager from './pages/PageImagesManager';
 
 export const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "") // this how we get the env var
 export const currency = '$';
@@ -57,6 +58,7 @@ const App = () => {
         <Route path="/nancy-home" element={<NancyHomeControl token={token} />} />
         <Route path="/subcategory-studio" element={<SubcategoryStudio token={token} />} />
         <Route path="/categories" element={<CategoriesManager token={token} />} />
+        <Route path="/page-images" element={<PageImagesManager token={token} />} />
         <Route path='/add' element={<Add token={token}/>} /> 
         <Route path='/orders' element={<Orders token={token}/>} /> 
         <Route path='/delivery' element={<DeliveryFeeControl token={token}/>} /> 

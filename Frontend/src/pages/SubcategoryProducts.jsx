@@ -13,9 +13,36 @@ import {
   subcategoryGroups as fallbackSubcategoryGroups,
 } from "../lib/subcategoryCatalog";
 
+const defaultNancyAdvice =
+  "Nancy's smile tip: apply a small amount first, let it settle with your skin, then build softly where you want more glow and comfort.";
+
+const defaultNancyDetails = [
+  [
+    "How to use",
+    "Start with clean skin and apply gently until the texture feels smooth and comfortable.",
+  ],
+  [
+    "Nancy's touch",
+    "Use a light layer for daytime radiance, then build slowly when you want a deeper finish.",
+  ],
+  [
+    "Best moment",
+    "Keep it close after showering or before going out for a simple Be Radiant ritual.",
+  ],
+];
+
+const cleanDetails = (details = []) =>
+  details
+    .map((item) => {
+      const title = Array.isArray(item) ? item[0] : item?.title;
+      const text = Array.isArray(item) ? item[1] : item?.text;
+      return [String(title || "").trim(), String(text || "").trim()];
+    })
+    .filter(([title, text]) => title && text);
+
 const emptySubcategoryPageData = {
-  advice: "",
-  details: [],
+  advice: defaultNancyAdvice,
+  details: defaultNancyDetails,
   media: { type: "image", src: "", label: "" },
   featuredProductId: "",
 };
@@ -44,11 +71,10 @@ const SubcategoryProducts = () => {
 
   const pageData = useMemo(() => {
     if (!livePageData) return emptySubcategoryPageData;
+    const liveDetails = cleanDetails(livePageData.details);
     return {
-      advice: livePageData.advice || "",
-      details: livePageData.details?.length
-        ? livePageData.details.map((item) => [item.title, item.text])
-        : [],
+      advice: String(livePageData.advice || "").trim() || defaultNancyAdvice,
+      details: liveDetails.length ? liveDetails : defaultNancyDetails,
       media: livePageData.media?.src ? livePageData.media : emptySubcategoryPageData.media,
       featuredProductId: livePageData.featuredProductId || "",
     };
@@ -235,7 +261,7 @@ const SubcategoryProducts = () => {
           <SubcategoryProductResults
             products={shelfProducts}
             subcategory={subcategory}
-            title={resultProducts.length ? subcategory.label : "Best Paired With"}
+            title={subcategory.label}
           />
         </>
       ) : (

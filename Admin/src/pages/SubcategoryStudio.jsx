@@ -26,8 +26,24 @@ const buttonBlack =
   "bg-black px-6 py-2 text-xs font-bold uppercase tracking-[0.16em] text-white transition hover:bg-[#222] disabled:opacity-50";
 
 const money = (value) => `$${(Number(value) || 0).toFixed(2)} USD`;
-const volumeOptions = ["100ML", "30ML", "50ML", "10ML"];
-const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette"];
+const volumeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
+const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Perfume"];
+const defaultNancyAdvice =
+  "Nancy's smile tip: apply a small amount first, let it settle with your skin, then build softly where you want more glow and comfort.";
+const defaultNancyDetails = [
+  {
+    title: "How to use",
+    text: "Start with clean skin and apply gently until the texture feels smooth and comfortable.",
+  },
+  {
+    title: "Nancy's touch",
+    text: "Use a light layer for daytime radiance, then build slowly when you want a deeper finish.",
+  },
+  {
+    title: "Best moment",
+    text: "Keep it close after showering or before going out for a simple Be Radiant ritual.",
+  },
+];
 
 const emptyPage = (subcategory) => ({
   slug: subcategory?.slug || "",
@@ -162,6 +178,8 @@ const normalizeProductSize = (value) => {
   const compact = text.toLowerCase().replace(/\s+/g, "");
   if (!compact || compact === "default") return "";
   if (compact === "100ml") return "100ML";
+  if (compact === "120ml") return "120ML";
+  if (compact === "150ml") return "150ML";
   if (compact === "50ml") return "50ML";
   if (compact === "30ml") return "30ML";
   if (compact === "10ml") return "10ML";
@@ -1299,7 +1317,7 @@ const AdvicePreview = ({ draft }) => (
       Nancy&apos;s Advice
     </p>
     <p className="mt-4 text-base font-light leading-8 text-black/75">
-      {draft.advice || "Write Nancy's advice for this subcategory."}
+      {draft.advice || defaultNancyAdvice}
     </p>
     <div className="mt-6 border-t border-black/20 pt-5">
       <div className="flex items-center justify-between">
@@ -1307,7 +1325,7 @@ const AdvicePreview = ({ draft }) => (
         <span className="text-2xl leading-none">+</span>
       </div>
       <ul className="mt-4 space-y-2 pl-5 text-sm leading-6 text-black/75">
-        {(draft.details || []).slice(0, 5).map((detail, index) => (
+        {((draft.details || []).length ? draft.details : defaultNancyDetails).slice(0, 5).map((detail, index) => (
           <li key={index} className="list-disc">
             <strong>{detail.title || "Detail"}:</strong> {detail.text || "Description"}
           </li>
@@ -1323,9 +1341,9 @@ const CampaignMediaPreview = ({ media, mediaPreview }) => (
   </div>
 );
 
-const ProductShelfPreview = ({ products }) => (
+const ProductShelfPreview = ({ products, title = "Subcategory Products" }) => (
   <section className="bg-white p-5">
-    <p className="mb-4 text-center text-xl font-black uppercase">Best Paired With</p>
+    <p className="mb-4 text-center text-xl font-black uppercase">{title}</p>
     <div className="grid grid-cols-2 gap-3">
       {products.slice(0, 4).map((product) => (
         <ProductMini key={product._id} product={product} />
@@ -1390,12 +1408,12 @@ const SubcategoryLivePreview = ({
     <div className="border-y border-black/25 p-5">
       <p className="text-sm font-light uppercase tracking-[0.12em] text-black/55">Nancy&apos;s Advice</p>
       <p className="mt-4 text-base font-light leading-8 text-black/75">
-        {draft.advice || "Write Nancy's advice for this subcategory."}
+        {draft.advice || defaultNancyAdvice}
       </p>
       <div className="mt-5 border-t border-black/20 pt-4">
         <p className="text-lg font-black uppercase">Details</p>
         <ul className="mt-3 space-y-2 pl-5 text-sm leading-6 text-black/75">
-          {(draft.details || []).slice(0, 5).map((detail, index) => (
+          {((draft.details || []).length ? draft.details : defaultNancyDetails).slice(0, 5).map((detail, index) => (
             <li key={index} className="list-disc">
               <strong>{detail.title || "Detail"}:</strong> {detail.text || "Description"}
             </li>
@@ -1409,7 +1427,9 @@ const SubcategoryLivePreview = ({
     </div>
 
     <div className="p-4">
-      <p className="mb-3 text-center text-xl font-black uppercase">Best Paired With</p>
+      <p className="mb-3 text-center text-xl font-black uppercase">
+        {subcategory?.label || "Subcategory Products"}
+      </p>
       <div className="grid grid-cols-2 gap-3">
         {relatedProducts.slice(0, 4).map((product) => (
           <ProductMini key={product._id} product={product} />
