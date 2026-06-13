@@ -2,6 +2,14 @@
 import { sendMail } from '../services/mailService.js';
 import { logError } from '../utils/logger.js';
 
+const escapeHtml = (value = '') =>
+  String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
 export const submitContact = async (req, res) => {
   const { name, email, message } = req.body || {};
 
@@ -11,15 +19,16 @@ export const submitContact = async (req, res) => {
 
   try {
     await sendMail({
-      to: process.env.CONTACT_TO_EMAIL || 'beradiantnancy@gmail.com',
+      to: process.env.CONTACT_TO_EMAIL || process.env.ADMIN_ORDER_EMAIL || process.env.GMAIL_USER,
+      replyTo: email,
       subject: 'New Be Radiant By Nancy contact form message',
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.5">
           <h2 style="margin:0 0 8px;color:#2D2D2D">Be Radiant By Nancy - Contact Form</h2>
           <hr style="border:none;border-top:1px solid #eee;margin:10px 0"/>
-          <p><strong>Name:</strong> ${name}</p>
-          <p><strong>Email:</strong> ${email}</p>
-          <p><strong>Message:</strong><br>${String(message).replace(/\n/g, '<br/>')}</p>
+          <p><strong>Name:</strong> ${escapeHtml(name)}</p>
+          <p><strong>Email:</strong> ${escapeHtml(email)}</p>
+          <p><strong>Message:</strong><br>${escapeHtml(message).replace(/\n/g, '<br/>')}</p>
         </div>
       `,
     });

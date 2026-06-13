@@ -19,6 +19,7 @@ import LegalPolicy from './componens/LegalPolicy'
 import SubcategoryProducts from './pages/SubcategoryProducts'
 import CartDrawer from './componens/CartDrawer'
 import CartRouteRedirect from './componens/CartRouteRedirect'
+import WhatsAppOrderPopup from './componens/WhatsAppOrderPopup'
 import { ShopContext } from './context/ShopContext'
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -108,6 +109,7 @@ const App = () => {
               <Route path="/subcategory/:slug" element={<SubcategoryProducts />} />
             </Routes>
           </div>
+          <WhatsAppOrderPopup suppressed={cartDrawerOpen} />
           <CartDrawer open={cartDrawerOpen} onClose={closeCart} />
           <Footer className="bg-[#2f2f2f] text-white" />
         </>
