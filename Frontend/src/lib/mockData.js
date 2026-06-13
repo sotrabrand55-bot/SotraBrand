@@ -1,6 +1,12 @@
 import { mystiqueProductMedia, pheromoneTouchProductMedia } from "./productMediaData";
 
 const now = Date.now();
+const pheromoneGiftBoxProductsImage =
+  pheromoneTouchProductMedia.storyImages.find((item) => item.id === "pheromone-gift-box-products")
+    ?.image || pheromoneTouchProductMedia.storyImages[0]?.image || "";
+const mystiqueGiftBoxImage =
+  mystiqueProductMedia.storyImages.find((item) => item.id === "mystique-gift-box-story")
+    ?.image || mystiqueProductMedia.shadeOptions.find((item) => item.id === "mystique-gift-box")?.image || "";
 
 const featuredPheromoneTouchProduct = {
     _id: "mock-pheromone-touch-1",
@@ -328,7 +334,7 @@ export const mockHomepageSections = [
       {
         id: "featured-set-1-image",
         type: "image",
-        src: "https://ik.imagekit.io/aovmyygbb/pheromone-gift-box-products-BE6BUSY_.jpeg",
+        src: pheromoneGiftBoxProductsImage,
         desktopSrc: "",
         poster: "",
         alt: "Pheromone Touch set by Nancy",
@@ -349,7 +355,7 @@ export const mockHomepageSections = [
       {
         id: "featured-set-2-image",
         type: "image",
-        src: "https://ik.imagekit.io/aovmyygbb/mystique-gift-box-CVlljw8t.jpeg",
+        src: mystiqueGiftBoxImage,
         desktopSrc: "",
         poster: "",
         alt: "Mystique set by Nancy",
