@@ -101,6 +101,7 @@ const App = () => {
             
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/index.html" element={<Home />} />
               <Route path="/Collection" element={<Collection />} />
               <Route path="/favorites" element={<Favorites />} />
               <Route path="/ratings" element={<Ratings />} />
@@ -115,6 +116,7 @@ const App = () => {
               <Route path="/privacy-policy" element={<LegalPolicy type="privacy" />} />
               <Route path="/terms" element={<LegalPolicy type="terms" />} />
               <Route path="/subcategory/:slug" element={<SubcategoryProducts />} />
+              <Route path="*" element={<Home />} />
             </Routes>
           </div>
           <WhatsAppOrderPopup suppressed={cartDrawerOpen} />
