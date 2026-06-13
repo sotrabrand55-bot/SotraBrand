@@ -1,6 +1,6 @@
 // controllers/contactController.js
 import { sendMail } from '../services/mailService.js';
-import { logError } from '../utils/logger.js';
+import { logError, logInfo } from '../utils/logger.js';
 
 const escapeHtml = (value = '') =>
   String(value)
@@ -18,8 +18,11 @@ export const submitContact = async (req, res) => {
   }
 
   try {
+    const to = process.env.CONTACT_TO_EMAIL || process.env.ADMIN_ORDER_EMAIL || process.env.GMAIL_USER;
+    logInfo('CONTACT_EMAIL_RECIPIENT', { to, from: process.env.GMAIL_USER });
+
     await sendMail({
-      to: process.env.CONTACT_TO_EMAIL || process.env.ADMIN_ORDER_EMAIL || process.env.GMAIL_USER,
+      to,
       replyTo: email,
       subject: 'New Be Radiant By Nancy contact form message',
       html: `

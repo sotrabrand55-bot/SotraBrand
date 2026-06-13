@@ -1,5 +1,5 @@
 import { transporter } from '../utils/mailer.js';
-import { logError } from '../utils/logger.js';
+import { logError, logInfo } from '../utils/logger.js';
 
 const money = (value) => {
   const amount = Number(value);
@@ -219,6 +219,7 @@ export const notifyAdminCheckout = async (req, res) => {
     const userWithAddress = { ...user, ...address };
     const to = process.env.ADMIN_ORDER_EMAIL || process.env.GMAIL_USER;
     const replyTo = userWithAddress.email || undefined;
+    logInfo('ORDER_EMAIL_RECIPIENT', { to, from: process.env.GMAIL_USER });
 
     await transporter.sendMail({
       from: `"Be Radiant By Nancy Orders" <${process.env.GMAIL_USER}>`,
