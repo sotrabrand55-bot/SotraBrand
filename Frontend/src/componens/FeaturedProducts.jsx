@@ -351,6 +351,7 @@ const FeaturedProductCard = ({
   const [adding, setAdding] = useState(false);
   const [celebrating, setCelebrating] = useState(false);
   const [reviewsOpen, setReviewsOpen] = useState(false);
+  const [descriptionOpen, setDescriptionOpen] = useState(false);
   const quantityPulseTimer = useRef(null);
   const selectedOption =
     selectedImage === null ? null : shadeOptions[selectedImage] || null;
@@ -408,7 +409,12 @@ const FeaturedProductCard = ({
   useEffect(() => {
     setSelectedSize("");
     setSelectedImage(null);
+    setDescriptionOpen(false);
   }, [product._id]);
+
+  useEffect(() => {
+    setDescriptionOpen(false);
+  }, [selectedImage]);
 
   useEffect(() => {
     return () => {
@@ -582,9 +588,26 @@ const FeaturedProductCard = ({
           </p>
         )}
 
-        <p className="mt-5 text-xs leading-5 text-black/65 lg:mt-10 lg:text-2xl lg:leading-8">
-          {selectedDescription}
-        </p>
+        {selectedDescription && (
+          <div className="mt-5 lg:mt-10">
+            <p
+              className={`text-xs leading-5 text-black/65 lg:text-2xl lg:leading-8 ${
+                descriptionOpen ? "" : "line-clamp-5"
+              }`}
+            >
+              {selectedDescription}
+            </p>
+            {String(selectedDescription).length > 180 && (
+              <button
+                type="button"
+                onClick={() => setDescriptionOpen((open) => !open)}
+                className="mt-2 border-b border-black pb-0.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-black transition hover:text-black/60 lg:mt-4 lg:text-sm"
+              >
+                {descriptionOpen ? "Read Less" : "Read More"}
+              </button>
+            )}
+          </div>
+        )}
 
         {hasSmallImageChoices && (
           <p className="mt-4 text-xs uppercase tracking-[0.08em] text-black/80 lg:mt-4 lg:text-xl">

@@ -20,6 +20,9 @@ const SubcategoryProductResults = ({ products, subcategory, title }) => {
   const [celebrating, setCelebrating] = useState(false);
   const timersRef = useRef([]);
   const visibleProducts = products.slice(0, 4);
+  const collectionHref = `/collection?cat=${encodeURIComponent(
+    subcategory?.groupLabel || ""
+  )}&sub=${encodeURIComponent(subcategory?.label || "")}`;
 
   useEffect(
     () => () => {
@@ -199,13 +202,12 @@ const SubcategoryProductResults = ({ products, subcategory, title }) => {
           })}
         </div>
 
-        <button
-          type="button"
-          disabled
-          className="mt-12 flex h-16 w-full cursor-default items-center justify-center bg-black text-sm font-semibold uppercase tracking-[0.34em] text-white opacity-100"
+        <Link
+          to={collectionHref}
+          className="mt-12 flex h-16 w-full items-center justify-center bg-black text-sm font-semibold uppercase tracking-[0.34em] text-white transition hover:bg-[#242424] active:scale-[0.99]"
         >
           View All
-        </button>
+        </Link>
       </div>
       {celebrating && <FireworksOverlay />}
       <ProductReviewsModal
