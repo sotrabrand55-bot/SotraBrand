@@ -5,7 +5,9 @@ import { ShopContext } from "../context/ShopContext";
 import { mockHeaderSlides, useMockData } from "../lib/mockData";
 import { ShimmerImage } from "./Skeletons";
 
-const POPUP_DELAY_MS = 20000;
+const POPUP_DELAY_MS = 5000;
+const POPUP_SESSION_KEY = "nancy-whatsapp-popup-shown";
+const DEFAULT_WHATSAPP_NUMBER = "96181190296";
 const DEFAULT_WHATSAPP_MESSAGE =
   "Hello Be Radiant By Nancy, I would like to order through WhatsApp.";
 
@@ -13,7 +15,7 @@ const getWhatsAppHref = () => {
   const configuredLink = String(import.meta.env.VITE_WHATSAPP_LINK || "").trim();
   if (configuredLink) return configuredLink;
 
-  const phone = String(import.meta.env.VITE_WHATSAPP_NUMBER || "").replace(/[^\d]/g, "");
+  const phone = String(import.meta.env.VITE_WHATSAPP_NUMBER || DEFAULT_WHATSAPP_NUMBER).replace(/[^\d]/g, "");
   const message = encodeURIComponent(DEFAULT_WHATSAPP_MESSAGE);
 
   return phone ? `https://wa.me/${phone}?text=${message}` : `https://wa.me/?text=${message}`;
@@ -35,10 +37,19 @@ const WhatsAppOrderPopup = ({ suppressed = false }) => {
   const whatsappHref = useMemo(getWhatsAppHref, []);
 
   useEffect(() => {
-    if (dismissed) return undefined;
-    const timer = window.setTimeout(() => setVisible(true), POPUP_DELAY_MS);
+    if (dismissed || visible) return undefined;
+    if (window.sessionStorage.getItem(POPUP_SESSION_KEY) === "true") {
+      setDismissed(true);
+      return undefined;
+    }
+
+    const timer = window.setTimeout(() => {
+      window.sessionStorage.setItem(POPUP_SESSION_KEY, "true");
+      setVisible(true);
+    }, POPUP_DELAY_MS);
+
     return () => window.clearTimeout(timer);
-  }, [dismissed]);
+  }, [dismissed, visible]);
 
   useEffect(() => {
     if (useMockData) return undefined;
@@ -69,7 +80,10 @@ const WhatsAppOrderPopup = ({ suppressed = false }) => {
     >
       <button
         type="button"
-        onClick={() => setDismissed(true)}
+        onClick={() => {
+          window.sessionStorage.setItem(POPUP_SESSION_KEY, "true");
+          setDismissed(true);
+        }}
         className="absolute right-3 top-3 z-20 grid h-9 w-9 place-items-center rounded-full bg-white/90 text-black shadow-[0_6px_18px_rgba(0,0,0,0.08)] transition hover:bg-black hover:text-white"
         aria-label="Close WhatsApp order popup"
       >
@@ -106,6 +120,9 @@ const WhatsAppOrderPopup = ({ suppressed = false }) => {
           href={whatsappHref}
           target="_blank"
           rel="noreferrer"
+          onClick={() => {
+            window.sessionStorage.setItem(POPUP_SESSION_KEY, "true");
+          }}
           className="flex min-h-14 w-full items-center justify-center bg-black px-5 text-center text-sm font-black uppercase tracking-[0.08em] text-white transition hover:bg-[#252525] active:scale-[0.99] sm:text-base"
         >
           Contact Our Sales Team
