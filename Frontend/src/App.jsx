@@ -1,5 +1,5 @@
 import 'react'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import About from './pages/About'
 import Product from './pages/Product'
 import Login from './pages/Login'
@@ -31,6 +31,8 @@ const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/
 
 const App = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const [initialPath] = useState(() => window.location.pathname);
   const { cartDrawerOpen, closeCart } = useContext(ShopContext);
   const [fade, setFade] = useState(false);
 
@@ -73,6 +75,12 @@ const App = () => {
   }, []);
 
   // 🔥 Render
+  useEffect(() => {
+    if (initialPath.toLowerCase().startsWith("/subcategory/")) {
+      navigate("/", { replace: true });
+    }
+  }, [initialPath, navigate]);
+
   if (loading || previewLoading) {
     return <NancyPreviewLoader />;
   }
