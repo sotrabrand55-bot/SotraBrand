@@ -12,6 +12,10 @@ const cookieBaseOptions = {
 };
 
 const adminCookieMaxAge = 10 * 365 * 24 * 60 * 60 * 1000;
+const USER_COOKIE_NAME = "nancy_token";
+const LEGACY_USER_COOKIE_NAME = "levon_token";
+const ADMIN_COOKIE_NAME = "nancy_admin_token";
+const LEGACY_ADMIN_COOKIE_NAME = "levon_admin_token";
 
 const setAuthCookie = (res, name, token, maxAge) => {
   res.cookie(name, token, {
@@ -47,7 +51,7 @@ const LoginUser = async (req, res) => {
 
     if (isMatch) {
       const token = createToken(user._id); // iza hal login true baati new id
-      setAuthCookie(res, "levon_token", token, 7 * 24 * 60 * 60 * 1000);
+      setAuthCookie(res, USER_COOKIE_NAME, token, 7 * 24 * 60 * 60 * 1000);
       res.json({ success: true, token });
     }
     // if the password not matching then
@@ -113,7 +117,7 @@ const registerUser = async (req, res) => {
 
     // Creating a token to allow the user to log in
     const token = createToken(user._id);
-    setAuthCookie(res, "levon_token", token, 7 * 24 * 60 * 60 * 1000);
+    setAuthCookie(res, USER_COOKIE_NAME, token, 7 * 24 * 60 * 60 * 1000);
     // The token will be used for authentication and will be auto-generated in MongoDB
 
     res.json({ success: true, token });
@@ -136,7 +140,7 @@ const adminLogin = async (req, res) => {
         { adminKey: email + password, role: "admin" },
         process.env.JWT_SECRET
       ); // admin token intentionally has no expiry
-      setAuthCookie(res, "levon_admin_token", token, adminCookieMaxAge);
+      setAuthCookie(res, ADMIN_COOKIE_NAME, token, adminCookieMaxAge);
       res.json({ success: true, token });
 
     } else {
@@ -151,12 +155,14 @@ const adminLogin = async (req, res) => {
 };
 
 const logoutUser = async (req, res) => {
-  clearAuthCookie(res, "levon_token");
+  clearAuthCookie(res, USER_COOKIE_NAME);
+  clearAuthCookie(res, LEGACY_USER_COOKIE_NAME);
   res.json({ success: true, message: "Logged out" });
 };
 
 const adminLogout = async (req, res) => {
-  clearAuthCookie(res, "levon_admin_token");
+  clearAuthCookie(res, ADMIN_COOKIE_NAME);
+  clearAuthCookie(res, LEGACY_ADMIN_COOKIE_NAME);
   res.json({ success: true, message: "Admin logged out" });
 };
 
