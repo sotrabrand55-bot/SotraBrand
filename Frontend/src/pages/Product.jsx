@@ -57,6 +57,7 @@ const Product = () => {
         showSocialProof
         hideFullDetails
         showNavigation={false}
+        showSetContents
         sectionId={`product-${product._id}`}
         ariaLabel={`${product.name} product details`}
       />

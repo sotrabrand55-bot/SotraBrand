@@ -7,6 +7,9 @@ import ProductNancyMediaEditor, {
   stripProductMediaPrivateFields,
 } from "../components/ProductNancyMediaEditor";
 import NancyProductLivePreview from "../components/NancyProductLivePreview";
+import ProductSetContentsEditor, {
+  stripSetContentPrivateFields,
+} from "../components/ProductSetContentsEditor";
 import {
   defaultCategoryGroups,
   getActiveCategoryGroups,
@@ -80,6 +83,7 @@ const Add = ({ token }) => {
   const [showSmallImages, setShowSmallImages] = useState(true);
   const [shadeOptions, setShadeOptions] = useState([]);
   const [storyImages, setStoryImages] = useState([]);
+  const [setContents, setSetContents] = useState([]);
   const visibleSubcategories = useMemo(
     () => getSubcategoriesForCategory(categoryGroups, category),
     [categoryGroups, category]
@@ -184,6 +188,7 @@ const Add = ({ token }) => {
     setShowSmallImages(true);
     setShadeOptions([]);
     setStoryImages([]);
+    setSetContents([]);
   };
 
   const onSubmitHandler = async (e) => {
@@ -250,11 +255,26 @@ const Add = ({ token }) => {
         "storyImages",
         JSON.stringify(storyImages.map(stripProductMediaPrivateFields))
       );
+      formData.append(
+        "setContents",
+        JSON.stringify(setContents.map(stripSetContentPrivateFields))
+      );
       shadeOptions.forEach((option, index) => {
         if (option._file) formData.append(`shadeImage${index}`, option._file);
       });
       storyImages.forEach((story, index) => {
         if (story._file) formData.append(`storyImage${index}`, story._file);
+      });
+      setContents.forEach((item, index) => {
+        if (item._file) formData.append(`setContentImage${index}`, item._file);
+        (item.gallery || []).forEach((galleryItem, galleryIndex) => {
+          if (galleryItem._file) {
+            formData.append(
+              `setContentGallery${index}_${galleryIndex}`,
+              galleryItem._file
+            );
+          }
+        });
       });
 
       const res = await axios.post(backendUrl + "/api/product/add", formData, {
@@ -502,6 +522,12 @@ const Add = ({ token }) => {
             setShadeOptions={setShadeOptions}
             storyImages={storyImages}
             setStoryImages={setStoryImages}
+          />
+
+          <ProductSetContentsEditor
+            items={setContents}
+            setItems={setSetContents}
+            submitLabel="Save Product With Set Items"
           />
 
           <div className="mt-5 grid gap-4">

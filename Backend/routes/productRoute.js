@@ -21,6 +21,13 @@ productRouter.post('/add',adminAuth, // here the token to protect the add
     { name: 'image4', maxCount: 1 },
     ...Array.from({ length: 8 }, (_, index) => ({ name: `shadeImage${index}`, maxCount: 1 })),
     ...Array.from({ length: 12 }, (_, index) => ({ name: `storyImage${index}`, maxCount: 1 })),
+    ...Array.from({ length: 8 }, (_, index) => ({ name: `setContentImage${index}`, maxCount: 1 })),
+    ...Array.from({ length: 8 }, (_, itemIndex) =>
+      Array.from({ length: 8 }, (_, galleryIndex) => ({
+        name: `setContentGallery${itemIndex}_${galleryIndex}`,
+        maxCount: 1,
+      }))
+    ).flat(),
   ]),
   addProduct // Calls the addProduct function after images are uploaded
 );
@@ -31,6 +38,13 @@ productRouter.put('/:id', adminAuth, upload.fields([
   { name: 'image4', maxCount: 1 },
   ...Array.from({ length: 8 }, (_, index) => ({ name: `shadeImage${index}`, maxCount: 1 })),
   ...Array.from({ length: 12 }, (_, index) => ({ name: `storyImage${index}`, maxCount: 1 })),
+  ...Array.from({ length: 8 }, (_, index) => ({ name: `setContentImage${index}`, maxCount: 1 })),
+  ...Array.from({ length: 8 }, (_, itemIndex) =>
+    Array.from({ length: 8 }, (_, galleryIndex) => ({
+      name: `setContentGallery${itemIndex}_${galleryIndex}`,
+      maxCount: 1,
+    }))
+  ).flat(),
 ]), updateProduct);
 
 productRouter.post('/remove',adminAuth, removeProduct); // here also we send the token to protect the remove 

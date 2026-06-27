@@ -9,6 +9,9 @@ import ProductNancyMediaEditor, {
   stripProductMediaPrivateFields,
 } from "../components/ProductNancyMediaEditor";
 import NancyProductLivePreview from "../components/NancyProductLivePreview";
+import ProductSetContentsEditor, {
+  stripSetContentPrivateFields,
+} from "../components/ProductSetContentsEditor";
 import {
   defaultCategoryGroups,
   getActiveCategoryGroups,
@@ -95,6 +98,7 @@ export default function EditProduct({ token }) {
   const [showSmallImages, setShowSmallImages] = useState(true);
   const [shadeOptions, setShadeOptions] = useState([]);
   const [storyImages, setStoryImages] = useState([]);
+  const [setContents, setSetContents] = useState([]);
 
   const visibleScentFamilies = useMemo(
     () => getSubcategoriesForCategory(categoryGroups, category),
@@ -184,6 +188,32 @@ export default function EditProduct({ token }) {
             fileId: item.fileId || "",
             alt: item.alt || "",
             order: item.order ?? index + 1,
+            _file: null,
+            _preview: "",
+          }))
+        : []
+    );
+    setSetContents(
+      Array.isArray(product.setContents)
+        ? product.setContents.map((item, index) => ({
+            id: item.id || `set-content-${index}`,
+            image: item.image || "",
+            fileId: item.fileId || "",
+            label: item.label || "",
+            description: item.description || "",
+            alt: item.alt || item.label || "",
+            order: item.order ?? index + 1,
+            gallery: Array.isArray(item.gallery)
+              ? item.gallery.map((galleryItem, galleryIndex) => ({
+                  id: galleryItem.id || `set-detail-${index}-${galleryIndex}`,
+                  image: galleryItem.image || "",
+                  fileId: galleryItem.fileId || "",
+                  alt: galleryItem.alt || item.label || "",
+                  order: galleryItem.order ?? galleryIndex + 1,
+                  _file: null,
+                  _preview: "",
+                }))
+              : [],
             _file: null,
             _preview: "",
           }))
@@ -329,11 +359,26 @@ export default function EditProduct({ token }) {
         "storyImages",
         JSON.stringify(storyImages.map(stripProductMediaPrivateFields))
       );
+      form.append(
+        "setContents",
+        JSON.stringify(setContents.map(stripSetContentPrivateFields))
+      );
       shadeOptions.forEach((option, index) => {
         if (option._file) form.append(`shadeImage${index}`, option._file);
       });
       storyImages.forEach((story, index) => {
         if (story._file) form.append(`storyImage${index}`, story._file);
+      });
+      setContents.forEach((item, index) => {
+        if (item._file) form.append(`setContentImage${index}`, item._file);
+        (item.gallery || []).forEach((galleryItem, galleryIndex) => {
+          if (galleryItem._file) {
+            form.append(
+              `setContentGallery${index}_${galleryIndex}`,
+              galleryItem._file
+            );
+          }
+        });
       });
 
       if (finalDiscount !== undefined) {
@@ -616,6 +661,13 @@ export default function EditProduct({ token }) {
             setShadeOptions={setShadeOptions}
             storyImages={storyImages}
             setStoryImages={setStoryImages}
+          />
+
+          <ProductSetContentsEditor
+            items={setContents}
+            setItems={setSetContents}
+            submitLabel="Save Inside Sets"
+            saving={saving}
           />
 
           <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">

@@ -141,6 +141,28 @@ export const normalizeProduct = (product = {}) => {
     ...explicitPerfumeTypes,
     legacyPerfumeType,
   ].filter(Boolean))];
+  const setContents = sortMediaItems(
+    Array.isArray(product.setContents) ? product.setContents : []
+  )
+    .map((item, index) => ({
+      ...item,
+      id: item?.id || `set-content-${index}`,
+      image: parseImageValue(item?.image),
+      label: String(item?.label || "").trim(),
+      description: String(item?.description || "").trim(),
+      alt: String(item?.alt || item?.label || "").trim(),
+      order: parseNumber(item?.order, index + 1),
+      gallery: sortMediaItems(Array.isArray(item?.gallery) ? item.gallery : [])
+        .map((galleryItem, galleryIndex) => ({
+          ...galleryItem,
+          id: galleryItem?.id || `set-detail-${index}-${galleryIndex}`,
+          image: parseImageValue(galleryItem?.image),
+          alt: String(galleryItem?.alt || item?.label || "").trim(),
+          order: parseNumber(galleryItem?.order, galleryIndex + 1),
+        }))
+        .filter((galleryItem) => galleryItem.image),
+    }))
+    .filter((item) => item.image);
 
   return {
     ...product,
@@ -164,6 +186,7 @@ export const normalizeProduct = (product = {}) => {
     concentration: product.concentration || perfumeTypes[0] || "",
     perfumeTypes,
     sizes,
+    setContents,
     colors: parseArray(product.colors),
     bestseller: parseBool(product.bestseller, false),
     newArrival: parseBool(product.newArrival, false),

@@ -102,14 +102,14 @@ const FeaturedSetPicture = ({ sectionKey = "featured-set-1" }) => {
           wrapperClassName="h-full w-full"
           skeletonClassName="bg-[#EAEAEA]"
         />
-        <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent p-5 text-white sm:p-8">
+        <span className="absolute inset-x-0 bottom-0 p-5 text-black sm:p-8">
           {media?.label && (
             <span className="block text-xs font-bold uppercase tracking-[0.22em]">
               {media.label}
             </span>
           )}
           {buttonLabel && (
-            <span className="mt-3 inline-flex items-center gap-3 border-b border-white pb-1 text-xs font-bold uppercase tracking-[0.22em]">
+            <span className="mt-3 inline-flex items-center gap-3 border-b border-black pb-1 text-xs font-bold uppercase tracking-[0.22em]">
               {buttonLabel}
               <FiArrowRight className="h-4 w-4" />
             </span>

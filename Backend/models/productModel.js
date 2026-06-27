@@ -75,6 +75,32 @@ const productSchema = new mongoose.Schema({
     ],
     default: [],
   },
+  setContents: {
+    type: [
+      {
+        id: { type: String, default: "" },
+        image: { type: String, default: "" },
+        fileId: { type: String, default: "" },
+        label: { type: String, default: "" },
+        description: { type: String, default: "" },
+        alt: { type: String, default: "" },
+        order: { type: Number, default: 0 },
+        gallery: {
+          type: [
+            {
+              id: { type: String, default: "" },
+              image: { type: String, default: "" },
+              fileId: { type: String, default: "" },
+              alt: { type: String, default: "" },
+              order: { type: Number, default: 0 },
+            },
+          ],
+          default: [],
+        },
+      },
+    ],
+    default: [],
+  },
 });
 
 // this or operatior  when the product models is already available than that model will be used the(mongoose.models.product) and if its not available it will create a new model using this schema( mongoose.model("product",productSchema))

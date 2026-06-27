@@ -1,6 +1,5 @@
 /* eslint-disable react/prop-types */
 import { useContext, useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import {
@@ -12,7 +11,6 @@ import {
   FiSearch,
   FiShoppingCart,
   FiStar,
-  FiX,
 } from "react-icons/fi";
 import { ShopContext } from "../context/ShopContext";
 import { FeaturedProductSkeleton, ShimmerImage } from "./Skeletons";
@@ -20,6 +18,8 @@ import LuxuryVideoGallery from "./LuxuryVideoGallery";
 import FireworksOverlay from "./FireworksOverlay";
 import { ProductReviewsModal } from "./ProductReviewPanel";
 import { customerPreviewLocked } from "../lib/customerPreview";
+import ProductMediaViewer from "./ProductMediaViewer";
+import ProductSetContents from "./ProductSetContents";
 
 const isRealOption = (value) =>
   Boolean(value) &&
@@ -140,76 +140,6 @@ const getOptionLabel = (product, index) => {
   return color ? `${fallback} - ${String(color).toUpperCase()}` : `${fallback} ${index + 1}`;
 };
 
-const StoryImageViewer = ({ product, images, initialIndex, onClose }) => {
-  const viewerRef = useRef(null);
-
-  useEffect(() => {
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    const focusImage = window.requestAnimationFrame(() => {
-      const target = viewerRef.current?.querySelector(
-        `[data-story-viewer-index="${initialIndex}"]`
-      );
-      target?.scrollIntoView({ block: "start" });
-    });
-
-    const handleKeyDown = (event) => {
-      if (event.key === "Escape") onClose();
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-
-    return () => {
-      window.cancelAnimationFrame(focusImage);
-      window.removeEventListener("keydown", handleKeyDown);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [initialIndex, onClose]);
-
-  if (typeof document === "undefined") return null;
-
-  return createPortal(
-    <div
-      ref={viewerRef}
-      className="fixed inset-0 z-[1200] overflow-y-auto overscroll-contain bg-white"
-      role="dialog"
-      aria-modal="true"
-      aria-label={`${product.name} story images`}
-    >
-      <button
-        type="button"
-        onClick={onClose}
-        className="fixed right-3 top-3 z-[1210] grid h-11 w-11 place-items-center rounded-full bg-black text-white shadow-[0_8px_24px_rgba(0,0,0,0.2)] transition hover:bg-[#262626] active:scale-95 sm:right-5 sm:top-5"
-        aria-label="Close story images"
-      >
-        <FiX className="h-5 w-5" />
-      </button>
-
-      <div className="mx-auto w-full max-w-[52rem] space-y-7 bg-white py-7 sm:space-y-10 sm:py-10">
-        {images.map((image, index) => (
-          <div
-            key={image.id || `${image.image}-${index}`}
-            data-story-viewer-index={index}
-            className="aspect-[4/5] w-full bg-white"
-          >
-            <ShimmerImage
-              src={image.image}
-              alt={image.alt || `${product.name} story ${index + 1}`}
-              className="h-full w-full object-contain"
-              wrapperClassName="h-full w-full"
-              skeletonClassName="nancy-cool-shimmer bg-[#EAEAEA]"
-              loading={Math.abs(index - initialIndex) <= 1 ? "eager" : "lazy"}
-              draggable="false"
-            />
-          </div>
-        ))}
-      </div>
-    </div>,
-    document.body
-  );
-};
-
 const ProductGallery = ({ product, storyImages, targetIndex, targetVersion }) => {
   const images = storyImages;
   const railRef = useRef(null);
@@ -314,7 +244,7 @@ const ProductGallery = ({ product, storyImages, targetIndex, targetVersion }) =>
       )}
 
       {viewerIndex !== null && (
-        <StoryImageViewer
+        <ProductMediaViewer
           product={product}
           images={images}
           initialIndex={viewerIndex}
@@ -331,6 +261,7 @@ const FeaturedProductCard = ({
   showSmallImages = true,
   showSocialProof = false,
   hideFullDetails = false,
+  showSetContents = false,
 }) => {
   const { currency, addToCart, openCart, toggleFavorite, isFavorite } = useContext(ShopContext);
   const { price, displayPrice, hasDiscount } = getDisplayPrice(product);
@@ -685,8 +616,7 @@ const FeaturedProductCard = ({
           </div>
         )}
 
-        <div className="lg:mt-10 lg:flex lg:items-center lg:gap-8">
-          <div className="mt-5 flex items-center gap-3 lg:mt-0 lg:gap-8">
+        <div className="mt-5 flex items-center gap-3 lg:mt-10 lg:gap-8">
             <button
               type="button"
               onClick={() => changeQuantity((prev) => prev - 1)}
@@ -712,27 +642,28 @@ const FeaturedProductCard = ({
             >
               <FiPlus className="h-3.5 w-3.5 lg:h-5 lg:w-5" />
             </button>
-          </div>
-
-          <button
-            type="button"
-            onClick={handleAddToCart}
-            disabled={adding || !canSubmitOptions}
-            className={`nancy-water-add relative mt-5 flex h-11 w-full items-center justify-center overflow-hidden border border-black bg-white text-[10px] font-semibold uppercase tracking-[0.22em] text-black transition hover:text-white lg:mt-0 lg:h-[4.4rem] lg:flex-1 lg:text-2xl ${
-              adding ? "is-filling" : ""
-            } ${!canSubmitOptions ? "cursor-not-allowed opacity-45" : ""}`}
-          >
-            <span className="relative z-10">
-              {isSoldOut
-                ? "Out Of Stock"
-                : hasSizes && !selectedSize
-                  ? "Choose Size"
-                  : adding
-                    ? "Added To Cart"
-                    : "Add To Cart"}
-            </span>
-          </button>
         </div>
+
+        {showSetContents && <ProductSetContents product={product} />}
+
+        <button
+          type="button"
+          onClick={handleAddToCart}
+          disabled={adding || !canSubmitOptions}
+          className={`nancy-water-add relative mt-5 flex h-11 w-full items-center justify-center overflow-hidden border border-black bg-white text-[10px] font-semibold uppercase tracking-[0.22em] text-black transition hover:text-white lg:mt-7 lg:h-[4.4rem] lg:text-2xl ${
+            adding ? "is-filling" : ""
+          } ${!canSubmitOptions ? "cursor-not-allowed opacity-45" : ""}`}
+        >
+          <span className="relative z-10">
+            {isSoldOut
+              ? "Out Of Stock"
+              : hasSizes && !selectedSize
+                ? "Choose Size"
+                : adding
+                  ? "Added To Cart"
+                  : "Add To Cart"}
+          </span>
+        </button>
 
         <button
           type="button"
@@ -786,6 +717,7 @@ const FeaturedProducts = ({
   ariaLabel,
   hideFullDetails = false,
   showNavigation = true,
+  showSetContents = false,
 }) => {
   const { products, productsLoading } = useContext(ShopContext);
   const trackRef = useRef(null);
@@ -880,6 +812,7 @@ const FeaturedProducts = ({
                 showSmallImages={showSmallImages ?? true}
                 showSocialProof={showSocialProof}
                 hideFullDetails={hideFullDetails}
+                showSetContents={showSetContents}
               />
             ))}
           </div>

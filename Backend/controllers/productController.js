@@ -115,14 +115,83 @@ const normalizeMediaOptions = async ({ rawItems, files, prefix, fallbackName, al
     .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
 };
 
+const normalizeSetContents = async ({ rawItems, files }) => {
+  const items = toObjectArray(rawItems);
+
+  for (let itemIndex = 0; itemIndex < items.length; itemIndex += 1) {
+    const mainUpload = await uploadImageKitAsset(
+      files?.[`setContentImage${itemIndex}`]?.[0],
+      `set-content-${itemIndex + 1}`
+    );
+
+    if (mainUpload) {
+      items[itemIndex].image = mainUpload.url;
+      items[itemIndex].fileId = mainUpload.fileId;
+    }
+
+    items[itemIndex].id =
+      items[itemIndex].id || `set-content-${Date.now()}-${itemIndex}`;
+    items[itemIndex].label = items[itemIndex].label || items[itemIndex].alt || "";
+    items[itemIndex].description = items[itemIndex].description || "";
+    items[itemIndex].alt = items[itemIndex].alt || items[itemIndex].label || "";
+    items[itemIndex].order = Number.isFinite(Number(items[itemIndex].order))
+      ? Number(items[itemIndex].order)
+      : itemIndex + 1;
+
+    const gallery = Array.isArray(items[itemIndex].gallery)
+      ? items[itemIndex].gallery.filter((item) => item && typeof item === "object")
+      : [];
+
+    for (let galleryIndex = 0; galleryIndex < gallery.length; galleryIndex += 1) {
+      const upload = await uploadImageKitAsset(
+        files?.[`setContentGallery${itemIndex}_${galleryIndex}`]?.[0],
+        `set-content-${itemIndex + 1}-detail-${galleryIndex + 1}`
+      );
+
+      if (upload) {
+        gallery[galleryIndex].image = upload.url;
+        gallery[galleryIndex].fileId = upload.fileId;
+      }
+
+      gallery[galleryIndex].id =
+        gallery[galleryIndex].id ||
+        `set-content-detail-${Date.now()}-${itemIndex}-${galleryIndex}`;
+      gallery[galleryIndex].alt = gallery[galleryIndex].alt || items[itemIndex].label || "";
+      gallery[galleryIndex].order = Number.isFinite(Number(gallery[galleryIndex].order))
+        ? Number(gallery[galleryIndex].order)
+        : galleryIndex + 1;
+    }
+
+    items[itemIndex].gallery = gallery
+      .filter((item) => item.image)
+      .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+  }
+
+  return items
+    .filter((item) => item.image)
+    .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0));
+};
+
 const mediaAssets = (items = []) =>
   items
     .map((item) => ({ url: item?.image || "", fileId: item?.fileId || "" }))
     .filter((item) => item.url || item.fileId);
 
+const setContentAssets = (items = []) => [
+  ...mediaAssets(items),
+  ...items.flatMap((item) => mediaAssets(Array.isArray(item?.gallery) ? item.gallery : [])),
+];
+
 const removedMediaAssets = (previous = [], next = []) => {
   const nextUrls = new Set(next.map((item) => item?.image).filter(Boolean));
   return mediaAssets(previous).filter((item) => item.url && !nextUrls.has(item.url));
+};
+
+const removedSetContentAssets = (previous = [], next = []) => {
+  const nextUrls = new Set(setContentAssets(next).map((item) => item.url).filter(Boolean));
+  return setContentAssets(previous).filter(
+    (item) => item.url && !nextUrls.has(item.url)
+  );
 };
 
 const uniqueAssets = (assets = []) => {
@@ -183,6 +252,7 @@ const addProduct = async (req, res) => {
       ,showSmallImages
       ,shadeOptions
       ,storyImages
+      ,setContents
     } = req.body;
 
     const parsedSizes = normalizeSizes(sizes);
@@ -200,6 +270,10 @@ const addProduct = async (req, res) => {
       files: req.files,
       prefix: "storyImage",
       fallbackName: "story-image",
+    });
+    const parsedSetContents = await normalizeSetContents({
+      rawItems: setContents,
+      files: req.files,
     });
 
     //we create the productdata to save the url of images and the data (names,..) in the mongodb--------------------------------------
@@ -231,6 +305,7 @@ const addProduct = async (req, res) => {
       showSmallImages: showSmallImages === undefined ? true : toBool(showSmallImages, true),
       shadeOptions: parsedShadeOptions,
       storyImages: parsedStoryImages,
+      setContents: parsedSetContents,
 
       image: deriveProductImages(parsedStoryImages, parsedShadeOptions),
       imageMeta: [],
@@ -276,6 +351,7 @@ const removeProduct = async (req, res) => {
         ...getExistingImageMeta(product),
         ...mediaAssets(product.shadeOptions),
         ...mediaAssets(product.storyImages),
+        ...setContentAssets(product.setContents),
       ]),
     ]);
 
@@ -352,6 +428,7 @@ const updateProduct = async (req, res) => {
       ,showSmallImages
       ,shadeOptions
       ,storyImages
+      ,setContents
     } = req.body;
 
     const nextShadeOptions =
@@ -373,6 +450,10 @@ const updateProduct = async (req, res) => {
             fallbackName: "story-image",
           })
         : product.storyImages;
+    const nextSetContents =
+      setContents !== undefined
+        ? await normalizeSetContents({ rawItems: setContents, files: req.files })
+        : product.setContents;
     const parsedSizes =
       sizes !== undefined ? normalizeSizes(sizes) : normalizeSizes(product.sizes);
     const parsedPerfumeTypes =
@@ -415,6 +496,7 @@ const updateProduct = async (req, res) => {
       showSmallImages: toBool(showSmallImages, product.showSmallImages),
       shadeOptions: nextShadeOptions,
       storyImages: nextStoryImages,
+      setContents: nextSetContents,
     };
 
     if (shadeOptions !== undefined) {
@@ -422,6 +504,9 @@ const updateProduct = async (req, res) => {
     }
     if (storyImages !== undefined) {
       await deleteImageKitAssets(removedMediaAssets(product.storyImages, next.storyImages));
+    }
+    if (setContents !== undefined) {
+      await deleteImageKitAssets(removedSetContentAssets(product.setContents, next.setContents));
     }
 
     const nextProductImages = deriveProductImages(next.storyImages, next.shadeOptions);
@@ -452,6 +537,7 @@ const updateProduct = async (req, res) => {
     product.showSmallImages = next.showSmallImages;
     product.shadeOptions = next.shadeOptions;
     product.storyImages = next.storyImages;
+    product.setContents = next.setContents;
 
     product.imageMeta = [];
     product.image = nextProductImages;
