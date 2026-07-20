@@ -15,8 +15,12 @@ import SearchBar from "../componens/SearchBar";
 import { CollectionGridSkeleton } from "../componens/Skeletons";
 import { getEffectiveProductPrice } from "../utils/productMapping";
 import { subcategoryGroups as fallbackSubcategoryGroups } from "../lib/subcategoryCatalog";
-const concentrationOptions = ["Eau de Parfum", "Eau de Toilette", "Parfum"];
 const lowStockLimit = 5;
+const sortOptions = [
+  { value: "newest", label: "Newest" },
+  { value: "low-high", label: "Price Low To High" },
+  { value: "high-low", label: "Price High To Low" },
+];
 
 const matchesCategoryGroup = (item, categoryName, categorySubcategories) => {
   const childCategories = categorySubcategories[categoryName] || [];
@@ -50,6 +54,8 @@ const stockStatus = (item) => {
 };
 
 const getConcentration = (item) => String(item?.concentration || "").trim();
+const isCollectionsGroup = (group) =>
+  String(group?.label || "").trim().toLowerCase() === "collections";
 
 const toggleArrayValue = (setter, value) =>
   setter((current) =>
@@ -63,15 +69,19 @@ const Collection = () => {
   const { products, productsLoading, search, showSearch, categoryGroups } = useContext(ShopContext);
   const subcategoryGroups =
     categoryGroups?.length ? categoryGroups : fallbackSubcategoryGroups;
+  const filterCategoryGroups = useMemo(
+    () => subcategoryGroups.filter((group) => !isCollectionsGroup(group)),
+    [subcategoryGroups]
+  );
   const categorySubcategories = useMemo(
     () =>
       Object.fromEntries(
-        subcategoryGroups.map((group) => [
+        filterCategoryGroups.map((group) => [
           group.label,
           group.children.map((child) => child.label),
         ])
       ),
-    [subcategoryGroups]
+    [filterCategoryGroups]
   );
   const [showFilterPanel, setShowFilterPanel] = useState(false);
   const [openCategoryGroups, setOpenCategoryGroups] = useState({});
@@ -102,7 +112,6 @@ const Collection = () => {
   });
   const [openSections, setOpenSections] = useState({
     categories: true,
-    concentration: true,
     special: true,
     availability: true,
   });
@@ -174,7 +183,7 @@ const Collection = () => {
   useEffect(() => {
     if (!subCategory.length) return;
 
-    const matchingGroups = subcategoryGroups.filter((group) =>
+    const matchingGroups = filterCategoryGroups.filter((group) =>
       group.children.some((child) => subCategory.includes(child.label))
     );
     if (!matchingGroups.length) return;
@@ -183,7 +192,7 @@ const Collection = () => {
       ...current,
       ...Object.fromEntries(matchingGroups.map((group) => [group.label, true])),
     }));
-  }, [subCategory, subcategoryGroups]);
+  }, [filterCategoryGroups, subCategory]);
 
   const filteredProducts = useMemo(() => {
     let result = [...(products || [])];
@@ -318,6 +327,7 @@ const Collection = () => {
     setCategory([]);
     setSubCategory([]);
     setConcentration([]);
+    setSortType("newest");
     setSpecialFlags({ newArrival: false, onSales: false });
     setStockFlags({ inStock: false, lowStock: false, outOfStock: false });
     setTempCategory([]);
@@ -353,15 +363,6 @@ const Collection = () => {
     setSpecialFlags({ ...tempSpecialFlags });
     setStockFlags({ ...tempStockFlags });
     setShowFilterPanel(false);
-    setCurrentPage(1);
-  };
-
-  const chooseFamily = (label) => {
-    setCategory([label]);
-    setTempCategory([label]);
-    setSubCategory([]);
-    setTempSubCategory([]);
-    setOpenCategoryGroups((current) => ({ ...current, [label]: true }));
     setCurrentPage(1);
   };
 
@@ -438,7 +439,7 @@ const Collection = () => {
     onToggleSubcategory,
   }) => (
     <div>
-      {subcategoryGroups.map((group) => {
+      {filterCategoryGroups.map((group) => {
         const isOpen = Boolean(openCategoryGroups[group.label]);
         const selectedChildCount = group.children.filter((child) =>
           selectedSubcategories.includes(child.label)
@@ -523,12 +524,10 @@ const Collection = () => {
   const FilterContents = ({
     selectedCategories,
     selectedSubcategories,
-    selectedConcentration,
     selectedSpecialFlags,
     selectedStockFlags,
     onCategory,
     onSubcategory,
-    onConcentration,
     onSpecial,
     onStock,
   }) => (
@@ -540,24 +539,6 @@ const Collection = () => {
           onToggleCategory={onCategory}
           onToggleSubcategory={onSubcategory}
         />
-      </FilterSection>
-      <FilterSection sectionKey="concentration" title="Concentration">
-        {concentrationOptions.map((option) => (
-          <label key={option} className={filterRowClass}>
-            <span className="flex items-center gap-3">
-              <input
-                className={checkboxClass}
-                type="checkbox"
-                checked={selectedConcentration.includes(option)}
-                onChange={() => onConcentration(option)}
-              />
-              {option}
-            </span>
-            <span className={countClass}>
-              {countItems((item) => getConcentration(item) === option)}
-            </span>
-          </label>
-        ))}
       </FilterSection>
       <FilterSection sectionKey="special" title="Special">
         <label className={filterRowClass}>
@@ -619,44 +600,12 @@ const Collection = () => {
         <div className="mx-auto max-w-[1480px]">
           <div className="text-center">
             <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-black/55 sm:text-xs">
-              Be Radiant By Nancy
+              SotraBrand
             </p>
             <h1 className="mt-3 text-4xl font-black uppercase leading-none sm:text-6xl lg:text-7xl">
-              The Collection
-            </h1>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-black/55 sm:text-base">
-              Find the ritual, scent, and finish made for your radiance.
-            </p>
-          </div>
-
-          <div className="mx-auto mt-8 flex max-w-4xl snap-x gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:justify-center">
-            <button
-              type="button"
-              onClick={clearAll}
-              className={`shrink-0 border px-5 py-3 text-[10px] font-bold uppercase tracking-[0.17em] transition sm:text-xs ${
-                activeFilters.length === 0
-                  ? "border-black bg-black text-white"
-                  : "border-black/25 bg-white text-black hover:border-black"
-              }`}
-            >
               All Products
-            </button>
-            {subcategoryGroups.map((group) => (
-              <button
-                key={group.label}
-                type="button"
-                onClick={() => chooseFamily(group.label)}
-                className={`shrink-0 border px-5 py-3 text-[10px] font-bold uppercase tracking-[0.17em] transition sm:text-xs ${
-                  category.includes(group.label)
-                    ? "border-black bg-black text-white"
-                    : "border-black/25 bg-white text-black hover:border-black"
-                }`}
-              >
-                {group.label}
-              </button>
-            ))}
+            </h1>
           </div>
-          <SearchBar />
         </div>
       </section>
 
@@ -683,13 +632,17 @@ const Collection = () => {
                 onChange={(event) => setSortType(event.target.value)}
                 className="h-full w-full appearance-none bg-white px-4 text-center text-[11px] font-bold uppercase tracking-[0.15em] outline-none"
               >
-                <option value="newest">Newest</option>
-                <option value="low-high">Price Low to High</option>
-                <option value="high-low">Price High to Low</option>
+                {sortOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
               <FiChevronDown className="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2" />
             </label>
           </div>
+
+          <SearchBar className="mb-6 lg:hidden" />
 
           {activeFilters.length > 0 && (
             <div className="mb-7 flex flex-wrap items-center gap-2">
@@ -726,12 +679,10 @@ const Collection = () => {
                 <FilterContents
                   selectedCategories={category}
                   selectedSubcategories={subCategory}
-                  selectedConcentration={concentration}
                   selectedSpecialFlags={specialFlags}
                   selectedStockFlags={stockFlags}
                   onCategory={(value) => toggleArrayValue(setCategory, value)}
                   onSubcategory={(value) => toggleArrayValue(setSubCategory, value)}
-                  onConcentration={(value) => toggleArrayValue(setConcentration, value)}
                   onSpecial={(key) =>
                     setSpecialFlags((current) => ({
                       ...current,
@@ -782,6 +733,8 @@ const Collection = () => {
                 </label>
               </div>
 
+              <SearchBar className="mb-7 hidden lg:block" />
+
               <div className="mb-5 flex items-end justify-between lg:hidden">
                 <div>
                   <p className="text-xs font-bold uppercase tracking-[0.18em]">
@@ -798,7 +751,7 @@ const Collection = () => {
               ) : visibleProducts.length ? (
                 <motion.div
                   key={`${currentPage}-${sortType}-${activeFilters.join("|")}`}
-                  className="grid grid-cols-2 gap-x-4 gap-y-12 sm:gap-x-6 md:grid-cols-3 xl:grid-cols-4"
+                  className="grid grid-cols-2 gap-x-2 gap-y-12 sm:gap-x-4 md:grid-cols-3 xl:grid-cols-4"
                   initial="hidden"
                   animate="show"
                   variants={{
@@ -886,26 +839,23 @@ const Collection = () => {
         </div>
       </section>
 
-      <AnimatePresence>
-        {showFilterPanel && (
-          <motion.div
-            className="fixed inset-0 z-[999]"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <button
-              type="button"
-              className="absolute inset-0 h-full w-full bg-black/45"
-              onClick={() => setShowFilterPanel(false)}
-              aria-label="Close filters"
-            />
-            <motion.aside
-              className="absolute left-0 top-0 flex h-full w-[92vw] max-w-[390px] flex-col bg-white"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0, transition: { duration: 0.3, ease: [0.22, 1, 0.36, 1] } }}
-              exit={{ x: "-100%", transition: { duration: 0.22 } }}
-            >
+      <div
+        className={`fixed inset-0 z-[1200] lg:hidden transition-opacity duration-300 ease-out ${
+          showFilterPanel ? "pointer-events-auto opacity-100" : "pointer-events-none opacity-0"
+        }`}
+        aria-hidden={!showFilterPanel}
+      >
+        <button
+          type="button"
+          className="absolute inset-0 h-full w-full bg-black/20 transition-opacity duration-300"
+          onClick={() => setShowFilterPanel(false)}
+          aria-label="Close filters"
+        />
+        <aside
+          className={`absolute left-0 top-0 flex h-[100dvh] w-[92vw] max-w-[390px] flex-col overflow-hidden bg-white text-[#121212] shadow-2xl transition-transform duration-300 ease-out will-change-transform ${
+            showFilterPanel ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
               <header className="flex items-center justify-between border-b border-black px-5 py-5">
                 <div>
                   <p className="text-[9px] font-bold uppercase tracking-[0.24em] text-black/45">
@@ -936,18 +886,14 @@ const Collection = () => {
                 </div>
               )}
 
-              <div className="flex-1 overflow-y-auto px-5">
+              <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-5">
                 <FilterContents
                   selectedCategories={tempCategory}
                   selectedSubcategories={tempSubCategory}
-                  selectedConcentration={tempConcentration}
                   selectedSpecialFlags={tempSpecialFlags}
                   selectedStockFlags={tempStockFlags}
                   onCategory={(value) => toggleArrayValue(setTempCategory, value)}
                   onSubcategory={(value) => toggleArrayValue(setTempSubCategory, value)}
-                  onConcentration={(value) =>
-                    toggleArrayValue(setTempConcentration, value)
-                  }
                   onSpecial={(key) =>
                     setTempSpecialFlags((current) => ({
                       ...current,
@@ -963,7 +909,7 @@ const Collection = () => {
                 />
               </div>
 
-              <footer className="border-t border-black bg-white px-5 py-4">
+              <footer className="shrink-0 border-t border-black bg-white px-5 pb-[calc(1rem+env(safe-area-inset-bottom))] pt-4">
                 <div className="mb-3 flex items-center justify-between">
                   <button
                     type="button"
@@ -979,15 +925,13 @@ const Collection = () => {
                 <button
                   type="button"
                   onClick={applyFilters}
-                  className="w-full bg-black px-5 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-white"
+                  className="w-full bg-black px-5 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition active:scale-[0.99]"
                 >
-                  Show Products
+                  Apply Filters
                 </button>
               </footer>
-            </motion.aside>
-          </motion.div>
-        )}
-      </AnimatePresence>
+        </aside>
+      </div>
     </main>
   );
 };

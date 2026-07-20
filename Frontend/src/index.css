@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Prata&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;500;600;700&family=Inter+Tight:wght@500;600;700;800&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -7,7 +7,17 @@
 
 /* Global font */
 @layer base {
-  html, body, #root { @apply bg-white font-sans; }
+  html, body, #root { @apply bg-white font-sans text-[#121212]; }
+
+  *,
+  *::before,
+  *::after,
+  button,
+  input,
+  textarea,
+  select {
+    font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  }
 }
 
 html {
@@ -33,8 +43,8 @@ svg {
 a.active hr { display: block; }
 
 .prata-regular {
-  font-family: "Prata", serif;
-  font-weight: 600; /* Prata is 400 */
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+  font-weight: 600;
   font-style: normal;
 }
 
@@ -63,6 +73,108 @@ html, body {
 
 .nancy-announcement-marquee {
   animation: nancy-announcement-marquee 28s linear infinite;
+  will-change: transform;
+}
+
+.sotra-announcement-message {
+  animation: sotra-announcement-message 680ms ease both;
+  will-change: opacity, transform;
+}
+
+.sotra-menu-click {
+  animation: sotra-menu-click 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: center;
+}
+
+.sotra-search-click {
+  animation: sotra-search-click 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  transform-origin: center;
+}
+
+.sotra-navbar-logo-frame {
+  position: relative;
+  display: block;
+  overflow: hidden;
+}
+
+.sotra-navbar-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.sotra-hero-title {
+  text-shadow:
+    0 2px 16px rgba(0, 0, 0, 0.32),
+    0 1px 2px rgba(0, 0, 0, 0.36);
+}
+
+.sotra-preview-loader-mark {
+  position: relative;
+  width: 12rem;
+  height: 15.5rem;
+  display: grid;
+  place-items: center;
+  isolation: isolate;
+}
+
+.sotra-preview-loader-mark > span {
+  position: absolute;
+  inset: 1.15rem 0.05rem;
+  border: 1px solid rgba(0, 0, 0, 0.14);
+  border-radius: 9999px;
+  animation: sotra-preview-loader-ring 1.55s ease-in-out infinite;
+  will-change: opacity, transform;
+}
+
+.sotra-preview-loader-mark > span:nth-child(2) {
+  inset: 2.25rem 1.1rem;
+  animation-delay: 160ms;
+}
+
+.sotra-preview-loader-mark > span:nth-child(3) {
+  inset: 3.35rem 2.15rem;
+  border-color: rgba(0, 0, 0, 0.26);
+  animation-delay: 320ms;
+}
+
+.sotra-preview-logo-frame {
+  position: relative;
+  width: 10.25rem;
+  height: 13.55rem;
+  overflow: hidden;
+  border-radius: 0;
+  background: #fff;
+  box-shadow: none;
+  animation: sotra-preview-logo-rise 920ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  z-index: 1;
+}
+
+.sotra-preview-logo {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transform-origin: center;
+  animation: sotra-preview-logo-breathe 1.55s ease-in-out infinite;
+}
+
+.sotra-preview-loader-line {
+  position: relative;
+  width: min(13rem, 58vw);
+  height: 1px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.13);
+}
+
+.sotra-preview-loader-line span {
+  position: absolute;
+  inset-block: 0;
+  left: 0;
+  width: 42%;
+  background: #111;
+  animation: sotra-preview-loader-line 1.2s ease-in-out infinite;
   will-change: transform;
 }
 
@@ -201,25 +313,9 @@ button:disabled {
   inset-block: 0;
   left: 0;
   background: #000;
-  transition: transform 240ms ease;
+  transition: transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
-}
-
-.nancy-shade-progress {
-  position: relative;
-  height: 2px;
-  margin: 0 0.5rem;
-  overflow: hidden;
-  background: rgba(0, 0, 0, 0.14);
-}
-
-.nancy-shade-progress span {
-  position: absolute;
-  inset-block: 0;
-  left: 0;
-  background: #000;
-  transition: transform 240ms ease;
-  will-change: transform;
+  transform: translate3d(0, 0, 0);
 }
 
 .nancy-video-skeleton {
@@ -283,6 +379,28 @@ button:disabled {
   display: inline-block;
   transform-origin: center;
   transition: color 180ms ease, transform 220ms ease, opacity 220ms ease;
+}
+
+.sotra-price {
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif !important;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.055em;
+}
+
+.sotra-sale-price {
+  color: #111;
+  font-weight: 700;
+}
+
+.sotra-old-price {
+  font-family: "Cormorant Garamond", Georgia, "Times New Roman", serif !important;
+  color: rgba(0, 0, 0, 0.42);
+  font-variant-numeric: tabular-nums;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-decoration-line: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: rgba(0, 0, 0, 0.58);
 }
 
 .nancy-price-value.is-changing,
@@ -407,6 +525,86 @@ button:disabled {
   }
   to {
     transform: translateX(-50%);
+  }
+}
+
+@keyframes sotra-announcement-message {
+  0% {
+    opacity: 0;
+    transform: translateY(0.45rem);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes sotra-menu-click {
+  0% {
+    transform: rotate(0deg) scale(1);
+  }
+  45% {
+    transform: rotate(90deg) scale(0.88);
+  }
+  100% {
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+@keyframes sotra-search-click {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  45% {
+    transform: scale(0.82) rotate(-12deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes sotra-preview-loader-ring {
+  0%,
+  100% {
+    opacity: 0.2;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.82;
+    transform: scale(1.04);
+  }
+}
+
+@keyframes sotra-preview-logo-rise {
+  0% {
+    opacity: 0;
+    transform: translateY(0.65rem) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes sotra-preview-logo-breathe {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.035);
+  }
+}
+
+@keyframes sotra-preview-loader-line {
+  0% {
+    transform: translateX(-105%);
+  }
+  55% {
+    transform: translateX(80%);
+  }
+  100% {
+    transform: translateX(250%);
   }
 }
 

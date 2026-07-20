@@ -8,10 +8,10 @@ const defaultImages = {
   key: "main",
   aboutImage: "",
   aboutImageFileId: "",
-  aboutImageAlt: "Be Radiant by Nancy collection",
+  aboutImageAlt: "SotraBrand collection",
   contactImage: "",
   contactImageFileId: "",
-  contactImageAlt: "Be Radiant by Nancy contact",
+  contactImageAlt: "SotraBrand contact",
 };
 
 const getOrCreatePageImages = async () => {

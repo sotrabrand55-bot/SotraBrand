@@ -35,7 +35,7 @@ const Product = () => {
     return (
       <main className="flex min-h-[65vh] flex-col items-center justify-center bg-white px-5 py-20 text-center text-black">
         <p className="text-xs font-semibold uppercase tracking-[0.22em] text-black/45">
-          Be Radiant By Nancy
+          SotraBrand
         </p>
         <h1 className="mt-4 font-serif text-5xl">Product not found</h1>
         <Link
@@ -54,7 +54,6 @@ const Product = () => {
       <FeaturedProducts
         productsOverride={[product]}
         includeVideoGallery={false}
-        showSocialProof
         hideFullDetails
         showNavigation={false}
         showSetContents
@@ -62,7 +61,7 @@ const Product = () => {
         ariaLabel={`${product.name} product details`}
       />
 
-      <section className="border-t border-black/10 bg-white px-4 pb-16 pt-10 sm:px-[5vw] md:px-[7vw] lg:px-[3vw] lg:pt-14">
+      <section className="border-t border-black/10 bg-white px-4 pb-16 pt-10 sm:px-6 lg:px-10 lg:pt-14">
         <div className="mx-auto max-w-[1480px]">
           <RelatedProducts
             category={product.category}

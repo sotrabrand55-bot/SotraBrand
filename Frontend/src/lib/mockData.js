@@ -1,417 +1,370 @@
-import { mystiqueProductMedia, pheromoneTouchProductMedia } from "./productMediaData";
+import abayaPleatedPlum from "../assets/sotraBrand/abaya (1).jpeg";
+import abayaButtonBeige from "../assets/sotraBrand/abaya (2).jpeg";
+import abayaButtonBrown from "../assets/sotraBrand/abaya (3).jpeg";
+import abayaPrayerGreen from "../assets/sotraBrand/abaya (4).jpeg";
+import blouse1 from "../assets/sotraBrand/blouses1 (1).jpeg";
+import blouse2 from "../assets/sotraBrand/blouses1 (2).jpeg";
+import blouse3 from "../assets/sotraBrand/blouses1 (3).jpeg";
+import dressesImage from "../assets/sotraBrand/dresses.jpeg";
+import dressFloralSage from "../assets/sotraBrand/dresses (1).jpeg";
+import dressPlainRed from "../assets/sotraBrand/dresses (3).jpeg";
+import dressPlainBlueSide from "../assets/sotraBrand/dresses (4).jpeg";
+import dressFloralYellow from "../assets/sotraBrand/dresses (5).jpeg";
+import header1 from "../assets/sotraBrand/Header_1.jpeg";
+import header2 from "../assets/sotraBrand/Header_2.jpeg";
+import header3 from "../assets/sotraBrand/Header_3.jpeg";
+import hijab2 from "../assets/sotraBrand/hijab2_.jpeg";
+import hijab3 from "../assets/sotraBrand/hijab3.jpeg";
+import hijab4 from "../assets/sotraBrand/hijab4.jpeg";
+import hijab5 from "../assets/sotraBrand/hijab5.jpeg";
+import hijabProducts from "../assets/sotraBrand/hijab_products.jpeg";
+import islamicEssentials1 from "../assets/sotraBrand/islamic (1).jpeg";
+import islamicEssentials2 from "../assets/sotraBrand/islamic (2).jpeg";
+import sotraVideo from "../assets/sotraBrand/WhatsApp Video 2026-07-20 at 10.04.08 AM.mp4";
 
 const now = Date.now();
-const pheromoneGiftBoxProductsImage =
-  pheromoneTouchProductMedia.storyImages.find((item) => item.id === "pheromone-gift-box-products")
-    ?.image || pheromoneTouchProductMedia.storyImages[0]?.image || "";
-const mystiqueGiftBoxImage =
-  mystiqueProductMedia.storyImages.find((item) => item.id === "mystique-gift-box-story")
-    ?.image || mystiqueProductMedia.shadeOptions.find((item) => item.id === "mystique-gift-box")?.image || "";
+const brandLabel = "SOTRA BRAND";
+const heroTitle = "SOTRA\nBringing Modesty to Every Wardrobe";
 
-const featuredPheromoneTouchProduct = {
-    _id: "mock-pheromone-touch-1",
-    name: "Pheromone Touch",
-    description:
-      "Body Splash Pheromone Touch. A fresh, radiant body mist with a soft feminine trail.",
-    price: 36,
-    discountPrice: 0,
-    rating: 5,
-    reviewCount: 2,
-    image: pheromoneTouchProductMedia.shadeOptions.map((option) => option.image),
-    storyImages: pheromoneTouchProductMedia.storyImages,
-    shadeOptions: pheromoneTouchProductMedia.shadeOptions,
-    category: "Pheromone Touch",
-    subCategory: "Pheromone Touch",
-    concentration: "Body Ritual",
-    sizes: ["100ml"],
-    colors: ["body splash", "body oil", "body lotion"],
-    bestseller: true,
-    newArrival: true,
-    onSales: true,
-    featuredSlot: 1,
-    showSmallImages: true,
-    active: true,
-    outOfStock: false,
-    stock: 18,
-    date: now - 1000,
+const categoryImages = {
+  Abaya: [abayaButtonBrown, abayaButtonBeige, abayaPleatedPlum, abayaPrayerGreen],
+  Dresses: [dressesImage, dressFloralSage, dressPlainRed, dressPlainBlueSide, dressFloralYellow],
+  Hijabs: [hijabProducts, hijab2, hijab3, hijab4, hijab5],
+  "Islamic Essentials": [islamicEssentials1, islamicEssentials2],
+  Blouses: [blouse1, blouse2, blouse3],
 };
 
-const featuredMystiqueProduct = {
-    _id: "mock-mystique-featured-1",
-    name: "Mystique Parfum",
-    description:
-      "Mystique Parfum. A deep red floral fragrance with a confident, elegant trail.",
-    price: 48,
-    discountPrice: 0,
-    rating: 5,
-    reviewCount: 6,
-    image: mystiqueProductMedia.shadeOptions.map((option) => option.image),
-    storyImages: mystiqueProductMedia.storyImages,
-    shadeOptions: mystiqueProductMedia.shadeOptions,
-    category: "Mystique Set",
-    subCategory: "Mystique parfum",
-    concentration: "Parfum",
-    sizes: ["100ml"],
-    colors: ["mystique parfum", "red bloom", "orchid touch", "gift box"],
-    bestseller: true,
-    newArrival: true,
-    onSales: false,
-    featuredSlot: 2,
-    showSmallImages: true,
-    active: true,
-    outOfStock: false,
-    stock: 14,
-    date: now - 900,
+const productImageSets = {
+  Abaya: [
+    { images: [abayaButtonBeige, abayaButtonBrown], colors: ["Beige", "Brown"] },
+    { images: [abayaPleatedPlum], colors: ["Plum"] },
+    { images: [abayaPrayerGreen], colors: ["Green"] },
+    { images: [abayaButtonBrown, abayaButtonBeige], colors: ["Brown", "Beige"] },
+    { images: [abayaPleatedPlum], colors: ["Plum"] },
+    { images: [abayaPrayerGreen], colors: ["Green"] },
+  ],
+  Dresses: [
+    {
+      images: [dressesImage, dressPlainBlueSide, dressPlainRed],
+      colors: ["Sky Blue", "Aqua Blue", "Burgundy"],
+    },
+    {
+      images: [dressFloralSage, dressFloralYellow],
+      colors: ["Sage Floral", "Yellow Floral"],
+    },
+    { images: [dressPlainRed, dressPlainBlueSide], colors: ["Burgundy", "Aqua Blue"] },
+    { images: [dressPlainBlueSide, dressesImage], colors: ["Aqua Blue", "Sky Blue"] },
+    { images: [dressFloralYellow, dressFloralSage], colors: ["Yellow Floral", "Sage Floral"] },
+    { images: [dressesImage], colors: ["Sky Blue"] },
+  ],
+  Hijabs: [
+    { images: [hijabProducts], colors: ["Classic"] },
+    { images: [hijab2], colors: ["Soft Neutral"] },
+    { images: [hijab3], colors: ["Everyday"] },
+    { images: [hijab4], colors: ["Essential"] },
+    { images: [hijab5], colors: ["Statement"] },
+    { images: [hijabProducts, hijab2], colors: ["Classic", "Soft Neutral"] },
+  ],
+  "Islamic Essentials": [
+    { images: [islamicEssentials1], colors: ["Black Sleeves"] },
+    { images: [islamicEssentials2], colors: ["Black Gloves"] },
+    { images: [islamicEssentials1, islamicEssentials2], colors: ["Black Sleeves", "Black Gloves"] },
+    { images: [islamicEssentials2], colors: ["Classic Black"] },
+    { images: [islamicEssentials1], colors: ["Soft Black"] },
+    { images: [islamicEssentials2, islamicEssentials1], colors: ["Black Gloves", "Black Sleeves"] },
+  ],
+  Blouses: [
+    { images: [blouse1], colors: ["Rose"] },
+    { images: [blouse2], colors: ["Ivory"] },
+    { images: [blouse3], colors: ["Soft Pink"] },
+    { images: [blouse1, blouse2], colors: ["Rose", "Ivory"] },
+    { images: [blouse2, blouse3], colors: ["Ivory", "Soft Pink"] },
+    { images: [blouse3], colors: ["Soft Pink"] },
+  ],
 };
 
-const catalogDefinitions = [
+export const sotraCollections = [
+  "New Arrival",
+  "Everyday Modesty",
+  "Elegant Edit",
+  "Hijab Essentials",
+];
+
+export const sotraCategoryTiles = [
+  { label: "Abaya", slug: "abaya", image: abayaButtonBrown },
+  { label: "Dresses", slug: "dresses", image: dressesImage },
+  { label: "Hijabs", slug: "hijabs", image: hijabProducts },
+  { label: "Islamic Essentials", slug: "islamic-essentials", image: islamicEssentials1 },
+  { label: "Blouses", slug: "blouses", image: blouse1 },
+];
+
+export const sotraHero = {
+  eyebrow: "SOTRA",
+  title: heroTitle,
+  buttonLabel: "Discover More",
+  to: "/collection",
+  image: header1,
+  desktopImage: header1,
+};
+
+export const sotraSaleFeature = {
+  title: heroTitle,
+  buttonLabel: "On Sale",
+  to: "/on-sale",
+  image: header2,
+};
+
+export const sotraHeroSlides = [
   {
-    category: "Pheromone Touch",
-    subCategory: "Pheromone Touch",
-    slug: "pheromone-touch",
-    basePrice: 36,
-    size: "100ml",
-    concentration: "Body Ritual",
+    id: "sotra-modesty-wardrobe",
+    title: heroTitle,
+    buttonLabel: "Discover More",
+    to: "/collection",
+    image: header1,
+    desktopImage: header1,
   },
   {
-    category: "Pheromone Touch",
-    subCategory: "Body lotion pheromone",
-    slug: "body-lotion-pheromone",
-    basePrice: 28,
-    size: "250ml",
-    concentration: "Body Lotion",
+    id: "sotra-sale-edit",
+    title: heroTitle,
+    buttonLabel: "On Sale",
+    to: "/on-sale",
+    image: header2,
+    desktopImage: header2,
   },
   {
-    category: "Pheromone Touch",
-    subCategory: "Body oil pheromone",
-    slug: "body-oil-pheromone",
-    basePrice: 32,
-    size: "100ml",
-    concentration: "Body Oil",
-  },
-  {
-    category: "Pheromone Touch",
-    subCategory: "Body splash pheromone",
-    slug: "body-splash-pheromone",
-    basePrice: 26,
-    size: "250ml",
-    concentration: "Body Splash",
-  },
-  {
-    category: "Pheromone Touch",
-    subCategory: "Body scrub pheromone",
-    slug: "body-scrub-pheromone",
-    basePrice: 30,
-    size: "300g",
-    concentration: "Body Scrub",
-  },
-  {
-    category: "Mystique Set",
-    subCategory: "Mystique parfum",
-    slug: "mystique-parfum",
-    basePrice: 48,
-    size: "50ml",
-    concentration: "Parfum",
-  },
-  {
-    category: "Mystique Set",
-    subCategory: "Body lotion mystique",
-    slug: "body-lotion-mystique",
-    basePrice: 30,
-    size: "250ml",
-    concentration: "Body Lotion",
-  },
-  {
-    category: "Mystique Set",
-    subCategory: "Body splash mystique",
-    slug: "body-splash-mystique",
-    basePrice: 28,
-    size: "250ml",
-    concentration: "Body Splash",
-  },
-  {
-    category: "Roll-on",
-    subCategory: "Radiant charm",
-    slug: "radiant-charm",
-    basePrice: 18,
-    size: "10ml",
-    concentration: "Roll-on",
+    id: "sotra-new-arrivals",
+    title: heroTitle,
+    buttonLabel: "Discover More",
+    to: "/collection",
+    image: header3,
+    desktopImage: header3,
   },
 ];
 
-const productNames = [
-  "Original",
-  "Rose Glow",
-  "Velvet Bloom",
-  "Soft Musk",
-  "Golden Touch",
-  "Midnight",
-  "Radiant",
-];
+const productCatalog = {
+  Abaya: [
+    ["Black Flow Abaya", "Elegant Edit", 90, 0],
+    ["Everyday Soft Abaya", "Everyday Modesty", 82, 68],
+    ["Layered Modest Abaya", "New Arrival", 96, 0],
+    ["Classic Sotra Abaya", "Elegant Edit", 88, 0],
+    ["Premium Occasion Abaya", "New Arrival", 110, 92],
+    ["Comfort Wrap Abaya", "Everyday Modesty", 78, 0],
+  ],
+  Dresses: [
+    ["Modest Satin Dress", "Elegant Edit", 78, 0],
+    ["Soft Day Dress", "Everyday Modesty", 72, 58],
+    ["Evening Modesty Dress", "New Arrival", 95, 0],
+    ["Garden Flow Dress", "Elegant Edit", 86, 0],
+    ["Long Sleeve Dress", "Everyday Modesty", 80, 64],
+    ["Sotra Occasion Dress", "New Arrival", 105, 0],
+  ],
+  Hijabs: [
+    ["Premium Chiffon Hijab", "Hijab Essentials", 18, 0],
+    ["Soft Jersey Hijab", "Everyday Modesty", 20, 16],
+    ["Essential Crepe Hijab", "Hijab Essentials", 17, 0],
+    ["Everyday Modal Hijab", "New Arrival", 22, 0],
+    ["Elegant Evening Hijab", "Elegant Edit", 24, 19],
+    ["Classic Sotra Hijab", "Hijab Essentials", 18, 0],
+  ],
+  "Islamic Essentials": [
+    ["Sotra Arm Sleeves", "Hijab Essentials", 12, 0],
+    ["Sotra Modest Gloves", "Everyday Modesty", 14, 0],
+    ["Arm Sleeves And Gloves Set", "Hijab Essentials", 22, 18],
+    ["Classic Black Gloves", "New Arrival", 14, 0],
+    ["Soft Black Arm Sleeves", "Everyday Modesty", 12, 0],
+    ["Sotra Modesty Essentials Set", "Elegant Edit", 24, 20],
+  ],
+  Blouses: [
+    ["Soft Modest Blouse", "Everyday Modesty", 42, 0],
+    ["Elegant Tie Blouse", "Elegant Edit", 48, 38],
+    ["Classic Covered Blouse", "New Arrival", 45, 0],
+    ["Minimal Daily Blouse", "Everyday Modesty", 39, 0],
+    ["Refined Satin Blouse", "Elegant Edit", 55, 44],
+    ["Sotra Layering Blouse", "New Arrival", 46, 0],
+  ],
+};
 
-const catalogImages = [
-  ...pheromoneTouchProductMedia.shadeOptions.map((option) => option.image),
-  ...pheromoneTouchProductMedia.storyImages.map((story) => story.image),
-];
+const slugify = (value) =>
+  String(value)
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
 
-const generatedCatalogProducts = catalogDefinitions.flatMap(
-  (definition, definitionIndex) => {
-    const startIndex = definition.slug === "pheromone-touch" ? 2 : 1;
+const productDescriptionByCategory = {
+  Abaya:
+    "A graceful abaya selected for modest coverage, easy movement, and refined everyday elegance. The silhouette is comfortable without losing its polished shape, making it suitable for visits, errands, prayer, and special moments.",
+  Dresses:
+    "A modest dress designed with a soft feminine line and thoughtful coverage. The fabric, length, and movement make it easy to style for daytime, gatherings, and elevated occasions while staying true to SOTRA's elegant modest mood.",
+  Hijabs:
+    "A comfortable hijab chosen for smooth drape, reliable coverage, and styling flexibility. It sits neatly with everyday outfits and occasion looks, giving you a clean finish without feeling heavy.",
+  "Islamic Essentials":
+    "An essential modest piece created to support daily routines with comfort and confidence. It is practical, refined, and easy to pair with SOTRA dresses, abayas, and hijabs.",
+  Blouses:
+    "A modest blouse with a clean shape, soft coverage, and an easy fit for layering. It pairs beautifully with skirts, trousers, abayas, and hijabs for a complete SOTRA wardrobe look.",
+};
 
-    return Array.from(
-      { length: definition.slug === "pheromone-touch" ? 6 : 7 },
-      (_, localIndex) => {
-        const productNumber = startIndex + localIndex;
-        const sequence = definitionIndex * 7 + productNumber;
-        const imageStart = (sequence * 2) % catalogImages.length;
-        const images = Array.from(
-          { length: 3 },
-          (_, imageIndex) =>
-            catalogImages[(imageStart + imageIndex) % catalogImages.length]
-        );
-        const stock = sequence % 11 === 0 ? 0 : 3 + ((sequence * 5) % 24);
-        const hasDiscount = sequence % 4 === 0;
-        const price = definition.basePrice + localIndex * 2;
+const colorOptionNames = ["Black", "Ivory", "Mocha"];
+const fitRangeCategories = new Set(["Abaya", "Dresses", "Blouses"]);
 
-        return {
-          _id: `mock-${definition.slug}-${productNumber}`,
-          name: `${definition.subCategory} ${productNames[localIndex]}`,
-          description: `${definition.subCategory} ${productNames[localIndex]}. A Be Radiant by Nancy ritual designed for softness, confidence, and a beautiful lasting finish.`,
-          price,
-          discountPrice: hasDiscount ? Math.max(1, price - 5) : 0,
-          rating: 4 + (sequence % 2) * 0.5,
-          reviewCount: 3 + ((sequence * 3) % 38),
-          image: images,
-          storyImages: images.map((image, storyIndex) => ({
-            id: `${definition.slug}-${productNumber}-story-${storyIndex + 1}`,
-            image,
-            alt: `${definition.subCategory} ${productNames[localIndex]}`,
-          })),
-          category: definition.category,
-          subCategory: definition.subCategory,
-          concentration: definition.concentration,
-          sizes: [definition.size],
-          colors: ["radiant", "soft", "nancy"],
-          bestseller: sequence % 3 === 0,
-          newArrival: sequence % 2 === 0,
-          onSales: hasDiscount,
-          featuredSlot: undefined,
-          showSmallImages: sequence % 2 === 0,
-          active: true,
-          outOfStock: stock === 0,
-          stock,
-          date: now - sequence * 1000,
-        };
-      }
-    );
+const getProductImageSet = (category, itemIndex) => {
+  const sets = productImageSets[category];
+  if (Array.isArray(sets) && sets.length) {
+    return sets[itemIndex % sets.length];
+  }
+
+  const pool = categoryImages[category] || [header1, header2, header3];
+  return {
+    images: pool.length ? [pool[itemIndex % pool.length]] : [header1],
+    colors: [colorOptionNames[itemIndex % colorOptionNames.length]],
+  };
+};
+
+const buildProductDescription = (name, category, collection) =>
+  `${name} belongs to the ${collection} selection at SotraBrand. ${
+    productDescriptionByCategory[category] ||
+    "This piece is selected for modest styling, comfort, and everyday elegance."
+  } Every detail is chosen to help you feel confident, covered, and beautifully dressed with purpose.`;
+
+const buildOptionDescription = (name, category, collection, optionLabel) =>
+  `${optionLabel} color option for ${name}. This ${category.toLowerCase()} keeps the same ${collection} fit and modest silhouette while giving the customer a clear color choice for the order.`;
+
+const productSeeds = Object.entries(productCatalog).flatMap(([category, items], categoryIndex) =>
+  items.map(([name, collection, price, discountPrice], itemIndex) => [
+    `sotra-${slugify(category)}-${itemIndex + 1}`,
+    name,
+    category,
+    collection,
+    price,
+    discountPrice,
+    categoryIndex,
+    itemIndex,
+  ])
+);
+
+export const mockProducts = productSeeds.map(
+  ([id, name, category, collection, price, discountPrice, categoryIndex, itemIndex], index) => {
+    const imageSet = getProductImageSet(category, itemIndex);
+    const images = (Array.isArray(imageSet.images) ? imageSet.images : []).filter(Boolean);
+    const optionLabels = (Array.isArray(imageSet.colors) ? imageSet.colors : [])
+      .filter(Boolean)
+      .slice(0, images.length);
+
+    return {
+      _id: id,
+      name,
+      brand: brandLabel,
+      description: buildProductDescription(name, category, collection),
+      price,
+      discountPrice: discountPrice || 0,
+      image: images.length ? images : [header1],
+      storyImages: images.map((image, storyIndex) => ({
+        id: `${id}-story-${storyIndex + 1}`,
+        image,
+        alt: storyIndex === 0 ? name : `${name} detail ${storyIndex + 1}`,
+        order: storyIndex + 1,
+      })),
+      shadeOptions: images.map((image, optionIndex) => ({
+        id: `${id}-icon-${optionIndex + 1}`,
+        label: optionLabels[optionIndex] || colorOptionNames[optionIndex] || `Color ${optionIndex + 1}`,
+        cartValue: optionLabels[optionIndex] || colorOptionNames[optionIndex] || `Color ${optionIndex + 1}`,
+        image,
+        description: buildOptionDescription(
+          name,
+          category,
+          collection,
+          optionLabels[optionIndex] || colorOptionNames[optionIndex] || `Color ${optionIndex + 1}`
+        ),
+        order: optionIndex + 1,
+      })),
+      category,
+      subCategory: category,
+      concentration: collection,
+      collection,
+      sizes: [],
+      fitRange: fitRangeCategories.has(category) ? "Fits 50 kg - 110 kg" : "",
+      fitMin: fitRangeCategories.has(category) ? 50 : null,
+      fitMax: fitRangeCategories.has(category) ? 110 : null,
+      fitUnit: fitRangeCategories.has(category) ? "kg" : "",
+      colors: (optionLabels.length ? optionLabels : colorOptionNames).map((color) => color.toLowerCase()),
+      bestseller: index % 4 === 0,
+      newArrival: collection === "New Arrival",
+      onSales: Boolean(discountPrice),
+      active: true,
+      outOfStock: index === 11,
+      stock: index === 11 ? 0 : 4 + categoryIndex + itemIndex * 3,
+      date: now - index * 1000,
+    };
   }
 );
 
-export const mockProducts = [
-  featuredPheromoneTouchProduct,
-  featuredMystiqueProduct,
-  ...generatedCatalogProducts,
-];
-
-export const mockHeaderSlides = [
-  {
-    _id: "mock-header-1",
-    image: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-03_at_9.03.49_PM_YJfO-9jLTx.jpeg",
-    desktopImage: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-05_at_9.31.12_PM_mXLwfuaNt.jpeg",
-    order: 0,
-    active: true,
-  },
-  {
-    _id: "mock-header-2",
-    image: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-05_at_9.31.12_PM_3SXZ2cOee.jpeg",
-    desktopImage: "",
-    order: 1,
-    active: true,
-  },
-  {
-    _id: "mock-header-3",
-    image: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-05_at_9.32.19_PM__1__KOAgKtYtI.jpeg",
-    desktopImage: "",
-    order: 2,
-    active: true,
-  },
-];
+export const mockHeaderSlides = sotraHeroSlides.map((slide, index) => ({
+  _id: slide.id,
+  image: slide.image,
+  desktopImage: slide.desktopImage,
+  order: index,
+  active: true,
+}));
 
 export const mockHomepageSections = [
   {
-    key: "luxury-gallery",
-    title: "Luxury Video Gallery",
-    active: true,
-    preferredSizeNote: "Mobile: vertical 9:16 videos/images. Laptop: 4 vertical columns work best.",
-    items: [
-      {
-        id: "nancy-video-1",
-        type: "video",
-        src: "https://ik.imagekit.io/aovmyygbb/luxury-gallery-nancy-video-1-1780769455770-3690_1l8g6lDTe.mp4",
-        poster: "",
-        alt: "Nancy video 1",
-        label: "Nancy video 1",
-        order: 0,
-        active: true,
-      },
-      {
-        id: "nancy-video-2",
-        type: "video",
-        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Video_2026-06-05_at_9.47.07_PM_7p9uQ83mp.mp4",
-        poster: "",
-        alt: "Nancy video 2",
-        label: "Nancy video 2",
-        order: 1,
-        active: true,
-      },
-      {
-        id: "nancy-gallery-image-1",
-        type: "video",
-        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Video_2026-06-05_at_10.06.33_PM_NMGNt6M2I.mp4",
-        poster: "",
-        alt: "Pheromone Touch campaign",
-        label: "Pheromone Touch campaign",
-        order: 2,
-        active: true,
-      },
-      {
-        id: "nancy-video-3",
-        type: "video",
-        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Video_2026-06-05_at_10.03.50_PM_gQLA0to4h.mp4",
-        poster: "",
-        alt: "Nancy video 3",
-        label: "Nancy video 3",
-        order: 3,
-        active: true,
-      },
-      {
-        id: "nancy-video-4",
-        type: "video",
-        src: "https://ik.imagekit.io/aovmyygbb/luxury-gallery-nancy-video-4-1780769459546-215_X5h9-V4wJ.mp4",
-        poster: "",
-        alt: "Nancy video 4",
-        label: "Nancy video 4",
-        order: 4,
-        active: true,
-      },
-      {
-        id: "nancy-video-5",
-        type: "video",
-        src: "https://ik.imagekit.io/aovmyygbb/luxury-gallery-nancy-video-5-1780769460410-2190_AIUb7MWdZ.mp4",
-        poster: "",
-        alt: "Nancy video 5",
-        label: "Nancy video 5",
-        order: 5,
-        active: true,
-      },
-    ],
-  },
-  {
-    key: "single-campaign",
-    title: "Single Campaign Video",
-    active: true,
-    preferredSizeNote: "Mobile: 9:16 vertical. Laptop: wide 2:1 media matching the header width.",
-    items: [
-      {
-        id: "nancy-single-campaign-video",
-        type: "video",
-        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Video_2026-06-05_at_10.06.37_PM_XL4Er_YDF.mp4",
-        desktopSrc: "",
-        poster: "",
-        alt: "Be Radiant by Nancy campaign video",
-        label: "Be Radiant by Nancy campaign video",
-        order: 0,
-        active: true,
-      },
-    ],
-  },
-  {
     key: "featured-set-1",
-    title: "Featured Set Picture 1",
+    title: "SotraBrand Modest Edit",
     active: true,
-    preferredSizeNote: "Single image section. Mobile: 9:16 vertical. Laptop: wide 2:1 set image.",
     items: [
       {
-        id: "featured-set-1-image",
+        id: "sotra-sale-feature",
         type: "image",
-        src: pheromoneGiftBoxProductsImage,
+        src: sotraSaleFeature.image,
         desktopSrc: "",
-        poster: "",
-        alt: "Pheromone Touch set by Nancy",
-        label: "Pheromone Touch Set",
-        buttonLabel: "See Full Set",
+        alt: "SotraBrand modest sale pieces",
+        label: "SotraBrand Modest Edit",
+        buttonLabel: "On Sale",
         productId: "",
-        order: 0,
         active: true,
+        order: 0,
       },
     ],
   },
   {
-    key: "featured-set-2",
-    title: "Featured Set Picture 2",
+    key: "luxury-gallery",
+    title: "SotraBrand Edit",
     active: true,
-    preferredSizeNote: "Single image section. Mobile: 9:16 vertical. Laptop: wide 2:1 set image.",
     items: [
       {
-        id: "featured-set-2-image",
-        type: "image",
-        src: mystiqueGiftBoxImage,
-        desktopSrc: "",
-        poster: "",
-        alt: "Mystique set by Nancy",
-        label: "Mystique Set",
-        buttonLabel: "See Full Set",
-        productId: "",
-        order: 0,
-        active: true,
-      },
-    ],
-  },
-  {
-    key: "from-the-gram",
-    title: "From The Gram",
-    active: true,
-    preferredSizeNote: "Mobile: vertical 9:16. Laptop: 4 vertical columns with square edges.",
-    items: [
-      {
-        id: "from-the-gram-image-1",
-        type: "image",
-        src: "https://ik.imagekit.io/aovmyygbb/from-the-gram-from-the-gram-image-1-1780769462839-2104_7pqDQdiIt.jpeg",
-        poster: "",
-        alt: "Be Radiant by Nancy campaign",
-        label: "Be Radiant by Nancy campaign",
-        order: 0,
-        active: true,
-      },
-      {
-        id: "from-the-gram-video-1",
+        id: "sotra-video-1",
         type: "video",
-        src: "https://ik.imagekit.io/aovmyygbb/from-the-gram-from-the-gram-video-1-1780769463610-4733_r-nVjX7be.mp4",
-        poster: "",
-        alt: "Be Radiant by Nancy social video",
-        label: "Be Radiant by Nancy social video",
+        src: sotraVideo,
+        alt: "SotraBrand modest fashion video",
+        label: "SotraBrand video",
+        active: true,
+        order: 0,
+      },
+      {
+        id: "sotra-gallery-1",
+        type: "image",
+        src: header1,
+        alt: "SotraBrand abaya styling",
+        label: "SotraBrand abaya styling",
+        active: true,
         order: 1,
-        active: true,
       },
       {
-        id: "from-the-gram-mystique-red-dress",
+        id: "sotra-gallery-2",
         type: "image",
-        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-05_at_7.07.40_PM_ImvF4BwlT.jpeg",
-        poster: "",
-        alt: "Mystique perfume held against red satin",
-        label: "Mystique perfume held against red satin",
+        src: hijabProducts,
+        alt: "SotraBrand hijab essentials",
+        label: "SotraBrand hijab essentials",
+        active: true,
         order: 2,
-        active: true,
       },
       {
-        id: "from-the-gram-image-3",
+        id: "sotra-gallery-3",
         type: "image",
-        src: "https://ik.imagekit.io/aovmyygbb/WhatsApp_Image_2026-06-05_at_7.07.41_PM_oD4Rmd5Ax.jpeg",
-        poster: "",
-        alt: "Be Radiant by Nancy fragrance story",
-        label: "Be Radiant by Nancy fragrance story",
-        order: 3,
+        src: blouse1,
+        alt: "SotraBrand blouse edit",
+        label: "SotraBrand blouse edit",
         active: true,
+        order: 3,
       },
     ],
   },
@@ -427,25 +380,29 @@ export const getMockHomepageSectionItems = (key) =>
       src: item.src,
       desktopSrc: item.desktopSrc || "",
       poster: item.poster || "",
-      alt: item.alt || item.label || "Be Radiant by Nancy media",
-      label: item.label || item.alt || "Be Radiant by Nancy media",
-      buttonLabel: item.buttonLabel ?? "See Full Set",
+      alt: item.alt || item.label || "SotraBrand media",
+      label: item.label || item.alt || "SotraBrand media",
+      buttonLabel: item.buttonLabel ?? "Discover More",
       productId: item.productId || "",
     }));
 
 export const mockSettings = {
-  delivery_fee: 3,
+  delivery_fee: 5,
   announcementEnabled: true,
-  announcementItems: ["FREE 10 mL Tester With Every Purchase", "Free Shipping On All Orders"],
+  announcementItems: ["Welcome to our store", "Cash On Delivery", "Tripoli Delivery Only $2"],
   freeShippingEnabled: true,
-  freeShippingText: "Free Shipping On All Orders",
-  availableNowText: "AVAILABLE NOW",
-  brandEmail: "beradiantnancy@gmail.com",
+  freeShippingText: "Delivery $5 All Over Lebanon",
+  availableNowText: "SOTRA Modest Fashion",
+  brandEmail: "Serinachendeb133@gmail.com",
+  brandPhone: "71872919",
   socialLinks: {
-    instagram: "https://www.instagram.com/radiant_bynancy?igsh=MWY3YmwxcjNyYTNjcg==",
-    facebook: "https://www.facebook.com/share/18oAYDyvZt/",
-    tiktok: "https://www.tiktok.com/@radiant.nancy?_r=1&_t=ZS-96qoZYlR9xF",
-    email: "beradiantnancy@gmail.com",
+    instagram:
+      "https://www.instagram.com/sotra_brand_hijab?igsh=MWZiNzdkM3BuZnVndA%3D%3D&utm_source=qr",
+    facebook: "https://www.facebook.com/share/1Cnd12KNGw/?mibextid=wwXIfr",
+    tiktok: "https://www.tiktok.com/@sotrabrand133?_r=1&_t=ZS-98BbAHXPjTc",
+    whatsapp: "https://wa.me/96171872919",
+    email: "Serinachendeb133@gmail.com",
+    phone: "71872919",
   },
 };
 

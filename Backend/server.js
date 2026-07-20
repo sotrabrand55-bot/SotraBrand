@@ -50,6 +50,8 @@ const allowedOrigins = [
   'https://nancy-project-frontend.onrender.com',
    'https://radiantbynancy.com',
   'https://www.radiantbynancy.com',
+  'http://192.168.10.104:5173',
+'http://192.168.10.104:5174',
   ...envAllowedOrigins,
 ].map(normalizeOrigin);
 

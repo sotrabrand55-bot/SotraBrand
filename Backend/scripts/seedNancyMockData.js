@@ -106,11 +106,11 @@ const sectionAssets = (section) =>
 
 const settings = {
   key: "main",
-  delivery_fee: 3,
+  delivery_fee: 5,
   announcementEnabled: true,
-  announcementItems: ["FREE 10 mL Tester With Every Purchase", "Free Shipping On All Orders"],
+  announcementItems: ["Welcome to our store", "Cash On Delivery", "Tripoli Delivery Only $2"],
   freeShippingEnabled: true,
-  freeShippingText: "Free Shipping On All Orders",
+  freeShippingText: "Delivery $5 All Over Lebanon",
   availableNowText: "AVAILABLE NOW",
   brandEmail: "beradiantnancy@gmail.com",
   socialLinks: {
@@ -307,8 +307,6 @@ const buildFeaturedProducts = async () => {
       description: "Body Splash Pheromone Touch. A fresh, radiant body mist with a soft feminine trail.",
       price: 36,
       discountPrice: 0,
-      rating: 5,
-      reviewCount: 2,
       image: pheromoneShades.assets.map((item) => item.url),
       imageMeta: pheromoneShades.assets,
       storyImages: pheromoneStories,
@@ -333,8 +331,6 @@ const buildFeaturedProducts = async () => {
       description: "Mystique Parfum. A deep red floral fragrance with a confident, elegant trail.",
       price: 48,
       discountPrice: 0,
-      rating: 5,
-      reviewCount: 6,
       image: mystiqueShades.assets.map((item) => item.url),
       imageMeta: mystiqueShades.assets,
       storyImages: mystiqueShades.items.map((item, index) => ({
@@ -389,8 +385,6 @@ const buildCatalogProducts = async () => {
         description: `${definition.subCategory} ${productNames[localIndex]}. A Be Radiant by Nancy ritual designed for softness, confidence, and a beautiful lasting finish.`,
         price,
         discountPrice: hasDiscount ? Math.max(1, price - 5) : 0,
-        rating: 4 + (sequence % 2) * 0.5,
-        reviewCount: 3 + ((sequence * 3) % 38),
         image: imageAssets.map((item) => item.url),
         imageMeta: imageAssets,
         storyImages: imageAssets.map((item, storyIndex) => ({

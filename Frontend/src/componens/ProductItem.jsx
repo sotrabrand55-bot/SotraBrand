@@ -184,15 +184,15 @@ const ProductItem = ({
           <div className="mt-3 flex items-end gap-2">
             {hasDiscount ? (
               <>
-                <span className="text-base font-semibold text-[#7b2d2d]">
+                <span className="sotra-price sotra-sale-price text-base font-bold">
                   ${Number(discountPrice).toFixed(2)}
                 </span>
-                <span className="text-sm text-[#a59586] line-through">
+                <span className="sotra-old-price text-sm">
                   ${Number(price).toFixed(2)}
                 </span>
               </>
             ) : (
-              <span className="text-base font-semibold text-[#000000]">
+              <span className="sotra-price text-base font-bold text-[#000000]">
                 ${Number(price).toFixed(2)}
               </span>
             )}

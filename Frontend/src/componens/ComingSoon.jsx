@@ -20,21 +20,21 @@ export default function ComingSoon() {
           fontWeight: "400",
           letterSpacing: "4px",
           margin: 0,
-          fontFamily: "Garamond, serif",
+          fontFamily: '"Cormorant Garamond", Georgia, serif',
         }}
       >
-        BE RADIANT
+        SOTRA
       </h1>
       <p
         style={{
           color: "#000000",
           fontSize: "20px",
           marginTop: "20px",
-          fontFamily: "Poppins, sans-serif",
+          fontFamily: '"Cormorant Garamond", Georgia, serif',
           opacity: 0.9,
         }}
       >
-        by Nancy - Coming Soon
+        Modesty - Coming Soon
       </p>
     </div>
   );

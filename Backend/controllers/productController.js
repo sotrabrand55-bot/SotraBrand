@@ -243,8 +243,6 @@ const addProduct = async (req, res) => {
       // NEW FIELDS we keep the same style (strings/CSV -> convert)
       colors,          // e.g. "Red,Blue"  OR JSON/array from frontend (we will parse here)
       discountPrice,   // string -> Number
-      rating,
-      reviewCount,
       active,          // "true"/"false" -> boolean (default true)
       outOfStock,      // "true"/"false" -> boolean
       stock            // numeric stock count
@@ -296,8 +294,6 @@ const addProduct = async (req, res) => {
       // NEW FIELDS saved the same way
       colors: toArray(colors),                  // "Red,Blue" -> ["Red","Blue"] OR JSON array
       discountPrice: toNum(discountPrice),      // "19.99" -> 19.99
-      rating: toNum(rating) ?? 5,
-      reviewCount: toNum(reviewCount) ?? 0,
       active: active === undefined ? true : toBool(active, true), // default true
       outOfStock: toBool(outOfStock, false),
       stock: toStock(stock, undefined),
@@ -419,8 +415,6 @@ const updateProduct = async (req, res) => {
       // NEW FIELDS (same style)
       colors,         // "Red,Blue" or array
       discountPrice,  // string number
-      rating,
-      reviewCount,
       active,         // "true"/"false"
       outOfStock,     // "true"/"false"
       stock           // numeric stock count
@@ -484,8 +478,6 @@ const updateProduct = async (req, res) => {
         discountPrice !== undefined && discountPrice !== ''
           ? Number(discountPrice)
           : (discountPrice === '' ? undefined : product.discountPrice),
-      rating: rating !== undefined ? Number(rating) : product.rating,
-      reviewCount: reviewCount !== undefined ? Number(reviewCount) : product.reviewCount,
       active: toBool(active, product.active),
       outOfStock: toBool(outOfStock, product.outOfStock),
       stock: toStock(stock, product.stock),
@@ -528,8 +520,6 @@ const updateProduct = async (req, res) => {
     // NEW
     product.colors = next.colors;
     product.discountPrice = next.discountPrice;
-    product.rating = next.rating;
-    product.reviewCount = next.reviewCount;
     product.active = next.active;
     product.outOfStock = next.outOfStock;
     product.stock = next.stock;
@@ -555,58 +545,11 @@ const updateProduct = async (req, res) => {
   }
 };
 
-const addProductReview = async (req, res) => {
-  try {
-    const { id } = req.params;
-    const product = await productModel.findById(id);
-    if (!product) {
-      return res.status(404).json({ success: false, message: "Product not found" });
-    }
-
-    const rating = Math.max(1, Math.min(5, Math.round(Number(req.body.rating) || 0)));
-    if (!rating) {
-      return res.status(400).json({ success: false, message: "Choose a rating first" });
-    }
-
-    const review = {
-      name: String(req.body.name || "Customer").trim().slice(0, 60) || "Customer",
-      rating,
-      comment: String(req.body.comment || "").trim().slice(0, 500),
-      date: Date.now(),
-    };
-
-    product.reviews = Array.isArray(product.reviews) ? product.reviews : [];
-    product.reviews.unshift(review);
-    const reviewCount = product.reviews.length;
-    const ratingTotal = product.reviews.reduce(
-      (sum, item) => sum + (Number(item.rating) || 0),
-      0
-    );
-    product.reviewCount = reviewCount;
-    product.rating = reviewCount ? Number((ratingTotal / reviewCount).toFixed(1)) : 5;
-
-    await product.save();
-
-    return res.json({
-      success: true,
-      message: "Review added",
-      product,
-      reviews: product.reviews,
-      rating: product.rating,
-      reviewCount: product.reviewCount,
-    });
-  } catch (error) {
-    logError("addProductReview", error);
-    return res.status(500).json({ success: false, message: error.message });
-  }
-};
-
 export {
   listProducts,
   addProduct,
   removeProduct,
   singleProduct,      // your original (POST body {productId})
   singleProductById,  // optional GET /:id version
-  updateProduct,
-  addProductReview
+  updateProduct
 };

@@ -24,7 +24,8 @@ import {
 
 const isObjectId = (value) =>
   typeof value === "string" && /^[a-f0-9]{24}$/i.test(value);
-const ORDER_NOTE_STORAGE_KEY = "nancy_order_note";
+const ORDER_NOTE_STORAGE_KEY = "sotra_order_note";
+const LEGACY_ORDER_NOTE_STORAGE_KEY = "nancy_order_note";
 const isObject = (value) => value && typeof value === "object";
 const isRealSize = (value) =>
   Boolean(value) &&
@@ -32,17 +33,41 @@ const isRealSize = (value) =>
 const isRealOption = (value) =>
   Boolean(value) &&
   !["default", "_default", "_no_perfume_type"].includes(String(value).toLowerCase());
+const needsFitSelection = (product) =>
+  Number.isFinite(Number(product?.fitMin)) && Number.isFinite(Number(product?.fitMax));
 const formatPrice = (value, currency = "$") =>
   `${currency || "$"}${(Number(value) || 0).toFixed(2)}`;
 const WISH_MONEY_NUMBER = "+96181238570";
+const DEFAULT_LEBANON_DELIVERY = 5;
+const TRIPOLI_DELIVERY = 2;
+
+const normalizeOptionText = (value) =>
+  String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
+
+const getSelectedColorOption = (product, color) => {
+  const target = normalizeOptionText(color);
+  if (!target || !Array.isArray(product?.shadeOptions)) return null;
+
+  return (
+    product.shadeOptions.find((option) =>
+      [option?.cartValue, option?.label, option?.id]
+        .map(normalizeOptionText)
+        .includes(target)
+    ) || null
+  );
+};
 
 const fieldClass =
-  "mt-2 h-12 w-full border border-black/25 bg-white px-4 text-sm text-black outline-none transition placeholder:text-black/35 focus:border-black";
+  "mt-2 h-11 w-full rounded-[6px] border border-black/15 bg-white px-4 text-sm text-black outline-none transition placeholder:text-black/35 focus:border-black";
 const labelClass =
-  "text-[10px] font-bold uppercase tracking-[0.17em] text-black/65";
+  "text-[10px] font-bold uppercase tracking-[0.16em] text-black/50";
 const getSavedOrderNote = () => {
   try {
-    return localStorage.getItem(ORDER_NOTE_STORAGE_KEY) || "";
+    return (
+      localStorage.getItem(ORDER_NOTE_STORAGE_KEY) ||
+      localStorage.getItem(LEGACY_ORDER_NOTE_STORAGE_KEY) ||
+      ""
+    );
   } catch {
     return "";
   }
@@ -94,6 +119,7 @@ const Placeorder = () => {
   const [customerNote, setCustomerNote] = useState(getSavedOrderNote);
   const [submitting, setSubmitting] = useState(false);
   const [showFireworks, setShowFireworks] = useState(false);
+  const [tripoliDeliverySelected, setTripoliDeliverySelected] = useState(false);
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -183,13 +209,29 @@ const Placeorder = () => {
     0
   );
   const discount = Number(couponDiscount || 0);
-  const shipping = Number(delivery_fee || 0);
+  const baseShipping = Number.isFinite(Number(delivery_fee))
+    ? Number(delivery_fee)
+    : DEFAULT_LEBANON_DELIVERY;
+  const shipping = tripoliDeliverySelected ? TRIPOLI_DELIVERY : baseShipping;
+  const shippingLabel = tripoliDeliverySelected
+    ? "Tripoli delivery"
+    : "Lebanon delivery";
   const total = Math.max(0, subtotal - discount + shipping);
   const itemCount = cartRows.reduce((sum, row) => sum + row.quantity, 0);
 
   const onChangeHandler = (event) => {
     const { name, value } = event.target;
     setFormData((current) => ({ ...current, [name]: value }));
+  };
+
+  const toggleTripoliDelivery = () => {
+    setTripoliDeliverySelected((current) => {
+      const next = !current;
+      if (next && !formData.city.trim()) {
+        setFormData((data) => ({ ...data, city: "Tripoli" }));
+      }
+      return next;
+    });
   };
 
   const handleApplyCoupon = async () => {
@@ -203,6 +245,9 @@ const Placeorder = () => {
       .filter((row) => isObjectId(row.productId))
       .map((row) => {
         const price = getEffectiveProductPrice(row.product);
+        const colorOption = getSelectedColorOption(row.product, row.color);
+        const colorImage = colorOption?.image || "";
+        const colorLabel = colorOption?.label || row.color || "";
         const stock =
           row.product?.stock === undefined ||
           row.product?.stock === null ||
@@ -219,13 +264,18 @@ const Placeorder = () => {
           productId: row.productId,
           size: isRealSize(row.size) ? row.size : null,
           color: row.color,
+          colorLabel,
+          colorImage,
+          selectedColor: colorLabel,
+          selectedColorImage: colorImage,
           quantity: row.quantity,
           title: row.product.name || row.product.title || "",
           name: row.product.name || row.product.title || "",
           price,
           unitPrice: price,
           lineTotal: price * row.quantity,
-          image: getPrimaryProductImage(row.product),
+          image: colorImage || getPrimaryProductImage(row.product),
+          productImage: getPrimaryProductImage(row.product),
           category: row.product.category || "",
           subCategory: row.product.subCategory || "",
           concentration:
@@ -262,10 +312,15 @@ const Placeorder = () => {
       const sizes = Array.isArray(product?.sizes)
         ? product.sizes.filter((size) => isRealSize(size))
         : [];
-      return sizes.length > 0 && !item.size;
+      return (sizes.length > 0 || needsFitSelection(product)) && !item.size;
     });
     if (missingSizeItem) {
-      return toast.error(`${missingSizeItem.title || "Product"} needs a size.`);
+      const product = products?.find((entry) => entry._id === missingSizeItem.productId);
+      return toast.error(
+        `${missingSizeItem.title || "Product"} needs ${
+          needsFitSelection(product) ? "her kg fit" : "a size"
+        }.`
+      );
     }
     const overStockItem = items.find(
       (item) => item.stock !== null && item.quantity > item.stock
@@ -286,7 +341,9 @@ const Placeorder = () => {
       orderDiscount =
         orderSubtotal * (Number(appliedCoupon.value || 0) / 100);
     }
-    const orderShipping = Number(delivery_fee || 0);
+    const orderShipping = tripoliDeliverySelected
+      ? TRIPOLI_DELIVERY
+      : baseShipping;
     const orderTotal = orderSubtotal - orderDiscount + orderShipping;
     const cleanNote = customerNote.trim();
     const orderData = {
@@ -300,6 +357,12 @@ const Placeorder = () => {
         discount: orderDiscount,
         shipping: orderShipping,
         total: orderTotal,
+      },
+      delivery: {
+        zone: tripoliDeliverySelected ? "Tripoli" : "Lebanon",
+        note: tripoliDeliverySelected
+          ? "Tripoli delivery applied at $2"
+          : "Lebanon delivery applied at $5",
       },
     };
 
@@ -321,6 +384,7 @@ const Placeorder = () => {
       setShowFireworks(true);
       try {
         localStorage.removeItem(ORDER_NOTE_STORAGE_KEY);
+        localStorage.removeItem(LEGACY_ORDER_NOTE_STORAGE_KEY);
       } catch {
         // The completed order is not affected when storage is unavailable.
       }
@@ -346,6 +410,7 @@ const Placeorder = () => {
             },
             meta: {
               orderId: response.data?.orderId || response.data?.data?._id || "",
+              deliveryZone: tripoliDeliverySelected ? "Tripoli" : "Lebanon",
             },
           },
           { headers: { "Content-Type": "application/json", token } }
@@ -365,40 +430,78 @@ const Placeorder = () => {
     <main className="min-h-screen bg-white text-black">
       {showFireworks && <FireworksOverlay />}
       <form onSubmit={onSubmitHandler}>
-        <header className="border-b border-black/15 px-4 pb-8 pt-10 text-center sm:px-6 sm:pb-10 sm:pt-14">
-          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-black/50 sm:text-xs">
-            Be Radiant By Nancy
+        <header className="border-b border-black/10 px-4 pb-8 pt-10 text-center sm:px-6 sm:pb-10 sm:pt-14">
+          <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-[#ad9a7d] sm:text-xs">
+            SotraBrand
           </p>
-          <h1 className="mt-3 text-4xl font-black uppercase leading-none sm:text-6xl lg:text-7xl">
+          <h1 className="mt-3 font-serif text-[44px] font-normal leading-none sm:text-[64px]">
             Checkout
           </h1>
-          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-black/55 sm:text-base">
-            Review your order and tell us where your radiance should arrive.
+          <p className="mx-auto mt-4 max-w-xl text-sm leading-6 text-[#625d58] sm:text-base">
+            Review your order and tell us where your pieces should arrive.
           </p>
         </header>
 
-        <div className="mx-auto grid max-w-[1480px] gap-10 px-4 py-8 sm:px-6 sm:py-12 lg:grid-cols-[minmax(0,1fr)_430px] lg:px-10">
-          <div className="min-w-0">
-            <section className="border-t border-black">
-              <div className="flex items-center gap-3 border-b border-black/15 py-5">
-                <FiMapPin className="h-5 w-5" />
+        <div className="mx-auto grid max-w-[1320px] gap-7 px-4 py-8 sm:px-6 sm:py-10 lg:grid-cols-[minmax(0,1fr)_390px] lg:px-10">
+          <div className="min-w-0 space-y-5">
+            <section className="rounded-[8px] border border-black/10 bg-white px-4 sm:px-5">
+              <div className="flex items-center gap-3 border-b border-black/10 py-4">
+                <FiMapPin className="h-4 w-4 stroke-[1.4]" />
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-black/40">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-black/35">
                     Step 01
                   </p>
-                  <h2 className="mt-1 text-xl font-black uppercase sm:text-2xl">
+                  <h2 className="mt-1 font-serif text-[26px] font-normal leading-none sm:text-[32px]">
                     Contact & Delivery
                   </h2>
                 </div>
               </div>
 
-              <div className="grid gap-x-5 gap-y-6 py-7 md:grid-cols-2">
+              <div className="grid gap-x-5 gap-y-5 py-6 md:grid-cols-2">
                 <CheckoutField name="firstName" label="First Name" value={formData.firstName} onChange={onChangeHandler} required />
                 <CheckoutField name="lastName" label="Last Name" value={formData.lastName} onChange={onChangeHandler} required />
                 <CheckoutField name="email" label="Email" value={formData.email} onChange={onChangeHandler} type="email" required />
                 <CheckoutField name="phone" label="Phone" value={formData.phone} onChange={onChangeHandler} required />
                 <CheckoutField name="country" label="Country" value={formData.country} onChange={onChangeHandler} required />
                 <CheckoutField name="city" label="City" value={formData.city} onChange={onChangeHandler} required />
+                <div className="md:col-span-2">
+                  <button
+                    type="button"
+                    onClick={toggleTripoliDelivery}
+                    className={`flex w-full items-center justify-between rounded-[8px] border px-4 py-4 text-left transition ${
+                      tripoliDeliverySelected
+                        ? "border-black bg-black text-white"
+                        : "border-[#ad9a7d]/40 bg-[#fbfaf7] text-[#4d4a47] hover:border-black/35"
+                    }`}
+                    aria-pressed={tripoliDeliverySelected}
+                  >
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span
+                        className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border transition ${
+                          tripoliDeliverySelected
+                            ? "border-white bg-white text-black"
+                            : "border-[#ad9a7d]"
+                        }`}
+                      >
+                        {tripoliDeliverySelected && <FiCheck className="h-3.5 w-3.5" />}
+                      </span>
+                      <span className="min-w-0">
+                        <span className="block text-[10px] font-bold uppercase tracking-[0.16em] opacity-70">
+                          Optional Delivery Choice
+                        </span>
+                        <span className="mt-1 block text-sm leading-6">
+                          Select if the address is inside Tripoli. Delivery becomes $2.
+                        </span>
+                      </span>
+                    </span>
+                    <span className="sotra-price ml-3 shrink-0 text-lg font-bold">
+                      {tripoliDeliverySelected ? "$2" : "$5"}
+                    </span>
+                  </button>
+                  <p className="mt-2 text-[11px] leading-5 text-black/45">
+                    Delivery is $5 all over Lebanon. Tripoli only is $2.
+                  </p>
+                </div>
                 <div className="md:col-span-2">
                   <CheckoutField
                     name="addressLine1"
@@ -426,19 +529,19 @@ const Placeorder = () => {
               </div>
             </section>
 
-            <section className="border-t border-black">
-              <div className="flex items-center gap-3 border-b border-black/15 py-5">
-                <FiPackage className="h-5 w-5" />
+            <section className="rounded-[8px] border border-black/10 bg-white px-4 sm:px-5">
+              <div className="flex items-center gap-3 border-b border-black/10 py-4">
+                <FiPackage className="h-4 w-4 stroke-[1.4]" />
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-black/40">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-black/35">
                     Step 02
                   </p>
-                  <h2 className="mt-1 text-xl font-black uppercase sm:text-2xl">
+                  <h2 className="mt-1 font-serif text-[26px] font-normal leading-none sm:text-[32px]">
                     Order Note
                   </h2>
                 </div>
               </div>
-              <div className="py-7">
+              <div className="py-6">
                 <label className="block">
                   <span className={labelClass}>
                     Note For Your Order
@@ -449,8 +552,8 @@ const Placeorder = () => {
                     onChange={(event) =>
                       setCustomerNote(event.target.value.slice(0, 1200))
                     }
-                    placeholder="Delivery instructions, a gift message, or anything Nancy should know."
-                    className="mt-2 min-h-36 w-full resize-none border border-black/25 bg-white p-4 text-sm leading-6 outline-none transition placeholder:text-black/35 focus:border-black"
+                    placeholder="Delivery instructions, a gift message, or anything SotraBrand should know."
+                    className="mt-2 min-h-28 w-full resize-none rounded-[6px] border border-black/15 bg-white p-4 text-sm leading-6 outline-none transition placeholder:text-black/35 focus:border-black"
                   />
                 </label>
                 <div className="mt-2 flex items-center justify-between text-[9px] font-semibold uppercase tracking-[0.13em] text-black/35">
@@ -460,24 +563,24 @@ const Placeorder = () => {
               </div>
             </section>
 
-            <section className="border-t border-black">
-              <div className="flex items-center gap-3 border-b border-black/15 py-5">
-                <FiTruck className="h-5 w-5" />
+            <section className="rounded-[8px] border border-black/10 bg-white px-4 sm:px-5">
+              <div className="flex items-center gap-3 border-b border-black/10 py-4">
+                <FiTruck className="h-4 w-4 stroke-[1.4]" />
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-black/40">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-black/35">
                     Step 03
                   </p>
-                  <h2 className="mt-1 text-xl font-black uppercase sm:text-2xl">
+                  <h2 className="mt-1 font-serif text-[26px] font-normal leading-none sm:text-[32px]">
                     Payment
                   </h2>
                 </div>
               </div>
-              <div className="py-7">
+              <div className="py-6">
                 <div className="space-y-3">
                   <button
                     type="button"
                     onClick={() => setMethod("COD")}
-                    className={`flex w-full items-center justify-between border px-5 py-5 text-left transition ${
+                    className={`flex w-full items-center justify-between rounded-[8px] border px-4 py-4 text-left transition ${
                       method === "COD"
                         ? "border-black bg-black text-white"
                         : "border-black/20 bg-white text-black hover:border-black"
@@ -514,7 +617,7 @@ const Placeorder = () => {
                   <button
                     type="button"
                     onClick={() => setMethod("Wish Money")}
-                    className={`flex w-full items-center justify-between border px-5 py-5 text-left transition ${
+                    className={`flex w-full items-center justify-between rounded-[8px] border px-4 py-4 text-left transition ${
                       method === "Wish Money"
                         ? "border-black bg-black text-white"
                         : "border-black/20 bg-white text-black hover:border-black"
@@ -541,7 +644,7 @@ const Placeorder = () => {
                             method === "Wish Money" ? "text-white/55" : "text-black/45"
                           }`}
                         >
-                          Send payment to Nancy: {WISH_MONEY_NUMBER}
+                          Send payment to SotraBrand: {WISH_MONEY_NUMBER}
                         </span>
                       </span>
                     </span>
@@ -559,7 +662,7 @@ const Placeorder = () => {
                     >
                       <span className="inline-flex items-center gap-2">
                         <FiPhone className="h-4 w-4" />
-                        Nancy Wish Money Number
+                        SotraBrand Wish Money Number
                       </span>
                       <span>{WISH_MONEY_NUMBER}</span>
                     </a>
@@ -570,13 +673,13 @@ const Placeorder = () => {
           </div>
 
           <aside className="min-w-0 lg:sticky lg:top-28 lg:self-start">
-            <section className="border-t border-black">
-              <div className="flex items-end justify-between border-b border-black/15 py-5">
+            <section className="rounded-[8px] border border-black/10 bg-white px-4 sm:px-5">
+              <div className="flex items-end justify-between border-b border-black/10 py-4">
                 <div>
-                  <p className="text-[9px] font-bold uppercase tracking-[0.22em] text-black/40">
+                  <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-black/35">
                     Final Review
                   </p>
-                  <h2 className="mt-1 text-xl font-black uppercase sm:text-2xl">
+                  <h2 className="mt-1 font-serif text-[26px] font-normal leading-none sm:text-[32px]">
                     Your Order
                   </h2>
                 </div>
@@ -589,6 +692,9 @@ const Placeorder = () => {
                 {cartRows.length ? (
                   cartRows.map((row) => {
                     const price = getEffectiveProductPrice(row.product);
+                    const colorOption = getSelectedColorOption(row.product, row.color);
+                    const displayImage = colorOption?.image || getPrimaryProductImage(row.product);
+                    const colorLabel = colorOption?.label || row.color || "";
                     return (
                       <article
                         key={`${row.productId}-${row.size}-${row.color || "default"}-${row.perfumeType || "no-perfume-type"}`}
@@ -596,7 +702,7 @@ const Placeorder = () => {
                       >
                         <div className="aspect-[3/4]">
                           <ShimmerImage
-                            src={getPrimaryProductImage(row.product)}
+                            src={displayImage}
                             alt={row.product.name}
                             className="h-full w-full object-contain"
                             wrapperClassName="h-full w-full"
@@ -614,14 +720,14 @@ const Placeorder = () => {
                               isRealSize(row.size)
                                 ? row.size
                                 : null,
-                              row.color,
+                              colorLabel,
                               `Qty ${row.quantity}`,
                             ]
                               .filter(Boolean)
                               .join(" / ")}
                           </p>
                         </div>
-                        <p className="text-sm font-medium">
+                        <p className="sotra-price text-sm font-bold">
                           {formatPrice(price * row.quantity, currency)}
                         </p>
                       </article>
@@ -633,6 +739,19 @@ const Placeorder = () => {
                     <p className="mt-3 text-xs font-bold uppercase tracking-[0.15em]">
                       Your cart is empty
                     </p>
+                    {!token && (
+                      <p className="mx-auto mt-5 max-w-[15rem] text-[1.05rem] leading-6 text-black/65">
+                        Have an account?{" "}
+                        <button
+                          type="button"
+                          onClick={() => navigate("/login?mode=login")}
+                          className="border-b border-black text-black transition hover:text-black/55"
+                        >
+                          Log in
+                        </button>{" "}
+                        to check out faster.
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
@@ -676,20 +795,20 @@ const Placeorder = () => {
               <div className="space-y-3 border-b border-black/15 py-5 text-sm">
                 <div className="flex justify-between text-black/55">
                   <span>Subtotal</span>
-                  <span className="font-medium text-black">
+                  <span className="sotra-price font-bold text-black">
                     {formatPrice(subtotal, currency)}
                   </span>
                 </div>
                 <div className="flex justify-between text-black/55">
-                  <span>Delivery</span>
-                  <span className="font-medium text-black">
+                  <span>{shippingLabel}</span>
+                  <span className="sotra-price font-bold text-black">
                     {formatPrice(shipping, currency)}
                   </span>
                 </div>
                 {discount > 0 && (
                   <div className="flex justify-between text-[#a24c68]">
                     <span>Discount</span>
-                    <span className="font-medium">
+                    <span className="sotra-price font-bold">
                       -{formatPrice(discount, currency)}
                     </span>
                   </div>
@@ -700,7 +819,7 @@ const Placeorder = () => {
                 <span className="text-[10px] font-black uppercase tracking-[0.2em]">
                   Total
                 </span>
-                <span className="text-3xl font-medium">
+                <span className="sotra-price text-3xl font-bold">
                   {formatPrice(total, currency)}
                 </span>
               </div>

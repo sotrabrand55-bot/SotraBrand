@@ -494,7 +494,6 @@ const Navbar = () => {
                 ? [
                     { label: 'Contact', to: '/contact' },
                     { label: 'Orders', to: '/orders', requiresLogin: true },
-                    { label: 'Ratings', to: '/ratings' },
                     { label: 'About', to: '/about' },
                     { label: 'Shipping Policy', to: '/shippingpolicy' },
                   ]
@@ -633,7 +632,6 @@ const Navbar = () => {
                     { label: 'About', to: '/about' },
                     { label: 'Contact', to: '/contact' },
                     { label: 'Orders', to: '/orders', requiresLogin: true },
-                    { label: 'Ratings', to: '/ratings' },
                   ]
                 : []
               ).map((item, index) => (

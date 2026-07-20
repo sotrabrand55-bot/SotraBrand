@@ -1,25 +1,23 @@
 export const rawSubcategoryGroups = [
   {
-    label: "Pheromone Touch",
+    label: "Shop",
     children: [
-      { label: "Pheromone Touch", slug: "pheromone-touch" },
-      { label: "Body lotion pheromone", slug: "body-lotion-pheromone" },
-      { label: "Body oil pheromone", slug: "body-oil-pheromone" },
-      { label: "Body splash pheromone", slug: "body-splash-pheromone" },
-      { label: "Body scrub pheromone", slug: "body-scrub-pheromone" },
+      { label: "Abaya", slug: "abaya" },
+      { label: "Dresses", slug: "dresses" },
+      { label: "Hijabs", slug: "hijabs" },
+      { label: "Islamic Essentials", slug: "islamic-essentials" },
+      { label: "Blouses", slug: "blouses" },
     ],
   },
   {
-    label: "Mystique Set",
+    label: "Collections",
     children: [
-      { label: "Mystique parfum", slug: "mystique-parfum" },
-      { label: "Body lotion mystique", slug: "body-lotion-mystique" },
-      { label: "Body splash mystique", slug: "body-splash-mystique" },
+      { label: "New Arrival", slug: "new-arrival" },
+      { label: "Everyday Modesty", slug: "everyday-modesty" },
+      { label: "Elegant Edit", slug: "elegant-edit" },
+      { label: "Hijab Essentials", slug: "hijab-essentials" },
+      { label: "On Sale", slug: "on-sale" },
     ],
-  },
-  {
-    label: "Roll-on",
-    children: [{ label: "Radiant charm", slug: "radiant-charm" }],
   },
 ];
 
@@ -85,25 +83,6 @@ const normalize = (value) =>
     .replace(/[^a-z0-9]+/g, " ")
     .trim();
 
-const getProductSearchText = (product) =>
-  normalize(
-    [
-      product?.name,
-      product?.category,
-      product?.subCategory,
-      product?.concentration,
-      product?.description,
-      ...(Array.isArray(product?.colors) ? product.colors : []),
-      ...(Array.isArray(product?.shadeOptions)
-        ? product.shadeOptions.flatMap((option) => [
-            option?.label,
-            option?.cartValue,
-            option?.description,
-          ])
-        : []),
-    ].join(" ")
-  );
-
 export const productMatchesSubcategory = (product, subcategory) => {
   if (!product || !subcategory) return false;
 
@@ -111,15 +90,5 @@ export const productMatchesSubcategory = (product, subcategory) => {
   const productSubcategory = normalize(product?.subCategory);
   const productCategory = normalize(product?.category);
 
-  if (productSubcategory === target) return true;
-  if (productCategory === target) return true;
-
-  const searchText = getProductSearchText(product);
-  if (!target || !searchText) return false;
-  if (searchText.includes(target)) return true;
-
-  return target
-    .split(" ")
-    .filter(Boolean)
-    .every((word) => searchText.includes(word));
+  return Boolean(target && (productSubcategory === target || productCategory === target));
 };

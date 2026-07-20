@@ -6,10 +6,10 @@ import { mockHeaderSlides, useMockData } from "../lib/mockData";
 import { ShimmerImage } from "./Skeletons";
 
 const POPUP_DELAY_MS = 5000;
-const POPUP_SESSION_KEY = "nancy-whatsapp-popup-shown";
-const DEFAULT_WHATSAPP_NUMBER = "96181190296";
+const POPUP_SESSION_KEY = "sotra-order-whatsapp-popup-shown";
+const DEFAULT_WHATSAPP_NUMBER = "96171872919";
 const DEFAULT_WHATSAPP_MESSAGE =
-  "Hello Be Radiant By Nancy, I would like to order through WhatsApp.";
+  "Hello SotraBrand, I would like to order through WhatsApp.";
 
 const getWhatsAppHref = () => {
   const configuredLink = String(import.meta.env.VITE_WHATSAPP_LINK || "").trim();
@@ -103,14 +103,14 @@ const WhatsAppOrderPopup = ({ suppressed = false }) => {
         {image ? (
           <ShimmerImage
             src={image}
-            alt="Be Radiant By Nancy"
+            alt="SotraBrand"
             className="h-full w-full object-cover object-center"
             wrapperClassName="h-full w-full"
             skeletonClassName="nancy-cool-shimmer bg-[#EAEAEA]"
           />
         ) : (
           <div className="grid h-full w-full place-items-center text-center text-xs font-bold uppercase tracking-[0.18em] text-black/40">
-            Be Radiant
+            SotraBrand
           </div>
         )}
       </div>
@@ -125,7 +125,7 @@ const WhatsAppOrderPopup = ({ suppressed = false }) => {
           }}
           className="flex min-h-14 w-full items-center justify-center bg-black px-5 text-center text-sm font-black uppercase tracking-[0.08em] text-white transition hover:bg-[#252525] active:scale-[0.99] sm:text-base"
         >
-          Contact Our Sales Team
+          Contact Us On WhatsApp
         </a>
       </div>
     </aside>

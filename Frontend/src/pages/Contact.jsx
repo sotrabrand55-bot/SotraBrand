@@ -1,34 +1,48 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
-import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
-import { FiArrowRight, FiMail } from "react-icons/fi";
-import contactImageFallback from "../assets/nancy_radiant_hero.jpeg";
+import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
+import { FiArrowRight, FiMail, FiPhone } from "react-icons/fi";
+import contactImageFallback from "../assets/sotraBrand/Header_2.jpeg";
 import { ShimmerImage } from "../componens/Skeletons";
 import { useMockData } from "../lib/mockData";
 import { useContactForm } from "../lib/useContactForm";
-
-const socials = [
-  {
-    label: "Instagram",
-    href: "https://www.instagram.com/radiant_bynancy?igsh=MWY3YmwxcjNyYTNjcg==",
-    icon: FaInstagram,
-  },
-  {
-    label: "Facebook",
-    href: "https://www.facebook.com/share/18oAYDyvZt/",
-    icon: FaFacebookF,
-  },
-  {
-    label: "TikTok",
-    href: "https://www.tiktok.com/@radiant.nancy?_r=1&_t=ZS-96qoZYlR9xF",
-    icon: FaTiktok,
-  },
-];
+import { ShopContext } from "../context/ShopContext";
 
 const Contact = () => {
+  const { siteSettings } = useContext(ShopContext);
   const [contactImage, setContactImage] = useState(contactImageFallback);
-  const [contactImageAlt, setContactImageAlt] = useState("Be Radiant by Nancy contact");
+  const [contactImageAlt, setContactImageAlt] = useState("SotraBrand contact");
   const { form, status, handleChange, handleSubmit } = useContactForm();
+  const socialLinks = siteSettings?.socialLinks || {};
+  const contactEmail = siteSettings?.brandEmail || socialLinks.email || "Serinachendeb133@gmail.com";
+  const contactPhone = siteSettings?.brandPhone || socialLinks.phone || "71872919";
+  const socials = useMemo(
+    () => [
+      {
+        label: "SotraBrand on Instagram",
+        href:
+          socialLinks.instagram ||
+          "https://www.instagram.com/sotra_brand_hijab?igsh=MWZiNzdkM3BuZnVndA%3D%3D&utm_source=qr",
+        icon: FaInstagram,
+      },
+      {
+        label: "SotraBrand on TikTok",
+        href: socialLinks.tiktok || "https://www.tiktok.com/@sotrabrand133?_r=1&_t=ZS-98BbAHXPjTc",
+        icon: FaTiktok,
+      },
+      {
+        label: "SotraBrand on Facebook",
+        href: socialLinks.facebook || "https://www.facebook.com/share/1Cnd12KNGw/?mibextid=wwXIfr",
+        icon: FaFacebookF,
+      },
+      {
+        label: "SotraBrand on WhatsApp",
+        href: socialLinks.whatsapp || "https://wa.me/96171872919",
+        icon: FaWhatsapp,
+      },
+    ],
+    [socialLinks.facebook, socialLinks.instagram, socialLinks.tiktok, socialLinks.whatsapp]
+  );
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -47,7 +61,7 @@ const Contact = () => {
         if (!cancelled && res.data?.success) {
           setContactImage(res.data.pageImages?.contactImage || contactImageFallback);
           setContactImageAlt(
-            res.data.pageImages?.contactImageAlt || "Be Radiant by Nancy contact"
+            res.data.pageImages?.contactImageAlt || "SotraBrand contact"
           );
         }
       } catch {
@@ -70,7 +84,7 @@ const Contact = () => {
         <div className="mx-auto max-w-[1280px]">
           <div className="mx-auto max-w-3xl text-center">
             <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/45">
-              Be Radiant By Nancy
+              SotraBrand
             </p>
             <h1 className="mt-3 text-5xl font-black uppercase leading-none sm:text-6xl">
               Contact Us
@@ -170,13 +184,23 @@ const Contact = () => {
               </form>
 
               <div className="mt-8 border-t border-black/15 pt-6">
-                <a
-                  href="mailto:beradiantnancy@gmail.com"
-                  className="inline-flex items-center gap-3 border-b border-black pb-1 text-sm text-black"
-                >
-                  <FiMail className="h-4 w-4" />
-                  beradiantnancy@gmail.com
-                </a>
+                <div className="space-y-4">
+                  <a
+                    href={`mailto:${contactEmail}`}
+                    className="inline-flex items-center gap-3 border-b border-black pb-1 text-sm text-black"
+                  >
+                    <FiMail className="h-4 w-4" />
+                    {contactEmail}
+                  </a>
+                  <br />
+                  <a
+                    href={`tel:${contactPhone}`}
+                    className="inline-flex items-center gap-3 border-b border-black pb-1 text-sm text-black"
+                  >
+                    <FiPhone className="h-4 w-4" />
+                    {contactPhone}
+                  </a>
+                </div>
 
                 <div className="mt-6 flex items-center gap-5 text-xl">
                   {socials.map(({ label, href, icon: Icon }) => (

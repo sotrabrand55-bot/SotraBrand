@@ -1,25 +1,24 @@
 import 'react'
-import { Route, Routes, useLocation, useNavigate } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import About from './pages/About'
 import Product from './pages/Product'
 import Login from './pages/Login'
 import Placeorder from './pages/Placeorder'
 import Orders from './pages/Orders' 
-import Navbar from './componens/Navbar'
-import Home from './pages/Home'
-import Footer from './componens/Footer'
+import SotraNavbar from './componens/SotraNavbar'
+import SotraHome from './pages/SotraHome'
+import ScandiFooter from './componens/ScandiFooter'
+import SotraWhatsAppPopup from './componens/SotraWhatsAppPopup'
 import Collection from './pages/Collection'
 import Contact from './pages/Contact'
-import Favorites from './pages/Favorites'
-import Ratings from './pages/Ratings'
 import ComingSoon from './componens/ComingSoon'
 import NancyPreviewLoader from './componens/NancyPreviewLoader'
 import ShippingPolicy from './componens/ShippingPolicy'
 import LegalPolicy from './componens/LegalPolicy'
 import SubcategoryProducts from './pages/SubcategoryProducts'
+import OnSaleProducts from './pages/OnSaleProducts'
 import CartDrawer from './componens/CartDrawer'
 import CartRouteRedirect from './componens/CartRouteRedirect'
-import WhatsAppOrderPopup from './componens/WhatsAppOrderPopup'
 import { ShopContext } from './context/ShopContext'
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -31,8 +30,6 @@ const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/
 
 const App = () => {
   const location = useLocation();
-  const navigate = useNavigate();
-  const [initialPath] = useState(() => window.location.pathname);
   const { cartDrawerOpen, closeCart } = useContext(ShopContext);
   const [fade, setFade] = useState(false);
 
@@ -70,17 +67,11 @@ const App = () => {
   }, [location.pathname]);
 
   useEffect(() => {
-    const timeout = setTimeout(() => setPreviewLoading(false), 900);
+    const timeout = setTimeout(() => setPreviewLoading(false), 1250);
     return () => clearTimeout(timeout);
   }, []);
 
   // 🔥 Render
-  useEffect(() => {
-    if (initialPath.toLowerCase().startsWith("/subcategory/")) {
-      navigate("/", { replace: true });
-    }
-  }, [initialPath, navigate]);
-
   if (loading || previewLoading) {
     return <NancyPreviewLoader />;
   }
@@ -91,20 +82,19 @@ const App = () => {
         <ComingSoon />
       ) : (
         <>
-          <Navbar />
+          <SotraNavbar />
           <div
-            className={`transition-all ${
-              fade ? 'opacity-0 translate-y-2' : 'opacity-100 translate-y-0'
+            className={`transition-opacity duration-150 ${
+              fade ? 'opacity-0' : 'opacity-100'
             }`}
           >
             <ToastContainer />
             
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/index.html" element={<Home />} />
+              <Route path="/" element={<SotraHome />} />
+              <Route path="/index.html" element={<SotraHome />} />
               <Route path="/Collection" element={<Collection />} />
-              <Route path="/favorites" element={<Favorites />} />
-              <Route path="/ratings" element={<Ratings />} />
+              <Route path="/favorites" element={<Navigate to="/collection" replace />} />
               <Route path="/About" element={<About />} />
               <Route path="/Contact" element={<Contact />} />
               <Route path="/Product/:productId" element={<Product />} />
@@ -116,12 +106,14 @@ const App = () => {
               <Route path="/privacy-policy" element={<LegalPolicy type="privacy" />} />
               <Route path="/terms" element={<LegalPolicy type="terms" />} />
               <Route path="/subcategory/:slug" element={<SubcategoryProducts />} />
-              <Route path="*" element={<Home />} />
+              <Route path="/on-sale" element={<OnSaleProducts />} />
+              <Route path="/sale" element={<OnSaleProducts />} />
+              <Route path="*" element={<SotraHome />} />
             </Routes>
           </div>
-          <WhatsAppOrderPopup suppressed={cartDrawerOpen} />
           <CartDrawer open={cartDrawerOpen} onClose={closeCart} />
-          <Footer className="bg-[#2f2f2f] text-white" />
+          <SotraWhatsAppPopup suppressed={cartDrawerOpen} />
+          <ScandiFooter />
         </>
       )}
     </div>

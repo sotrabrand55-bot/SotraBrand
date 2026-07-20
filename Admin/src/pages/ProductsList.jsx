@@ -327,11 +327,11 @@ const ProductsList = ({ token }) => {
 
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-baseline gap-2">
-                      <span className={`text-base font-semibold ${discount ? "text-[#7b2d2d]" : "text-[#000000]"}`}>
+                      <span className={`sotra-price text-base font-bold ${discount ? "sotra-sale-price" : "text-[#000000]"}`}>
                         ${discount ? discountPrice.toFixed(2) : price.toFixed(2)}
                       </span>
                       {discount && (
-                        <span className="text-sm text-[#a69888] line-through">
+                        <span className="sotra-old-price text-sm">
                           ${price.toFixed(2)}
                         </span>
                       )}

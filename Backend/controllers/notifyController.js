@@ -35,13 +35,14 @@ const normalizeItems = (items = []) =>
     return {
       key: `${item.productId || index}-${index}`,
       title: item.title || item.name || item.productName || item.productId || 'Product',
-      image: pickImage(item.image),
+      image: pickImage(item.colorImage) || pickImage(item.selectedColorImage) || pickImage(item.image),
+      colorImage: pickImage(item.colorImage) || pickImage(item.selectedColorImage),
       category: item.category || '',
       subCategory: item.subCategory || '',
       concentration: item.concentration || '',
       perfumeType: item.perfumeType || item.selectedPerfumeType || '',
       size: item.size || '',
-      color: item.color || '',
+      color: item.colorLabel || item.selectedColor || item.color || '',
       quantity,
       unitPrice,
       lineTotal,
@@ -84,8 +85,16 @@ const buildItemsHtml = (items = []) =>
                 </td>
                 <td valign="top" style="padding-right:12px;">
                   <div style="font-family:Georgia,serif;font-size:18px;color:#000000;line-height:1.2;">${escapeHtml(item.title)}</div>
-                  <div style="margin-top:5px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;">${meta || 'Be Radiant product'}</div>
-                  <div style="margin-top:7px;font-size:13px;color:#374151;">Qty ${item.quantity}${item.color ? ` / ${escapeHtml(item.color)}` : ''}</div>
+                  <div style="margin-top:5px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;">${meta || 'SotraBrand product'}</div>
+                  <div style="margin-top:7px;font-size:13px;color:#374151;">Qty ${item.quantity}${item.color ? ` / Color: ${escapeHtml(item.color)}` : ''}</div>
+                  ${
+                    item.colorImage
+                      ? `<div style="margin-top:8px;font-size:12px;color:#374151;">
+                          <img src="${escapeHtml(item.colorImage)}" alt="${escapeHtml(item.color || 'Selected color')}" width="28" height="28" style="display:inline-block;vertical-align:middle;object-fit:cover;border-radius:999px;border:1px solid #d4d4d4;background:#eaeaea;margin-right:7px;" />
+                          Selected color image
+                        </div>`
+                      : ''
+                  }
                 </td>
                 <td width="110" valign="top" align="right" style="font-size:13px;color:#000000;">
                   <div>${money(item.unitPrice)}</div>
@@ -125,7 +134,7 @@ const buildHtml = ({
             <table role="presentation" width="720" cellspacing="0" cellpadding="0" style="width:720px;max-width:94%;background:#ffffff;border:1px solid #e5e5e5;border-radius:8px;overflow:hidden;">
               <tr>
                 <td style="padding:26px 30px;border-bottom:1px solid #e5e5e5;">
-                  <div style="font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#111;">Be Radiant By Nancy Orders</div>
+                  <div style="font-size:11px;font-weight:700;letter-spacing:.24em;text-transform:uppercase;color:#111;">SotraBrand Orders</div>
                   <div style="margin-top:8px;font-family:Georgia,serif;font-size:34px;line-height:1;color:#000000;">New Checkout</div>
                   <div style="margin-top:10px;color:#4b5563;">${new Date().toLocaleString()} / Order ${orderId}</div>
                 </td>
@@ -222,10 +231,10 @@ export const notifyAdminCheckout = async (req, res) => {
     logInfo('ORDER_EMAIL_RECIPIENT', { to, from: process.env.GMAIL_USER });
 
     await transporter.sendMail({
-      from: `"Be Radiant By Nancy Orders" <${process.env.GMAIL_USER}>`,
+      from: `"SotraBrand Orders" <${process.env.GMAIL_USER}>`,
       to,
       replyTo,
-      subject: `Be Radiant By Nancy order ${meta.orderId ? `(${meta.orderId})` : ''} - ${userWithAddress.name || userWithAddress.email || 'Customer'}`,
+      subject: `SotraBrand order ${meta.orderId ? `(${meta.orderId})` : ''} - ${userWithAddress.name || userWithAddress.email || 'Customer'}`,
       html: buildHtml({
         user: userWithAddress,
         items,

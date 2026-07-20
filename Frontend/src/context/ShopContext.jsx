@@ -48,7 +48,7 @@ const walkCartQuantities = (value, visitor, meta = {}) => {
 const ShopContextProvider = (props) => {
   const currency =
     "$"; /* here if i change the currency it will updaitet for  entire  page */
-  const [delivery_fee, setDeliveryFee] = useState(3);
+  const [delivery_fee, setDeliveryFee] = useState(5);
   const [search, setSearch] = useState("");
   const [showSearch, setShowSearch] = useState(false);
   const [cartItems, setCartItems] = useState({});
@@ -98,7 +98,7 @@ const ShopContextProvider = (props) => {
           }
         }
       } catch {
-        setDeliveryFee(3);
+        setDeliveryFee(5);
       }
     };
 

@@ -1,15 +1,5 @@
 import mongoose from "mongoose";
 // we import the product data from frontend to store it in the data base
-const productReviewSchema = new mongoose.Schema(
-  {
-    name: { type: String, default: "Customer" },
-    rating: { type: Number, min: 1, max: 5, required: true },
-    comment: { type: String, default: "" },
-    date: { type: Number, default: Date.now },
-  },
-  { _id: true }
-);
-
 const productSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String, required: true },
@@ -40,9 +30,6 @@ const productSchema = new mongoose.Schema({
   onSales: { type: Boolean },
   date: { type: Number, required: true },
   discountPrice: { type: Number },       // ✅ new field
-  rating: { type: Number, default: 5 },
-  reviewCount: { type: Number, default: 0 },
-  reviews: { type: [productReviewSchema], default: [] },
   colors: [String],                      // ✅ new field
   active: { type: Boolean, default: true },       // ✅ new field
   outOfStock: { type: Boolean, default: false },  // ✅ new field

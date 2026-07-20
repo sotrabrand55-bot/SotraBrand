@@ -39,13 +39,13 @@ const Login = ({ setToken }) => {
         <section className="hidden border-r border-black/10 bg-black p-10 text-white lg:flex lg:flex-col lg:justify-between">
           <div>
             <div className="grid h-14 w-14 place-items-center border border-white/25 bg-white font-serif text-2xl text-black">
-              R
+              S
             </div>
             <p className="mt-8 text-[11px] font-bold uppercase tracking-[0.28em] text-[#f1c6d1]">
-              Be Radiant by Nancy
+              SotraBrand
             </p>
             <h1 className="mt-4 max-w-xl font-serif text-6xl leading-none">
-              Control the radiant experience.
+              Control the SotraBrand experience.
             </h1>
             <p className="mt-6 max-w-md text-sm leading-7 text-white/68">
               Manage products, orders, homepage media, category dropdowns,
@@ -69,7 +69,7 @@ const Login = ({ setToken }) => {
           <div className="w-full max-w-md">
             <div className="mb-7 text-center lg:text-left">
               <div className="mx-auto mb-4 grid h-12 w-12 place-items-center bg-black font-serif text-xl text-white lg:mx-0">
-                R
+                S
               </div>
               <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#c47b92]">
                 Secure Admin
@@ -78,7 +78,7 @@ const Login = ({ setToken }) => {
                 Welcome Back
               </h2>
               <p className="mt-3 text-sm leading-6 text-black/55">
-                Sign in to manage the Be Radiant storefront.
+                Sign in to manage the SotraBrand storefront.
               </p>
             </div>
 

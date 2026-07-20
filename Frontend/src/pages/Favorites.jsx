@@ -33,7 +33,7 @@ const Favorites = () => {
     <main className="min-h-screen bg-white text-black">
       <header className="border-b border-black/15 px-4 pb-8 pt-10 text-center sm:px-6 sm:pb-10 sm:pt-14">
         <p className="text-[10px] font-bold uppercase tracking-[0.3em] text-black/50 sm:text-xs">
-          Be Radiant By Nancy
+          SotraBrand
         </p>
         <h1 className="mt-3 text-4xl font-black uppercase leading-none sm:text-6xl lg:text-7xl">
           Favorites
@@ -124,7 +124,7 @@ const Favorites = () => {
                   Nothing Saved Yet
                 </h2>
                 <p className="mx-auto mt-4 max-w-sm text-sm leading-6 text-black/50">
-                  Tap the heart on any product to build your personal Nancy edit.
+                  Tap the heart on any product to build your personal SotraBrand edit.
                 </p>
                 <Link
                   to="/collection"

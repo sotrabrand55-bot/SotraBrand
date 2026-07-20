@@ -25,6 +25,7 @@ pnpm-debug.log*
 lerna-debug.log*
 
 # Editor and OS files
+.codex-remote-attachments/
 .vscode/*
 !.vscode/extensions.json
 .idea/

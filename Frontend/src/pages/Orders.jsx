@@ -104,7 +104,7 @@ const Orders = () => {
       </p>
       <p className="mt-3 text-sm leading-7 text-black/55">
         {loginRequired
-          ? "Your Be Radiant order history appears after you log in."
+          ? "Your SotraBrand order history appears after you log in."
           : "When you place an order, its status and details will appear here."}
       </p>
       <button
@@ -123,13 +123,13 @@ const Orders = () => {
       <section className="mx-auto max-w-[1300px]">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/45">
-            Be Radiant By Nancy
+            SotraBrand
           </p>
           <h1 className="mt-3 text-5xl font-black uppercase leading-none sm:text-6xl lg:text-7xl">
             My Orders
           </h1>
           <p className="mx-auto mt-5 max-w-2xl text-base leading-8 text-black/55 sm:text-lg">
-            Track your Be Radiant orders from placement to delivery.
+            Track your SotraBrand orders from placement to delivery.
           </p>
         </div>
 
@@ -188,7 +188,7 @@ const Orders = () => {
                     {(order.items || []).map((item, itemIndex) => {
                       const qty = Number(item.qty ?? item.quantity ?? 1);
                       const price = Number(item.unitPrice ?? item.price ?? 0);
-                      const title = item.title || item.name || "Be Radiant item";
+                      const title = item.title || item.name || "SotraBrand item";
 
                       return (
                         <div
@@ -227,7 +227,7 @@ const Orders = () => {
                             <p className="text-xs font-bold uppercase tracking-[0.16em] text-black/45">
                               Price
                             </p>
-                            <p className="mt-1 text-lg font-bold text-black">
+                            <p className="sotra-price mt-1 text-lg font-bold text-black">
                               {formatPrice(price, currency)}
                             </p>
                           </div>
@@ -256,14 +256,14 @@ const Orders = () => {
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center justify-between text-black/55">
                         <span>Subtotal</span>
-                        <span className="font-bold text-black">
+                        <span className="sotra-price font-bold text-black">
                           {formatPrice(order.subtotal ?? 0, currency)}
                         </span>
                       </div>
                       {Number(order.discount || 0) > 0 && (
                         <div className="flex items-center justify-between text-green-700">
                           <span>Discount</span>
-                          <span className="font-bold">
+                          <span className="sotra-price font-bold">
                             - {formatPrice(order.discount, currency)}
                           </span>
                         </div>
@@ -271,7 +271,7 @@ const Orders = () => {
                       {Number(order.shipping || 0) > 0 && (
                         <div className="flex items-center justify-between text-black/55">
                           <span>Delivery</span>
-                          <span className="font-bold text-black">
+                          <span className="sotra-price font-bold text-black">
                             {formatPrice(order.shipping, currency)}
                           </span>
                         </div>
@@ -280,7 +280,7 @@ const Orders = () => {
                         <span className="text-xs font-bold uppercase tracking-[0.18em] text-black/45">
                           Total
                         </span>
-                        <span className="text-3xl font-black text-black">
+                        <span className="sotra-price text-3xl font-black text-black">
                           {formatPrice(order.amount ?? 0, currency)}
                         </span>
                       </div>

@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
-import { useContext, useMemo, useState } from "react";
+import { useContext, useState } from "react";
 import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
-import { FiChevronDown, FiSend, FiStar } from "react-icons/fi";
+import { FiChevronDown, FiSend } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import { customerPreviewLocked } from "../lib/customerPreview";
 import { useContactForm } from "../lib/useContactForm";
@@ -17,7 +17,6 @@ const footerLinks = {
     { label: "Shipping info", to: "/shippingpolicy" },
   ],
   more: [
-    { label: "Ratings", to: "/ratings" },
     { label: "Terms and Conditions", to: "/terms" },
     { label: "Privacy Policy", to: "/privacy-policy" },
   ],
@@ -27,18 +26,18 @@ const getBrandSocialLinks = (settings = {}) => {
   const socialLinks = settings.socialLinks || {};
   return [
     {
-      label: "Be Radiant by Nancy on Instagram",
-      href: socialLinks.instagram || "https://www.instagram.com/radiant_bynancy?igsh=MWY3YmwxcjNyYTNjcg==",
+      label: "SotraBrand on Instagram",
+      href: socialLinks.instagram || "https://www.instagram.com/",
       icon: FaInstagram,
     },
     {
-      label: "Be Radiant by Nancy on Facebook",
-      href: socialLinks.facebook || "https://www.facebook.com/share/18oAYDyvZt/",
+      label: "SotraBrand on Facebook",
+      href: socialLinks.facebook || "https://www.facebook.com/",
       icon: FaFacebookF,
     },
     {
-      label: "Be Radiant by Nancy on TikTok",
-      href: socialLinks.tiktok || "https://www.tiktok.com/@radiant.nancy?_r=1&_t=ZS-96qoZYlR9xF",
+      label: "SotraBrand on TikTok",
+      href: socialLinks.tiktok || "https://www.tiktok.com/",
       icon: FaTiktok,
     },
   ].filter((item) => item.href);
@@ -60,128 +59,6 @@ const SocialLinks = ({ links }) => (
     ))}
   </div>
 );
-
-const getReviewCount = (product) =>
-  Math.max(
-    0,
-    Number(product?.reviewCount ?? product?.reviewsCount ?? product?.reviews?.length) || 0
-  );
-
-const FooterReviewsDropdown = ({ products = [], compact = false }) => {
-  const [open, setOpen] = useState(false);
-  const reviewSummary = useMemo(() => {
-    const reviewed = products
-      .filter((product) => product?.active !== false)
-      .map((product) => ({
-        ...product,
-        _reviewCount: getReviewCount(product),
-        _rating: Math.max(0, Math.min(5, Number(product?.rating) || 0)),
-      }))
-      .filter((product) => product._reviewCount > 0)
-      .sort((a, b) => {
-        if (b._rating !== a._rating) return b._rating - a._rating;
-        return b._reviewCount - a._reviewCount;
-      });
-
-    const totalReviews = reviewed.reduce((total, product) => total + product._reviewCount, 0);
-    const weightedRating = reviewed.reduce(
-      (total, product) => total + product._rating * product._reviewCount,
-      0
-    );
-
-    return {
-      reviewed,
-      totalReviews,
-      average: totalReviews ? weightedRating / totalReviews : 0,
-    };
-  }, [products]);
-
-  return (
-    <div className="relative">
-      <button
-        type="button"
-        onClick={() => setOpen((current) => !current)}
-        className={`flex w-full items-center justify-between gap-3 text-left transition hover:text-white ${
-          compact
-            ? "text-base font-light text-white/80"
-            : "text-[11px] font-bold uppercase tracking-[0.2em] text-white"
-        }`}
-        aria-expanded={open}
-      >
-        <span>
-          Total Reviews
-          {reviewSummary.totalReviews > 0 && (
-            <span className="ml-2 font-light text-white/55">
-              {reviewSummary.totalReviews}
-            </span>
-          )}
-        </span>
-        <FiChevronDown className={`h-4 w-4 shrink-0 transition-transform ${open ? "rotate-180" : ""}`} />
-      </button>
-
-      <div
-        className={`grid transition-[grid-template-rows,opacity] duration-300 ${
-          open ? "grid-rows-[1fr] pt-4 opacity-100" : "grid-rows-[0fr] opacity-0"
-        }`}
-      >
-        <div className="overflow-hidden">
-          <div className="border border-white/15 p-4">
-            <div className="flex items-end justify-between gap-4">
-              <div>
-                <p className="text-3xl font-light leading-none">
-                  {reviewSummary.average ? reviewSummary.average.toFixed(1) : "0.0"}
-                </p>
-                <p className="mt-2 text-[10px] uppercase tracking-[0.18em] text-white/45">
-                  Average rating
-                </p>
-              </div>
-              <div className="flex gap-1 text-white">
-                {Array.from({ length: 5 }).map((_, index) => (
-                  <FiStar
-                    key={index}
-                    className={`h-4 w-4 ${
-                      index < Math.round(reviewSummary.average)
-                        ? "fill-white text-white"
-                        : "text-white/25"
-                    }`}
-                  />
-                ))}
-              </div>
-            </div>
-
-            {reviewSummary.reviewed.length ? (
-              <div className="mt-5 space-y-3">
-                {reviewSummary.reviewed.slice(0, 3).map((product) => (
-                  <Link
-                    key={product._id}
-                    to={`/Product/${product._id}`}
-                    onClick={(event) => {
-                      if (customerPreviewLocked) {
-                        event.preventDefault();
-                        return;
-                      }
-                      setOpen(false);
-                    }}
-                    className="flex items-center justify-between gap-4 border-t border-white/10 pt-3 text-white/80 transition hover:text-white"
-                  >
-                    <span className="min-w-0 truncate text-sm font-light">{product.name}</span>
-                    <span className="shrink-0 text-xs text-white/55">
-                      {product._rating.toFixed(1)} / {product._reviewCount}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            ) : (
-              <p className="mt-5 border-t border-white/10 pt-3 text-sm font-light text-white/55">
-                Reviews will appear after customers rate products.
-              </p>
-            )}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
 const LetsDwebsCredit = () => (
   <a
@@ -340,8 +217,8 @@ const MobileAccordion = ({ id, title, openId, setOpenId, children }) => {
 
 const Footer = () => {
   const [openId, setOpenId] = useState("contact");
-  const { siteSettings, products } = useContext(ShopContext);
-  const brandEmail = siteSettings?.brandEmail || siteSettings?.socialLinks?.email || "beradiantnancy@gmail.com";
+  const { siteSettings } = useContext(ShopContext);
+  const brandEmail = siteSettings?.brandEmail || siteSettings?.socialLinks?.email || "hello@sotrabrand.com";
   const brandSocialLinks = getBrandSocialLinks(siteSettings);
 
   return (
@@ -369,20 +246,16 @@ const Footer = () => {
           <LinkList links={footerLinks.more} />
         </MobileAccordion>
 
-        <MobileAccordion id="reviews" title="Total Reviews" openId={openId} setOpenId={setOpenId}>
-          <FooterReviewsDropdown products={products} compact />
-        </MobileAccordion>
-
         <div className="pt-7">
           <p className="text-xs font-bold uppercase tracking-[0.2em]">
-            Follow Be Radiant By Nancy
+            Follow SotraBrand
           </p>
           <SocialLinks links={brandSocialLinks} />
 
           <div className="mt-8 space-y-3 border-t border-white/75 pt-5 text-xs font-light">
             <FooterLebanonSelector />
             <p className="text-white/60">
-              © {new Date().getFullYear()} BE RADIANT BY NANCY. All rights reserved.
+              © {new Date().getFullYear()} SOTRABRAND. All rights reserved.
             </p>
             <LetsDwebsCredit />
           </div>
@@ -414,9 +287,6 @@ const Footer = () => {
           <section>
             <h2 className="mb-7 text-[11px] font-bold uppercase tracking-[0.2em]">More</h2>
             <LinkList links={footerLinks.more} />
-            <div className="mt-8">
-              <FooterReviewsDropdown products={products} />
-            </div>
           </section>
 
           <section>
@@ -426,14 +296,14 @@ const Footer = () => {
             <FooterContactForm />
 
             <p className="mt-7 text-[11px] font-bold uppercase tracking-[0.2em]">
-              Follow Be Radiant By Nancy
+              Follow SotraBrand
             </p>
             <SocialLinks links={brandSocialLinks} />
           </section>
         </div>
 
         <div className="mt-20 flex items-end justify-between gap-8 text-xs font-light text-white/70">
-          <p>© {new Date().getFullYear()} BE RADIANT BY NANCY. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} SOTRABRAND. All rights reserved.</p>
           <div className="flex items-end gap-8">
             <LetsDwebsCredit />
             <FooterLebanonSelector />

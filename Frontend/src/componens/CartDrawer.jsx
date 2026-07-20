@@ -18,7 +18,8 @@ import {
 } from "../utils/productMapping";
 
 const FREE_SHIPPING_TARGET = 55;
-const ORDER_NOTE_STORAGE_KEY = "nancy_order_note";
+const ORDER_NOTE_STORAGE_KEY = "sotra_order_note";
+const LEGACY_ORDER_NOTE_STORAGE_KEY = "nancy_order_note";
 const isObject = (value) => value && typeof value === "object";
 const isRealSize = (value) =>
   Boolean(value) &&
@@ -26,11 +27,31 @@ const isRealSize = (value) =>
 const isRealOption = (value) =>
   Boolean(value) &&
   !["default", "_default", "_no_perfume_type"].includes(String(value).toLowerCase());
+const needsFitSelection = (product) =>
+  Number.isFinite(Number(product?.fitMin)) && Number.isFinite(Number(product?.fitMax));
 const formatMoney = (value, currency = "$") =>
   `${currency || "$"}${(Number(value) || 0).toFixed(2)}`;
+const normalizeOptionText = (value) =>
+  String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
+const getSelectedColorOption = (product, color) => {
+  const target = normalizeOptionText(color);
+  if (!target || !Array.isArray(product?.shadeOptions)) return null;
+
+  return (
+    product.shadeOptions.find((option) =>
+      [option?.cartValue, option?.label, option?.id]
+        .map(normalizeOptionText)
+        .includes(target)
+    ) || null
+  );
+};
 const getSavedOrderNote = () => {
   try {
-    return localStorage.getItem(ORDER_NOTE_STORAGE_KEY) || "";
+    return (
+      localStorage.getItem(ORDER_NOTE_STORAGE_KEY) ||
+      localStorage.getItem(LEGACY_ORDER_NOTE_STORAGE_KEY) ||
+      ""
+    );
   } catch {
     return "";
   }
@@ -57,6 +78,7 @@ const CartDrawer = ({ open, onClose }) => {
     delivery_fee,
     navigate,
     products,
+    token,
     updateQuantity,
   } = useContext(ShopContext);
   const [noteOpen, setNoteOpen] = useState(false);
@@ -216,7 +238,7 @@ const CartDrawer = ({ open, onClose }) => {
       : [];
     const perfumeTypeLabel = perfumeTypes[0] || suggestion.concentration || "";
 
-    if (sizes.length) {
+    if (sizes.length || needsFitSelection(suggestion)) {
       onClose();
       navigate(`/Product/${suggestion._id}`);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -299,19 +321,33 @@ const CartDrawer = ({ open, onClose }) => {
                 <span className="mx-auto grid h-16 w-16 place-items-center rounded-full border border-black/20">
                   <FiShoppingBag className="h-6 w-6" />
                 </span>
-                <h3 className="mt-6 text-2xl font-black uppercase">
+                <h3 className="mt-6 text-[2rem] font-normal leading-tight sm:text-[2.4rem]">
                   Your cart is empty
                 </h3>
-                <p className="mx-auto mt-3 max-w-xs text-sm leading-6 text-black/55">
-                  Add a little radiance and it will appear here.
-                </p>
                 <Link
                   to="/collection"
                   onClick={onClose}
-                  className="mt-7 inline-flex bg-black px-7 py-4 text-[10px] font-bold uppercase tracking-[0.22em] text-white"
+                  className="mt-7 inline-flex min-h-14 items-center justify-center rounded-[14px] bg-black px-10 text-[1.15rem] font-semibold text-white transition hover:bg-[#222]"
                 >
-                  Shop The Collection
+                  Continue shopping
                 </Link>
+                {!token && (
+                  <div className="mt-14">
+                    <h4 className="text-[1.65rem] font-semibold leading-none">
+                      Have an account?
+                    </h4>
+                    <p className="mt-5 text-[1.2rem] leading-none text-black/70">
+                      <Link
+                        to="/login?mode=login"
+                        onClick={onClose}
+                        className="border-b border-black text-black transition hover:text-black/55"
+                      >
+                        Log in
+                      </Link>{" "}
+                      to check out faster.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           ) : (
@@ -319,7 +355,9 @@ const CartDrawer = ({ open, onClose }) => {
               <div className="px-5">
                 {rows.map((row) => {
                   const price = getEffectiveProductPrice(row.product);
-                  const image = getPrimaryProductImage(row.product);
+                  const colorOption = getSelectedColorOption(row.product, row.color);
+                  const image = colorOption?.image || getPrimaryProductImage(row.product);
+                  const colorLabel = colorOption?.label || row.color || "";
                   const originalPrice = Number(row.product?.price || 0);
                   const discounted = originalPrice > price && price > 0;
                   const atMaximum =
@@ -374,7 +412,7 @@ const CartDrawer = ({ open, onClose }) => {
                           {[
                             row.perfumeType,
                             isRealSize(row.size) ? row.size : null,
-                            row.color,
+                            colorLabel,
                           ]
                             .filter(Boolean)
                             .join(" / ")}
@@ -421,11 +459,11 @@ const CartDrawer = ({ open, onClose }) => {
 
                       <div className="flex flex-col items-end justify-between gap-4">
                         <div className="text-right">
-                          <p className="text-sm font-medium">
+                          <p className={`sotra-price text-sm font-bold ${discounted ? "sotra-sale-price" : ""}`}>
                             {formatMoney(price * row.quantity, currency)}
                           </p>
                           {discounted && (
-                            <p className="mt-1 text-[10px] text-black/35 line-through">
+                            <p className="sotra-old-price mt-1 text-[10px]">
                               {formatMoney(originalPrice * row.quantity, currency)}
                             </p>
                           )}
@@ -472,7 +510,7 @@ const CartDrawer = ({ open, onClose }) => {
                       <p className="line-clamp-2 text-xs font-semibold uppercase leading-5 tracking-[0.08em]">
                         {suggestion.name}
                       </p>
-                      <p className="mt-1 text-sm">
+                      <p className="sotra-price mt-1 text-sm font-bold">
                         {formatMoney(getEffectiveProductPrice(suggestion), currency)}
                       </p>
                     </div>
@@ -533,16 +571,16 @@ const CartDrawer = ({ open, onClose }) => {
                   Taxes, discounts and shipping calculated at checkout.
                 </p>
               </div>
-              <p className="text-lg font-medium">{formatMoney(subtotal, currency)}</p>
+              <p className="sotra-price text-lg font-bold">{formatMoney(subtotal, currency)}</p>
             </div>
             <div className="mt-3 space-y-2 border-t border-black/15 pt-3 text-[11px]">
               <div className="flex items-center justify-between text-black/50">
                 <span>Delivery</span>
-                <span className="text-black">{formatMoney(delivery, currency)}</span>
+                <span className="sotra-price text-black">{formatMoney(delivery, currency)}</span>
               </div>
               <div className="flex items-center justify-between font-bold uppercase tracking-[0.1em]">
                 <span>Estimated Total</span>
-                <span>{formatMoney(estimatedTotal, currency)}</span>
+                <span className="sotra-price">{formatMoney(estimatedTotal, currency)}</span>
               </div>
             </div>
             {cannotCheckout && (
@@ -557,7 +595,7 @@ const CartDrawer = ({ open, onClose }) => {
               className="mt-4 flex w-full items-center justify-between bg-black px-5 py-4 text-[10px] font-bold uppercase tracking-[0.2em] text-white transition hover:bg-[#222] disabled:cursor-not-allowed disabled:opacity-35"
             >
               <span>{cannotCheckout ? "Update Cart To Continue" : "Proceed To Checkout"}</span>
-              <span>{formatMoney(estimatedTotal, currency)}</span>
+              <span className="sotra-price">{formatMoney(estimatedTotal, currency)}</span>
             </button>
             <p className="mt-3 text-center text-[9px] font-semibold uppercase tracking-[0.18em] text-black/40">
               {itemCount} {itemCount === 1 ? "item" : "items"} in your cart

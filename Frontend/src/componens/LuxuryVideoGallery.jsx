@@ -145,7 +145,7 @@ const LuxuryImageCard = ({ item }) => (
   >
     <ShimmerImage
       src={item.src}
-      alt={item.alt || "Be Radiant by Nancy gallery image"}
+      alt={item.alt || "SotraBrand gallery image"}
       className="h-full w-full object-cover"
       wrapperClassName="h-full w-full"
       skeletonClassName="bg-[#EAEAEA]"
@@ -168,7 +168,9 @@ const LuxuryVideoGallery = () => {
   const galleryMedia = useMemo(
     () =>
       useMockData
-        ? mockSectionMedia
+        ? mockSectionMedia.length
+          ? mockSectionMedia
+          : nancyVideoGallery
         : sectionMedia.length
           ? sectionMedia
           : nancyVideoGallery,
@@ -190,8 +192,8 @@ const LuxuryVideoGallery = () => {
             type: item.type === "video" ? "video" : "image",
             src: item.src,
             poster: item.poster || "",
-            alt: item.alt || item.label || "Be Radiant by Nancy gallery media",
-            label: item.label || item.alt || "Be Radiant by Nancy gallery media",
+            alt: item.alt || item.label || "SotraBrand gallery media",
+            label: item.label || item.alt || "SotraBrand gallery media",
           }));
         if (alive) setSectionMedia(items);
       } catch {

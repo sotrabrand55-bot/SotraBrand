@@ -64,10 +64,16 @@ const normalizeItems = (order) => {
     return {
       key: `${item.productId || item._id || index}-${index}`,
       thumb:
+        item.colorImage ||
+        item.selectedColorImage ||
         item.productThumb ||
         item.thumbnail ||
         pickImage(item.image) ||
         pickImage(item.product?.image),
+      colorThumb:
+        item.colorImage ||
+        item.selectedColorImage ||
+        "",
       name:
         item.title ||
         item.productName ||
@@ -80,7 +86,12 @@ const normalizeItems = (order) => {
         item.concentration ??
         null,
       size: item.size ?? item.selectedSize ?? item.variantSize ?? null,
-      color: item.color ?? item.selectedColor ?? item.variantColor ?? null,
+      color:
+        item.colorLabel ??
+        item.selectedColor ??
+        item.color ??
+        item.variantColor ??
+        null,
       quantity,
       unitPrice,
       subtotal,
@@ -422,8 +433,20 @@ const Orders = ({ token }) => {
                                 {item.name}
                               </p>
                               <p className="mt-1 truncate text-[11px] text-[#4b5563]">
-                                {[item.perfumeType, item.size].filter(Boolean).join(" / ") || "-"} / Qty {item.quantity}
+                                {[item.perfumeType, item.size, item.color].filter(Boolean).join(" / ") || "-"} / Qty {item.quantity}
                               </p>
+                              {item.colorThumb && (
+                                <div className="mt-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#6b7280]">
+                                  <span className="h-5 w-5 overflow-hidden rounded-full border border-[#d4d4d4] bg-[#EAEAEA]">
+                                    <img
+                                      src={item.colorThumb}
+                                      alt={item.color || "Selected color"}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  </span>
+                                  Selected color
+                                </div>
+                              )}
                             </div>
                           </div>
                         ))}
@@ -442,20 +465,20 @@ const Orders = ({ token }) => {
                     <div className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-3">
                       <div className="flex items-center justify-between text-xs text-[#4b5563]">
                         <span>Subtotal</span>
-                        <span className="font-semibold text-[#000000]">
+                        <span className="sotra-price font-semibold text-[#000000]">
                           {formatPrice(totals.subtotal)}
                         </span>
                       </div>
                       <div className="mt-2 flex items-center justify-between text-xs text-[#4b5563]">
                         <span>Delivery</span>
-                        <span className="font-semibold text-[#000000]">
+                        <span className="sotra-price font-semibold text-[#000000]">
                           {formatPrice(totals.shipping)}
                         </span>
                       </div>
                       {totals.discount > 0 && (
                         <div className="mt-2 flex items-center justify-between text-xs text-[#7b2d2d]">
                           <span>Discount</span>
-                          <span className="font-semibold">
+                          <span className="sotra-price font-semibold">
                             -{formatPrice(totals.discount)}
                           </span>
                         </div>
@@ -465,7 +488,7 @@ const Orders = ({ token }) => {
                           <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
                             Total
                           </span>
-                          <span className="font-serif text-2xl text-[#000000]">
+                          <span className="sotra-price text-2xl font-bold text-[#000000]">
                             {formatPrice(totals.amount)}
                           </span>
                         </div>
@@ -656,7 +679,19 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
                 <p className="mt-1 text-xs text-[#4b5563]">
                   {[item.perfumeType, item.size, item.color].filter(Boolean).join(" / ") || "-"} / Qty {item.quantity}
                 </p>
-                <p className="mt-1 text-xs font-semibold text-[#000000]">
+                {item.colorThumb && (
+                  <div className="mt-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#6b7280]">
+                    <span className="h-5 w-5 overflow-hidden rounded-full border border-[#d4d4d4] bg-[#EAEAEA]">
+                      <img
+                        src={item.colorThumb}
+                        alt={item.color || "Selected color"}
+                        className="h-full w-full object-cover"
+                      />
+                    </span>
+                    Selected color image
+                  </div>
+                )}
+                <p className="sotra-price mt-1 text-xs font-semibold text-[#000000]">
                   {formatPrice(item.subtotal)}
                 </p>
               </div>
@@ -669,20 +704,20 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
         <div className="space-y-2 text-sm">
           <div className="flex items-center justify-between text-[#4b5563]">
             <span>Subtotal</span>
-            <span className="font-semibold text-[#000000]">
+            <span className="sotra-price font-semibold text-[#000000]">
               {formatPrice(totals.subtotal)}
             </span>
           </div>
           <div className="flex items-center justify-between text-[#4b5563]">
             <span>Delivery</span>
-            <span className="font-semibold text-[#000000]">
+            <span className="sotra-price font-semibold text-[#000000]">
               {formatPrice(totals.shipping)}
             </span>
           </div>
           {totals.discount > 0 && (
             <div className="flex items-center justify-between text-[#7b2d2d]">
               <span>Discount {order.coupon ? `(${order.coupon})` : ""}</span>
-              <span className="font-semibold">-{formatPrice(totals.discount)}</span>
+              <span className="sotra-price font-semibold">-{formatPrice(totals.discount)}</span>
             </div>
           )}
         </div>
@@ -690,7 +725,7 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
           <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#6b7280]">
             Total
           </span>
-          <span className="font-serif text-3xl text-[#000000]">
+          <span className="sotra-price text-3xl font-bold text-[#000000]">
             {formatPrice(totals.amount)}
           </span>
         </div>

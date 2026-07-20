@@ -177,11 +177,11 @@ const NancyProductLivePreview = ({
           </div>
 
           <div className="mt-4 flex flex-wrap items-baseline gap-2">
-            <span className="text-2xl font-light tracking-[0.08em]">
+            <span className={`sotra-price text-2xl font-bold ${hasDiscount ? "sotra-sale-price" : ""}`}>
               ${displayPrice.toFixed(2)} USD
             </span>
             {hasDiscount && (
-              <span className="text-sm text-black/35 line-through">
+              <span className="sotra-old-price text-sm">
                 ${basePrice.toFixed(2)}
               </span>
             )}

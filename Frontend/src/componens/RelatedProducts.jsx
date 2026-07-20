@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useContext, useEffect, useState } from "react";
 import { ShopContext } from "../context/ShopContext";
-import ProductItem from "./ProductItem";
+import CollectionProductCard from "./CollectionProductCard";
 
 const RelatedProducts = ({ category, subCategory, currentId }) => {
   const { products } = useContext(ShopContext);
@@ -29,32 +29,16 @@ const RelatedProducts = ({ category, subCategory, currentId }) => {
   if (related.length === 0) return null;
 
   return (
-    <section className="pt-8">
-      <div className="mb-8 text-center">
-        <h2 className="text-3xl font-black uppercase leading-tight text-black sm:text-4xl">
+    <section className="pt-6">
+      <div className="mb-9 text-center">
+        <h2 className="text-[2.6rem] font-black uppercase leading-none text-black sm:text-5xl">
           You May Also Like
         </h2>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 gap-y-6 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+      <div className="grid grid-cols-2 gap-x-2 gap-y-12 sm:gap-x-4 md:grid-cols-3 xl:grid-cols-4">
         {related.map((item) => (
-          <ProductItem
-            key={item._id}
-            id={item._id}
-            name={item.name}
-            price={item.price}
-            discountPrice={item.discountPrice}
-            onSales={item.onSales}
-            outOfStock={item.outOfStock}
-            colors={[]}
-            sizes={item.sizes || []}
-            perfumeTypes={item.perfumeTypes || []}
-            category={item.category}
-            subCategory={item.subCategory}
-            concentration={item.concentration}
-            stock={item.stock}
-            image={item.image || item.image1}
-          />
+          <CollectionProductCard key={item._id} product={item} />
         ))}
       </div>
     </section>

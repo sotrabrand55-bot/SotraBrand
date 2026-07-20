@@ -13,23 +13,23 @@ const socialLinksSchema = new mongoose.Schema(
 const siteSettingsSchema = new mongoose.Schema(
   {
     key: { type: String, default: "main", unique: true },
-    delivery_fee: { type: Number, default: 3 },
+    delivery_fee: { type: Number, default: 5 },
     announcementEnabled: { type: Boolean, default: true },
     announcementItems: {
       type: [String],
-      default: ["FREE 10 mL Tester With Every Purchase", "Free Shipping On All Orders"],
+      default: ["Welcome to our store", "Cash On Delivery", "Tripoli Delivery Only $2"],
     },
     freeShippingEnabled: { type: Boolean, default: true },
-    freeShippingText: { type: String, default: "Free Shipping On All Orders" },
+    freeShippingText: { type: String, default: "Delivery $5 All Over Lebanon" },
     availableNowText: { type: String, default: "AVAILABLE NOW" },
-    brandEmail: { type: String, default: "beradiantnancy@gmail.com" },
+    brandEmail: { type: String, default: "Serinachendeb133@gmail.com" },
     socialLinks: {
       type: socialLinksSchema,
       default: () => ({
-        instagram: "https://www.instagram.com/radiant_bynancy?igsh=MWY3YmwxcjNyYTNjcg==",
-        facebook: "https://www.facebook.com/share/18oAYDyvZt/",
-        tiktok: "https://www.tiktok.com/@radiant.nancy?_r=1&_t=ZS-96qoZYlR9xF",
-        email: "beradiantnancy@gmail.com",
+        instagram: "https://www.instagram.com/sotra_brand_hijab?igsh=MWZiNzdkM3BuZnVndA%3D%3D&utm_source=qr",
+        facebook: "https://www.facebook.com/share/1Cnd12KNGw/?mibextid=wwXIfr",
+        tiktok: "https://www.tiktok.com/@sotrabrand133?_r=1&_t=ZS-98BbAHXPjTc",
+        email: "Serinachendeb133@gmail.com",
       }),
     },
   },

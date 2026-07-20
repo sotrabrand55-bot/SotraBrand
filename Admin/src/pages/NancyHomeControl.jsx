@@ -51,11 +51,11 @@ const volumeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
 const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Parfum"];
 
 const emptySettings = {
-  delivery_fee: 3,
+  delivery_fee: 5,
   announcementEnabled: true,
-  announcementItems: ["FREE 10 mL Tester With Every Purchase", "Free Shipping On All Orders"],
+  announcementItems: ["Welcome to our store", "Cash On Delivery", "Tripoli Delivery Only $2"],
   freeShippingEnabled: true,
-  freeShippingText: "Free Shipping On All Orders",
+  freeShippingText: "Delivery $5 All Over Lebanon",
   availableNowText: "AVAILABLE NOW",
   brandEmail: "beradiantnancy@gmail.com",
   socialLinks: {

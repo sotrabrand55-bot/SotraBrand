@@ -7,8 +7,8 @@ export default {
         brand: "#C7A96B",   // gold acc
       },
       fontFamily: {
-        serif: ["Prata", "serif"],   // main logo / headers
-        sans: ["Poppins", "ui-sans-serif", "system-ui"], // secondary text
+        serif: ["Cormorant Garamond", "Georgia", "Times New Roman", "serif"],
+        sans: ["Cormorant Garamond", "Georgia", "Times New Roman", "serif"],
       },
     },
   },

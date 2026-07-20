@@ -24,10 +24,10 @@ export const submitContact = async (req, res) => {
     await sendMail({
       to,
       replyTo: email,
-      subject: 'New Be Radiant By Nancy contact form message',
+      subject: 'New SotraBrand contact form message',
       html: `
         <div style="font-family:Arial,sans-serif;line-height:1.5">
-          <h2 style="margin:0 0 8px;color:#2D2D2D">Be Radiant By Nancy - Contact Form</h2>
+          <h2 style="margin:0 0 8px;color:#2D2D2D">SotraBrand - Contact Form</h2>
           <hr style="border:none;border-top:1px solid #eee;margin:10px 0"/>
           <p><strong>Name:</strong> ${escapeHtml(name)}</p>
           <p><strong>Email:</strong> ${escapeHtml(email)}</p>

@@ -39,7 +39,7 @@ const Login = () => {
         });
 
         if (response.data.success) {
-          toast("Your account has been created.");
+          toast("Your SotraBrand account has been created.");
           setToken(response.data.token);
           localStorage.setItem("token", response.data.token);
         } else {
@@ -52,7 +52,7 @@ const Login = () => {
         });
 
         if (response.data.success) {
-          toast("Welcome back to Be Radiant.");
+          toast("Welcome back to SotraBrand.");
           setToken(response.data.token);
           localStorage.setItem("token", response.data.token);
         } else {
@@ -91,7 +91,7 @@ const Login = () => {
         <section className="mx-auto flex min-h-[calc(100vh-9rem)] max-w-[760px] items-center justify-center border border-black/15 bg-white px-5 py-12 text-center sm:px-10">
           <div className="w-full max-w-md">
             <p className="text-[11px] font-black uppercase tracking-[0.28em] text-black/45">
-              Be Radiant Account
+              SotraBrand Account
             </p>
             <h1 className="mt-3 text-5xl font-black uppercase leading-none text-black">
               You Are Signed In
@@ -130,21 +130,21 @@ const Login = () => {
         <div className="hidden border-r border-black/15 bg-black p-8 text-white lg:flex lg:flex-col lg:justify-between xl:p-10">
           <div>
             <div className="grid h-14 w-14 place-items-center border border-white/40 font-serif text-2xl">
-              R
+              S
             </div>
             <p className="mt-8 text-[11px] font-bold uppercase tracking-[0.28em] text-white/60">
-              Be Radiant Account
+              SotraBrand Account
             </p>
             <h1 className="mt-4 max-w-xl text-5xl font-black uppercase leading-tight">
-              Keep your Nancy rituals close.
+              Keep your SotraBrand pieces close.
             </h1>
             <p className="mt-6 max-w-md text-sm leading-7 text-white/65">
-              Save favorites, follow orders, and return to the products you love.
+              Save your details, check out faster, and follow your SotraBrand orders.
             </p>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
-            {["Favorites", "Orders", "Rituals"].map((item) => (
+            {["Orders", "Fast Checkout", "Account"].map((item) => (
               <div key={item} className="border border-white/20 p-4">
                 <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-white/70">
                   {item}
@@ -162,12 +162,12 @@ const Login = () => {
                 {isLogin ? "Welcome Back" : "Create Account"}
               </p>
               <h2 className="mt-3 text-5xl font-black uppercase leading-none text-black">
-                {isLogin ? "Sign In" : "Join Nancy"}
+                {isLogin ? "Sign In" : "Create SotraBrand Account"}
               </h2>
               <p className="mt-4 text-sm leading-7 text-black/55">
                 {isLogin
-                  ? "Access your orders, saved products, and Be Radiant favorites."
-                  : "Create your account and begin your Be Radiant ritual."}
+                  ? "Access your orders, saved details, and SotraBrand account."
+                  : "Create your SotraBrand account to check out faster and follow your orders."}
               </p>
             </div>
 

@@ -17,9 +17,9 @@ const buttonBlack =
 
 const emptyImages = {
   aboutImage: "",
-  aboutImageAlt: "Be Radiant by Nancy collection",
+  aboutImageAlt: "SotraBrand collection",
   contactImage: "",
-  contactImageAlt: "Be Radiant by Nancy contact",
+  contactImageAlt: "SotraBrand contact",
 };
 
 const imageFields = [

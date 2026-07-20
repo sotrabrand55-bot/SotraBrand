@@ -22,7 +22,7 @@ const getTransporter = () => {
 export const sendMail = async ({ to, subject, html, text, replyTo }) => {
   const t = getTransporter();
   return t.sendMail({
-    from: `"Be Radiant By Nancy" <${process.env.GMAIL_USER}>`,
+    from: `"SotraBrand" <${process.env.GMAIL_USER}>`,
     to,
     replyTo,
     subject,

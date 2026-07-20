@@ -120,6 +120,24 @@ function getShadeValues(product = {}) {
     .filter(Boolean)
 }
 
+function getShadeOption(product = {}, requestedColor = '') {
+  const target = normalizeOption(requestedColor).toLowerCase()
+  if (!target) return null
+
+  return (Array.isArray(product.shadeOptions) ? product.shadeOptions : []).find((option, index) => {
+    const values = [
+      option?.cartValue,
+      option?.label,
+      option?.id,
+      `Option ${index + 1}`,
+    ]
+      .map((value) => normalizeOption(value).toLowerCase())
+      .filter(Boolean)
+
+    return values.includes(target)
+  }) || null
+}
+
 const effectivePrice = (product = {}) => {
   const price = Number(product.price || 0)
   const discountPrice = Number(product.discountPrice)
@@ -244,6 +262,14 @@ const placeOrder = async (req, res) => {
           message: `${requestedColor} is not available for ${p.name}`,
         });
       }
+      const shadeOption = getShadeOption(p, requestedColor);
+      const selectedColorLabel =
+        normalizeOption(it.colorLabel || it.selectedColor || shadeOption?.label || requestedColor);
+      const selectedColorImage =
+        pickImageValue(it.colorImage) ||
+        pickImageValue(it.selectedColorImage) ||
+        pickImageValue(shadeOption?.image) ||
+        '';
 
       const unitPrice = effectivePrice(p);
       const itemSubtotal = unitPrice * qty;
@@ -252,13 +278,18 @@ const placeOrder = async (req, res) => {
       orderItems.push({
         productId: String(p._id),
         title: p.name,
-        image: pickOrderProductImage(p),
+        image: selectedColorImage || pickOrderProductImage(p),
+        productImage: pickOrderProductImage(p),
         category: p.category || '',
         subCategory: p.subCategory || '',
         concentration: orderPerfumeType || p.concentration || '',
         perfumeType: orderPerfumeType || null,
         size: productSizes.length ? requestedSize : null,
         color: requestedColor || null,
+        colorLabel: selectedColorLabel || requestedColor || null,
+        colorImage: selectedColorImage || null,
+        selectedColor: selectedColorLabel || requestedColor || null,
+        selectedColorImage: selectedColorImage || null,
         qty,
         unitPrice,
         subtotal: itemSubtotal,

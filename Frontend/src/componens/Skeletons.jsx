@@ -239,7 +239,7 @@ export const CollectionGridSkeleton = ({ cards = 8 }) => (
         key={index}
         className="overflow-hidden bg-white"
       >
-        <SkeletonBlock className="aspect-[3/4] rounded-none bg-[#EAEAEA]" />
+        <SkeletonBlock className="aspect-[4/5] rounded-none bg-[#EAEAEA]" />
         <div className="pt-3">
           <div className="flex gap-1.5">
             <SkeletonBlock className="h-5 w-5 rounded-full bg-[#EAEAEA]" />

@@ -6,7 +6,7 @@ const copy = {
     eyebrow: "Privacy Policy",
     title: "Your Privacy Matters",
     intro:
-      "Be Radiant By Nancy respects your personal information and uses it only to support your shopping experience, order delivery, and customer care.",
+      "SotraBrand respects your personal information and uses it only to support your shopping experience, order delivery, and customer care.",
     sections: [
       {
         title: "Information We Collect",
@@ -16,7 +16,7 @@ const copy = {
       {
         title: "How We Use It",
         text:
-          "We use this information to confirm orders, arrange delivery, answer questions, improve our service, and keep your Be Radiant experience smooth.",
+          "We use this information to confirm orders, arrange delivery, answer questions, improve our service, and keep your SotraBrand experience smooth.",
       },
       {
         title: "Care With Your Data",
@@ -31,30 +31,31 @@ const copy = {
     ],
   },
   terms: {
-    eyebrow: "Terms and Conditions",
-    title: "Simple Terms For A Smooth Order",
+    eyebrow: "Exchange Policy",
+    title: "Exchange Only",
     intro:
-      "These terms help keep every Be Radiant By Nancy order clear, respectful, and easy to complete.",
+      "Exchanges are accepted only for incorrect size, incorrect color, or a manufacturing defect.",
     sections: [
       {
-        title: "Orders",
-        text:
-          "Please review your product choices, quantity, phone number, and delivery address before submitting your order.",
+        title: "Exchange Policy",
+        text: [
+          "Exchanges are accepted only in the following cases:",
+          "Incorrect size received.",
+          "Incorrect color received.",
+          "Manufacturing defect in the item.",
+          "We do not offer refunds. Exchange only.",
+        ],
       },
       {
-        title: "Prices and Availability",
-        text:
-          "Prices and stock can change when products are updated. If an item becomes unavailable, we will contact you before continuing the order.",
-      },
-      {
-        title: "Delivery",
-        text:
-          "Delivery follows the timing shown in our Shipping Info page. Delays may happen during busy periods or conditions outside our control.",
-      },
-      {
-        title: "Product Care",
-        text:
-          "For the best experience, store products away from direct heat and sunlight, and follow the usage guidance shown on the product page.",
+        title: "سياسة الاستبدال",
+        dir: "rtl",
+        text: [
+          "يمكن استبدال المنتج فقط في الحالات التالية:",
+          "في حال إرسال مقاس غير صحيح.",
+          "في حال إرسال لون غير صحيح.",
+          "في حال وجود عيب مصنعي في القطعة.",
+          "لا يوجد استرجاع للأموال، والاستبدال فقط.",
+        ],
       },
     ],
   },
@@ -87,9 +88,24 @@ const LegalPolicy = ({ type = "privacy" }) => {
             <h2 className="text-sm font-black uppercase tracking-[0.18em]">
               {section.title}
             </h2>
-            <p className="mt-4 text-sm font-light leading-8 text-black/65">
-              {section.text}
-            </p>
+            {Array.isArray(section.text) ? (
+              <div
+                dir={section.dir || "ltr"}
+                className="mt-4 space-y-3 text-sm font-light leading-8 text-black/65"
+              >
+                <p>{section.text[0]}</p>
+                <ul className="list-disc space-y-2 pl-5 rtl:pr-5">
+                  {section.text.slice(1, -1).map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+                <p className="font-medium text-black">{section.text.at(-1)}</p>
+              </div>
+            ) : (
+              <p className="mt-4 text-sm font-light leading-8 text-black/65">
+                {section.text}
+              </p>
+            )}
           </article>
         ))}
       </section>

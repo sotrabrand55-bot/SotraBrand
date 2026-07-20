@@ -1,38 +1,38 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FiArrowRight, FiClock, FiFeather, FiHeart, FiShield } from "react-icons/fi";
-import { assests } from "../assets/assests";
+import aboutImageFallback from "../assets/sotraBrand/Header_1.jpeg";
 import { ShimmerImage } from "../componens/Skeletons";
 import { useMockData } from "../lib/mockData";
 
 const values = [
   {
-    title: "Radiance",
-    text: "Body rituals created to feel soft, polished, and beautifully present on the skin.",
+    title: "Modesty",
+    text: "Designed for women who value coverage, comfort, and quiet elegance.",
     icon: FiHeart,
   },
   {
-    title: "Detail",
-    text: "Each formula and fragrance direction is chosen with a clean, feminine finish in mind.",
+    title: "Quality",
+    text: "Each piece is selected with refined fabrics, clean finishing, and lasting wear in mind.",
     icon: FiFeather,
   },
   {
-    title: "Confidence",
-    text: "A lasting glow that feels personal, elegant, and ready for everyday moments.",
+    title: "Elegance",
+    text: "Simple silhouettes made to feel graceful without compromising personal style.",
     icon: FiClock,
   },
 ];
 
 const principles = [
-  "Pure white visual direction",
-  "Soft feminine rituals",
-  "Modern Lebanese beauty",
-  "Details made to feel personal",
+  "Elegant modest silhouettes",
+  "Comfort-focused clothing",
+  "Quality fabrics and details",
+  "Style with purpose",
 ];
 
 const About = () => {
-  const [aboutImage, setAboutImage] = useState(assests.About_us);
-  const [aboutImageAlt, setAboutImageAlt] = useState("Be Radiant by Nancy story");
+  const [aboutImage, setAboutImage] = useState(aboutImageFallback);
+  const [aboutImageAlt, setAboutImageAlt] = useState("SotraBrand story");
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -50,13 +50,13 @@ const About = () => {
         const res = await fetch(`${backendUrl}/api/page-images`);
         const data = await res.json();
         if (!cancelled && data?.success) {
-          setAboutImage(data.pageImages?.aboutImage || assests.About_us);
+          setAboutImage(data.pageImages?.aboutImage || aboutImageFallback);
           setAboutImageAlt(
-            data.pageImages?.aboutImageAlt || "Be Radiant by Nancy story"
+            data.pageImages?.aboutImageAlt || "SotraBrand story"
           );
         }
       } catch {
-        if (!cancelled) setAboutImage(assests.About_us);
+        if (!cancelled) setAboutImage(aboutImageFallback);
       }
     };
 
@@ -71,34 +71,34 @@ const About = () => {
       <section className="border-b border-black/15">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 sm:py-16 lg:grid-cols-[0.95fr_1.05fr] lg:px-8 lg:py-20">
           <div className="max-w-2xl">
-            <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/50">
-              Be Radiant By Nancy
+            <p className="text-[11px] font-bold uppercase tracking-[0.32em] text-[#ad9a7d]">
+              About Sotra
             </p>
-            <h1 className="mt-4 text-5xl font-black uppercase leading-none sm:text-7xl">
-              About
+            <h1 className="mt-4 font-serif text-[42px] font-normal leading-[0.98] text-[#121212] sm:text-[68px]">
+              Where Modesty Meets Elegance
             </h1>
-            <p className="mt-6 max-w-xl text-lg leading-8 text-black/65 sm:text-xl">
-              Beauty rituals made for softness, confidence, and a radiant everyday finish.
+            <p className="mt-6 max-w-xl text-[17px] leading-8 text-[#625d58] sm:text-[19px] sm:leading-9">
+              SOTRA is a modest fashion brand dedicated to providing elegant,
+              comfortable, and high-quality clothing for women. We believe that
+              true beauty lies in confidence, simplicity, and modesty.
             </p>
-            <p className="mt-5 max-w-2xl text-sm leading-8 text-black/55 sm:text-base">
-              Be Radiant By Nancy brings together body care and fragrance in a clean,
-              feminine world: polished visuals, thoughtful textures, and products designed
-              to make the skin feel cared for before the scent even settles.
+            <p className="mt-5 max-w-2xl text-[16px] leading-8 text-[#6f6963] sm:text-[18px]">
+              Designed for women who value modesty without compromising on style.
             </p>
 
             <div className="mt-8 flex flex-col gap-3 sm:flex-row">
               <Link
                 to="/collection"
-                className="inline-flex h-12 items-center justify-center gap-3 bg-black px-7 text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#222]"
+                className="inline-flex h-12 items-center justify-center gap-3 rounded-[6px] bg-black px-7 text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#222]"
               >
                 Explore Collection
                 <FiArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/contact"
-                className="inline-flex h-12 items-center justify-center border border-black px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition hover:bg-black hover:text-white"
+                className="inline-flex h-12 items-center justify-center rounded-[6px] border border-black/70 px-7 text-xs font-bold uppercase tracking-[0.18em] text-black transition hover:bg-black hover:text-white"
               >
-                Contact Nancy
+                Contact Us
               </Link>
             </div>
           </div>
@@ -129,10 +129,10 @@ const About = () => {
               <div className="mb-5 grid h-11 w-11 place-items-center border border-black/20 text-black">
                 <Icon className="h-5 w-5" />
               </div>
-              <h2 className="text-2xl font-black uppercase tracking-[0.05em] text-black">
+              <h2 className="font-serif text-[28px] font-normal leading-none text-[#121212]">
                 {title}
               </h2>
-              <p className="mt-3 max-w-sm text-sm leading-7 text-black/55">
+              <p className="mt-3 max-w-sm text-sm leading-7 text-[#625d58]">
                 {text}
               </p>
             </div>
@@ -143,22 +143,21 @@ const About = () => {
       <section className="mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 sm:py-16 lg:grid-cols-[0.85fr_1.15fr] lg:px-8 lg:py-20">
         <div>
           <p className="text-[10px] font-black uppercase tracking-[0.3em] text-black/45">
-            The Nancy Way
+            The Sotra Way
           </p>
-          <h2 className="mt-4 max-w-xl text-4xl font-black uppercase leading-tight sm:text-5xl">
-            Luxury that feels clean, close, and personal.
+          <h2 className="mt-4 max-w-xl font-serif text-[38px] font-normal leading-tight text-[#121212] sm:text-[54px]">
+            Modest fashion made with clarity, comfort, and grace.
           </h2>
         </div>
 
         <div className="grid gap-8">
           <div className="border-l border-black pl-6">
-            <h3 className="text-2xl font-black uppercase tracking-[0.05em]">
+            <h3 className="font-serif text-[30px] font-normal leading-none text-[#121212]">
               Our Promise
             </h3>
-            <p className="mt-4 text-sm leading-8 text-black/55 sm:text-base">
-              To create skincare and scent rituals that feel refined without becoming
-              complicated: beautiful textures, clear presentation, and a feminine mood
-              that stays true to Be Radiant By Nancy.
+            <p className="mt-4 text-[16px] leading-8 text-[#625d58] sm:text-[18px]">
+              To offer pieces that support confidence, simplicity, and modesty,
+              while keeping every wardrobe elegant and practical.
             </p>
           </div>
 
