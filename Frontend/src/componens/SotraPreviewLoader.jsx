@@ -1,6 +1,6 @@
 import sotraLogo from "../assets/sotraBrand/Logo_Sotra_cropped.png";
 
-const NancyPreviewLoader = () => (
+const SotraPreviewLoader = () => (
   <main className="grid min-h-screen place-items-center bg-white px-6 text-black">
     <div className="flex flex-col items-center text-center">
       <div className="sotra-preview-loader-mark" aria-hidden="true">
@@ -19,4 +19,4 @@ const NancyPreviewLoader = () => (
   </main>
 );
 
-export default NancyPreviewLoader;
+export default SotraPreviewLoader;

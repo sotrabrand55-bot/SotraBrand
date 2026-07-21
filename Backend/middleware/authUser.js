@@ -1,14 +1,12 @@
 import jwt from "jsonwebtoken";
 import { logError } from "../utils/logger.js";
 
-const USER_COOKIE_NAME = "nancy_token";
-const LEGACY_USER_COOKIE_NAME = "levon_token";
+const USER_COOKIE_NAME = "sotra_token";
 
 const authUser = async (req, res, next) => {
   const token =
     req.headers.token ||
-    req.cookies?.[USER_COOKIE_NAME] ||
-    req.cookies?.[LEGACY_USER_COOKIE_NAME]; // getting the token from headers or httpOnly cookie
+    req.cookies?.[USER_COOKIE_NAME]; // getting the token from headers or httpOnly cookie
 
   if (!token) {
     // if the token not available

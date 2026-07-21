@@ -52,7 +52,7 @@ const MediaPreview = ({ src, file, label }) => {
   );
 };
 
-const ProductNancyMediaEditor = ({
+const ProductSotraMediaEditor = ({
   shadeOptions,
   setShadeOptions,
   storyImages,
@@ -319,4 +319,4 @@ const ProductNancyMediaEditor = ({
   );
 };
 
-export default ProductNancyMediaEditor;
+export default ProductSotraMediaEditor;

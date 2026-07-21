@@ -1,16 +1,14 @@
 import jwt from 'jsonwebtoken'; // Import the JWT library to verify and decode tokens
 import { logError } from "../utils/logger.js";
 
-const ADMIN_COOKIE_NAME = "nancy_admin_token";
-const LEGACY_ADMIN_COOKIE_NAME = "levon_admin_token";
+const ADMIN_COOKIE_NAME = "sotra_admin_token";
 
 // This middleware checks if the user is an admin before allowing access
 const adminAuth = async (req, res, next) => {
     try {
       const token =
         req.headers.token ||
-        req.cookies?.[ADMIN_COOKIE_NAME] ||
-        req.cookies?.[LEGACY_ADMIN_COOKIE_NAME]; // Extract the token from headers or httpOnly cookie
+        req.cookies?.[ADMIN_COOKIE_NAME]; // Extract the token from headers or httpOnly cookie
       // if not token 
       if(!token){//❌ If no token is provided in the header so we will return false
         return res.json({success:false,message:"Not Athorized Login Again"}) // we add return because wen its return it will stop here

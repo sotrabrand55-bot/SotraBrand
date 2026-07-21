@@ -9,20 +9,17 @@ import { getEffectiveProductPrice, normalizeProducts } from "../utils/productMap
 export const ShopContext = createContext();
 
 const defaultScentFamilies = [
-  "Amber",
-  "Floral",
-  "Fresh",
-  "Woods",
-  "Oud",
-  "Musk",
-  "Citrus",
+  "Elegant Edit",
+  "Everyday Modesty",
+  "Occasion Wear",
+  "Soft Essentials",
+  "Layering Pieces",
 ];
 
 const DEFAULT_SIZE_KEY = "_no_size";
 const DEFAULT_COLOR_KEY = "_default";
 const DEFAULT_PERFUME_TYPE_KEY = "_no_perfume_type";
-const FAVORITES_STORAGE_KEY = "nancy_favorites";
-const LEGACY_FAVORITES_STORAGE_KEY = "levon_favorites";
+const FAVORITES_STORAGE_KEY = "sotra_favorites";
 
 const normalizeVariantKey = (value, fallback) => {
   const text = String(value || "").trim();
@@ -56,9 +53,7 @@ const ShopContextProvider = (props) => {
   const [favoriteItems, setFavoriteItems] = useState(() => {
     try {
       const stored = JSON.parse(
-        localStorage.getItem(FAVORITES_STORAGE_KEY) ||
-          localStorage.getItem(LEGACY_FAVORITES_STORAGE_KEY) ||
-          "[]"
+        localStorage.getItem(FAVORITES_STORAGE_KEY) || "[]"
       );
       return Array.isArray(stored) ? stored : [];
     } catch {
@@ -221,7 +216,6 @@ const ShopContextProvider = (props) => {
 
   useEffect(() => {
     localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify(favoriteItems));
-    localStorage.removeItem(LEGACY_FAVORITES_STORAGE_KEY);
   }, [favoriteItems]);
 
   const toggleFavorite = (itemId) => {

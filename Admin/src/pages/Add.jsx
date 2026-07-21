@@ -3,10 +3,10 @@ import axios from "axios";
 import { backendUrl } from "../App";
 import { toast } from "react-toastify";
 import { Link, useLocation } from "react-router-dom";
-import ProductNancyMediaEditor, {
+import ProductSotraMediaEditor, {
   stripProductMediaPrivateFields,
-} from "../components/ProductNancyMediaEditor";
-import NancyProductLivePreview from "../components/NancyProductLivePreview";
+} from "../components/ProductSotraMediaEditor";
+import SotraProductLivePreview from "../components/SotraProductLivePreview";
 import {
   defaultCategoryGroups,
   getActiveCategoryGroups,
@@ -517,7 +517,7 @@ const Add = ({ token }) => {
             </div>
           </div>
 
-          <ProductNancyMediaEditor
+          <ProductSotraMediaEditor
             shadeOptions={shadeOptions}
             setShadeOptions={setShadeOptions}
             storyImages={storyImages}
@@ -573,7 +573,7 @@ const Add = ({ token }) => {
         </section>
 
         <aside className="xl:sticky xl:top-6 xl:self-start">
-          <NancyProductLivePreview
+          <SotraProductLivePreview
             name={name}
             description={description}
             price={price}

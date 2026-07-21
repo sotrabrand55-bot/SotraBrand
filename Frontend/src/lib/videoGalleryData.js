@@ -4,7 +4,7 @@ import header2 from "../assets/sotraBrand/Header_2.jpeg";
 import hijabProducts from "../assets/sotraBrand/hijab_products.jpeg";
 import blouse1 from "../assets/sotraBrand/blouses1 (1).jpeg";
 
-export const nancyVideoGallery = [
+export const sotraVideoGallery = [
   {
     id: "sotra-video-1",
     type: "video",

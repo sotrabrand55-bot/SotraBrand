@@ -9,7 +9,7 @@ const pageTitles = [
   { match: /^\/edit/, eyebrow: "Product Manager", title: "Edit Product" },
   { match: /^\/add$/, eyebrow: "Product Manager", title: "Add Product" },
   { match: /^\/orders/, eyebrow: "Orders", title: "Order Control" },
-  { match: /^\/sotra-home|^\/nancy-home/, eyebrow: "Sotra Studio", title: "Home Studio" },
+  { match: /^\/sotra-home/, eyebrow: "Sotra Studio", title: "Home Studio" },
   { match: /^\/categories/, eyebrow: "Menu", title: "Category Manager" },
   { match: /^\/maintenance/, eyebrow: "Settings", title: "Maintenance" },
   { match: /^\/delivery/, eyebrow: "Settings", title: "Delivery Control" },

@@ -5,7 +5,7 @@ import authUser from '../middleware/authUser.js'
 const orderRouter = express.Router()
 
 const optionalAuthUser = (req, res, next) => {
-  const token = req.headers.token || req.cookies?.nancy_token || req.cookies?.levon_token;
+  const token = req.headers.token || req.cookies?.sotra_token;
   if (!token) return next();
   return authUser(req, res, next);
 };

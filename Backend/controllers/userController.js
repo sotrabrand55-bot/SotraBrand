@@ -12,10 +12,8 @@ const cookieBaseOptions = {
 };
 
 const adminCookieMaxAge = 10 * 365 * 24 * 60 * 60 * 1000;
-const USER_COOKIE_NAME = "nancy_token";
-const LEGACY_USER_COOKIE_NAME = "levon_token";
-const ADMIN_COOKIE_NAME = "nancy_admin_token";
-const LEGACY_ADMIN_COOKIE_NAME = "levon_admin_token";
+const USER_COOKIE_NAME = "sotra_token";
+const ADMIN_COOKIE_NAME = "sotra_admin_token";
 
 const setAuthCookie = (res, name, token, maxAge) => {
   res.cookie(name, token, {
@@ -156,13 +154,11 @@ const adminLogin = async (req, res) => {
 
 const logoutUser = async (req, res) => {
   clearAuthCookie(res, USER_COOKIE_NAME);
-  clearAuthCookie(res, LEGACY_USER_COOKIE_NAME);
   res.json({ success: true, message: "Logged out" });
 };
 
 const adminLogout = async (req, res) => {
   clearAuthCookie(res, ADMIN_COOKIE_NAME);
-  clearAuthCookie(res, LEGACY_ADMIN_COOKIE_NAME);
   res.json({ success: true, message: "Admin logged out" });
 };
 

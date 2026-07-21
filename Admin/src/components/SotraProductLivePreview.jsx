@@ -26,7 +26,7 @@ const getPreviewMedia = (shadeOptions = [], storyImages = []) => {
 
 const previewKey = (item) => `${item?.type || "media"}-${item?.id || item?.index || 0}`;
 
-const NancyProductLivePreview = ({
+const SotraProductLivePreview = ({
   name,
   description,
   price,
@@ -266,4 +266,4 @@ const NancyProductLivePreview = ({
   );
 };
 
-export default NancyProductLivePreview;
+export default SotraProductLivePreview;

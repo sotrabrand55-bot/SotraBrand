@@ -12,7 +12,7 @@ import MaintenanceControl from './pages/MaintenanceControl';
 import DeliveryFeeControl from './pages/DeliveryFeeControl';
 import AddCoupon from './pages/AddCoupon';
 import Dashboard from './pages/Dashboard';
-import NancyHomeControl from './pages/NancyHomeControl';
+import SotraHomeControl from './pages/SotraHomeControl';
 import CategoriesManager from './pages/CategoriesManager';
 import PageImagesManager from './pages/PageImagesManager';
 
@@ -54,8 +54,7 @@ const App = () => {
         <Route path="/maintenance" element={<MaintenanceControl token={token} />} />
         <Route path="/products" element={<ProductsList token={token} />} />
         <Route path="/edit/:id" element={<EditProduct token={token} />} />
-        <Route path="/sotra-home" element={<NancyHomeControl token={token} />} />
-        <Route path="/nancy-home" element={<Navigate to="/sotra-home" replace />} />
+        <Route path="/sotra-home" element={<SotraHomeControl token={token} />} />
         <Route path="/categories" element={<CategoriesManager token={token} />} />
         <Route path="/page-images" element={<PageImagesManager token={token} />} />
         <Route path='/add' element={<Add token={token}/>} /> 

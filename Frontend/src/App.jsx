@@ -12,7 +12,7 @@ import SotraWhatsAppPopup from './componens/SotraWhatsAppPopup'
 import Collection from './pages/Collection'
 import Contact from './pages/Contact'
 import ComingSoon from './componens/ComingSoon'
-import NancyPreviewLoader from './componens/NancyPreviewLoader'
+import SotraPreviewLoader from './componens/SotraPreviewLoader'
 import ShippingPolicy from './componens/ShippingPolicy'
 import LegalPolicy from './componens/LegalPolicy'
 import SubcategoryProducts from './pages/SubcategoryProducts'
@@ -73,7 +73,7 @@ const App = () => {
 
   // 🔥 Render
   if (loading || previewLoading) {
-    return <NancyPreviewLoader />;
+    return <SotraPreviewLoader />;
   }
 
   return (         

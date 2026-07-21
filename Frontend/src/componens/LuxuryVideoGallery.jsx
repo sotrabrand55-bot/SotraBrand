@@ -1,7 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
 import axios from "axios";
 import { FiPause, FiPlay } from "react-icons/fi";
-import { nancyVideoGallery } from "../lib/videoGalleryData";
+import { sotraVideoGallery } from "../lib/videoGalleryData";
 import { getMockHomepageSectionItems, useMockData } from "../lib/mockData";
 import { enforceVideoClipWindow } from "../utils/videoClip";
 import { ShimmerImage } from "./Skeletons";
@@ -170,10 +170,10 @@ const LuxuryVideoGallery = () => {
       useMockData
         ? mockSectionMedia.length
           ? mockSectionMedia
-          : nancyVideoGallery
+          : sotraVideoGallery
         : sectionMedia.length
           ? sectionMedia
-          : nancyVideoGallery,
+          : sotraVideoGallery,
     [mockSectionMedia, sectionMedia]
   );
 

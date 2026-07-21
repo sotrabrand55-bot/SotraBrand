@@ -10,26 +10,6 @@ const sectionDefaults = {
     preferredSizeNote:
       "Mobile: vertical 9:16 videos/images. Laptop: 4 vertical columns work best.",
   },
-  "single-campaign": {
-    title: "Single Campaign Video",
-    preferredSizeNote:
-      "Mobile: 9:16 vertical. Laptop: wide 2:1 media matching the header width.",
-  },
-  "featured-set-1": {
-    title: "Featured Set Picture 1",
-    preferredSizeNote:
-      "Single image section. Mobile: 9:16 vertical. Laptop: wide 2:1 set image.",
-  },
-  "featured-set-2": {
-    title: "Featured Set Picture 2",
-    preferredSizeNote:
-      "Single image section. Mobile: 9:16 vertical. Laptop: wide 2:1 set image.",
-  },
-  "from-the-gram": {
-    title: "From The Gram",
-    preferredSizeNote:
-      "Mobile: vertical 9:16. Laptop: 4 vertical columns with square edges.",
-  },
 };
 
 const parseBool = (value, fallback = true) => {

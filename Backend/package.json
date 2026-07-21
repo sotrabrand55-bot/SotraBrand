@@ -9,7 +9,6 @@
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js ",
-    "seed:nancy": "node scripts/seedNancyMockData.js",
     "seed:sotra": "node scripts/seedSotraBrandData.js"
   },
   "dependencies": {

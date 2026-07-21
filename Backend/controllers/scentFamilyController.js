@@ -2,15 +2,11 @@ import scentFamilyModel from "../models/scentFamilyModel.js";
 import { logError } from "../utils/logger.js";
 
 const defaultScentFamilies = [
-  "Pheromone Touch",
-  "Body lotion pheromone",
-  "Body oil pheromone",
-  "Body splash pheromone",
-  "Body scrub pheromone",
-  "Mystique parfum",
-  "Body lotion mystique",
-  "Body splash mystique",
-  "Radiant charm",
+  "Elegant Edit",
+  "Everyday Modesty",
+  "Occasion Wear",
+  "Soft Essentials",
+  "Layering Pieces",
 ];
 
 const slugify = (value = "") =>
@@ -32,7 +28,7 @@ const seedDefaultsIfEmpty = async () => {
     defaultScentFamilies.map((name, index) => ({
       name,
       slug: slugify(name),
-      category: "Fragrance",
+      category: "SotraBrand",
       active: true,
       order: index,
     })),

@@ -3,9 +3,9 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import { Link } from "react-router-dom";
 import { backendUrl } from "../App";
-import ProductNancyMediaEditor, {
+import ProductSotraMediaEditor, {
   stripProductMediaPrivateFields,
-} from "../components/ProductNancyMediaEditor";
+} from "../components/ProductSotraMediaEditor";
 import {
   defaultCategoryGroups,
   getActiveCategoryGroups,
@@ -658,7 +658,7 @@ const SiteLayerLivePreview = ({ settings, announcementText }) => {
   );
 };
 
-const NancyHomeControl = ({ token }) => {
+const SotraHomeControl = ({ token }) => {
   const [settings, setSettings] = useState(emptySettings);
   const [announcementText, setAnnouncementText] = useState(emptySettings.announcementItems.join("\n"));
   const [slides, setSlides] = useState([]);
@@ -1871,7 +1871,7 @@ const FeaturedEditor = ({
             }`}
           >
             <div className="overflow-hidden">
-              <ProductNancyMediaEditor
+              <ProductSotraMediaEditor
                 shadeOptions={mediaDraft?.shadeOptions || []}
                 setShadeOptions={setShadeOptions}
                 storyImages={mediaDraft?.storyImages || []}
@@ -2342,4 +2342,4 @@ const MediaSectionEditor = ({
   );
 };
 
-export default NancyHomeControl;
+export default SotraHomeControl;
