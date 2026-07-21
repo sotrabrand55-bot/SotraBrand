@@ -36,12 +36,12 @@ const App = () => {
 )
   return (
 
-    <div className='min-h-screen bg-white'>
+    <div className='min-h-screen min-w-[1280px] bg-white'>
       <ToastContainer/>
 
       {token === "" ? <Login setToken = {setToken}/> /* here is the turnery how its work if token === "" emty string so return the login page else return all our page */ 
        : <> {/* here this mean (:) as (else) so  else return all our pages if the login page not equal "" */ }
-     <div className='flex min-h-screen w-full overflow-x-hidden'>
+     <div className='flex min-h-screen w-full'>
         <Sidebar/>
 
         <div className='min-w-0 flex-1 text-base text-black'>

@@ -227,7 +227,7 @@ const ProductGallery = ({ product, storyImages, targetIndex, targetVersion }) =>
               alt={image.alt || `${product.name} story ${index + 1}`}
               className="h-full w-full object-contain"
               wrapperClassName="h-full w-full"
-              skeletonClassName="nancy-cool-shimmer bg-[#EAEAEA]"
+              skeletonClassName="sotra-cool-shimmer bg-[#EAEAEA]"
               draggable="false"
             />
           </button>
@@ -258,7 +258,7 @@ const ProductGallery = ({ product, storyImages, targetIndex, targetVersion }) =>
       )}
 
       {images.length > 1 && (
-        <div className="nancy-story-progress absolute inset-x-0 bottom-0 z-20" aria-hidden="true">
+        <div className="sotra-story-progress absolute inset-x-0 bottom-0 z-20" aria-hidden="true">
           <span
             style={{
               width: `${100 / images.length}%`,
@@ -477,7 +477,7 @@ const FeaturedProductCard = ({
         <div className="mt-3 flex items-center justify-between gap-4 lg:mt-8">
           <div className="min-w-0">
             <span
-              className={`nancy-price-value sotra-price block text-sm font-bold lg:text-3xl lg:font-bold ${
+              className={`sotra-price-value sotra-price block text-sm font-bold lg:text-3xl lg:font-bold ${
                 hasDiscount ? "sotra-sale-price" : ""
               } ${
                 quantityPulse ? "is-changing" : ""
@@ -488,7 +488,7 @@ const FeaturedProductCard = ({
             </span>
             {hasDiscount && (
               <span
-                className={`nancy-price-value sotra-old-price mt-1 block text-xs ${
+                className={`sotra-price-value sotra-old-price mt-1 block text-xs ${
                   quantityPulse ? "is-changing" : ""
                 }`}
               >
@@ -509,7 +509,7 @@ const FeaturedProductCard = ({
               -
             </button>
             <span
-              className={`nancy-quantity-value min-w-5 text-center text-[12px] font-semibold text-black/70 lg:min-w-7 lg:text-base ${
+              className={`sotra-quantity-value min-w-5 text-center text-[12px] font-semibold text-black/70 lg:min-w-7 lg:text-base ${
                 quantityPulse ? "is-changing" : ""
               }`}
               aria-label={`Quantity ${quantity}`}
@@ -740,7 +740,7 @@ const FeaturedProductCard = ({
           type="button"
           onClick={handleAddToCart}
           disabled={adding || !canSubmitOptions}
-          className={`nancy-water-add relative mt-5 flex h-11 w-full items-center justify-center overflow-hidden border border-black bg-white text-[10px] font-semibold uppercase tracking-[0.22em] text-black transition hover:text-white lg:mt-7 lg:h-[4.4rem] lg:text-2xl ${
+          className={`sotra-water-add relative mt-5 flex h-11 w-full items-center justify-center overflow-hidden border border-black bg-white text-[10px] font-semibold uppercase tracking-[0.22em] text-black transition hover:text-white lg:mt-7 lg:h-[4.4rem] lg:text-2xl ${
             adding ? "is-filling" : ""
           } ${!canSubmitOptions ? "cursor-not-allowed opacity-45" : ""}`}
         >

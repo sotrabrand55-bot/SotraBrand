@@ -117,7 +117,7 @@ export const ShimmerImage = ({
 
 export const HeroSkeleton = () => (
   <section className="relative left-1/2 aspect-[9/16] w-screen -translate-x-1/2 overflow-hidden bg-[#EAEAEA] md:aspect-[2/1] md:w-[calc(100vw-12px)] md:rounded-[16px]">
-    <SkeletonBlock className="nancy-cool-shimmer h-full w-full rounded-none bg-[#EAEAEA]" />
+    <SkeletonBlock className="sotra-cool-shimmer h-full w-full rounded-none bg-[#EAEAEA]" />
   </section>
 );
 
@@ -186,7 +186,7 @@ export const ProductRailSkeleton = ({ titleWidth = "w-56", cards = 3 }) => (
 export const FeaturedProductSkeleton = () => (
   <section
     aria-label="Featured Products loading"
-    className="nancy-featured-skeleton relative left-1/2 w-screen -translate-x-1/2 bg-white pb-8 pt-0 sm:pb-12"
+    className="sotra-featured-skeleton relative left-1/2 w-screen -translate-x-1/2 bg-white pb-8 pt-0 sm:pb-12"
   >
     <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
       <div className="mb-3 flex justify-end gap-2">

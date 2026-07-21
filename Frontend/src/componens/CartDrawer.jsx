@@ -19,7 +19,7 @@ import {
 
 const FREE_SHIPPING_TARGET = 55;
 const ORDER_NOTE_STORAGE_KEY = "sotra_order_note";
-const LEGACY_ORDER_NOTE_STORAGE_KEY = "nancy_order_note";
+const LEGACY_ORDER_NOTE_STORAGE_KEY = "sotra_order_note";
 const isObject = (value) => value && typeof value === "object";
 const isRealSize = (value) =>
   Boolean(value) &&

@@ -75,7 +75,7 @@ const WhatsAppOrderPopup = ({ suppressed = false }) => {
 
   return (
     <aside
-      className="fixed inset-x-3 bottom-5 z-[900] mx-auto max-w-[420px] animate-[nancyWhatsappPopup_420ms_ease-out] overflow-hidden rounded-[14px] border border-black/10 bg-white text-black shadow-[0_22px_70px_rgba(0,0,0,0.22)] sm:bottom-7"
+      className="fixed inset-x-3 bottom-5 z-[900] mx-auto max-w-[420px] animate-[sotraWhatsappPopup_420ms_ease-out] overflow-hidden rounded-[14px] border border-black/10 bg-white text-black shadow-[0_22px_70px_rgba(0,0,0,0.22)] sm:bottom-7"
       aria-label="Order through WhatsApp"
     >
       <button
@@ -106,7 +106,7 @@ const WhatsAppOrderPopup = ({ suppressed = false }) => {
             alt="SotraBrand"
             className="h-full w-full object-cover object-center"
             wrapperClassName="h-full w-full"
-            skeletonClassName="nancy-cool-shimmer bg-[#EAEAEA]"
+            skeletonClassName="sotra-cool-shimmer bg-[#EAEAEA]"
           />
         ) : (
           <div className="grid h-full w-full place-items-center text-center text-xs font-bold uppercase tracking-[0.18em] text-black/40">

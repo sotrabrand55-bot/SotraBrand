@@ -25,7 +25,7 @@ const FireworksOverlay = () => {
   if (typeof document === "undefined") return null;
 
   return createPortal(
-    <div className="nancy-fireworks pointer-events-none fixed inset-0 z-[1000] h-screen w-screen overflow-hidden">
+    <div className="sotra-fireworks pointer-events-none fixed inset-0 z-[1000] h-screen w-screen overflow-hidden">
       {fireworksSparks.map(([x, y, dx, dy, delay, color], index) => (
         <span
           key={index}

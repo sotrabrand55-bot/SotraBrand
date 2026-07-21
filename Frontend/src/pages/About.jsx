@@ -110,7 +110,7 @@ const About = () => {
                 alt={aboutImageAlt}
                 className="h-full w-full object-cover"
                 wrapperClassName="h-full w-full"
-                skeletonClassName="nancy-cool-shimmer bg-[#EAEAEA]"
+                skeletonClassName="sotra-cool-shimmer bg-[#EAEAEA]"
                 loading="eager"
                 draggable="false"
               />

@@ -97,11 +97,11 @@ const LuxuryVideoCard = ({ item, index, registerVideo, requestPlay }) => {
     <article
       ref={cardRef}
       onClick={togglePlayback}
-      className="nancy-video-card relative overflow-hidden bg-[#EAEAEA]"
+      className="sotra-video-card relative overflow-hidden bg-[#EAEAEA]"
       data-gallery-card-id={item.id}
       data-video-card-id={item.id}
     >
-      {!loaded && <div className="nancy-video-skeleton absolute inset-0" />}
+      {!loaded && <div className="sotra-video-skeleton absolute inset-0" />}
 
       <video
         ref={videoRef}
@@ -127,7 +127,7 @@ const LuxuryVideoCard = ({ item, index, registerVideo, requestPlay }) => {
           event.stopPropagation();
           togglePlayback();
         }}
-        className={`nancy-video-toggle absolute left-1/2 top-1/2 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-black transition duration-300 ${
+        className={`sotra-video-toggle absolute left-1/2 top-1/2 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-black transition duration-300 ${
           showButton ? "opacity-100" : "opacity-0"
         }`}
         aria-label={playing ? "Pause video" : "Play video"}
@@ -140,7 +140,7 @@ const LuxuryVideoCard = ({ item, index, registerVideo, requestPlay }) => {
 
 const LuxuryImageCard = ({ item }) => (
   <article
-    className="nancy-video-card relative overflow-hidden bg-[#EAEAEA]"
+    className="sotra-video-card relative overflow-hidden bg-[#EAEAEA]"
     data-gallery-card-id={item.id}
   >
     <ShimmerImage
@@ -310,7 +310,7 @@ const LuxuryVideoGallery = () => {
         <div
           ref={railRef}
           onScroll={syncActiveVideo}
-          className="nancy-video-grid no-scrollbar"
+          className="sotra-video-grid no-scrollbar"
         >
           {galleryMedia.map((item, index) =>
             item.type === "image" ? (
@@ -327,7 +327,7 @@ const LuxuryVideoGallery = () => {
           )}
         </div>
 
-        <div className="nancy-video-progress" aria-hidden="true">
+        <div className="sotra-video-progress" aria-hidden="true">
           <span
             style={{
               width: `${100 / galleryMedia.length}%`,

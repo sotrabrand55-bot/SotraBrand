@@ -60,7 +60,7 @@ const SotraWhatsAppPopup = ({ suppressed = false }) => {
 
   return (
     <aside
-      className="fixed inset-x-4 bottom-5 z-[880] mx-auto max-w-[410px] animate-[nancyWhatsappPopup_420ms_ease-out] overflow-hidden border border-black/10 bg-white text-[#121212] shadow-[0_22px_70px_rgba(0,0,0,0.22)]"
+      className="fixed inset-x-4 bottom-5 z-[880] mx-auto max-w-[410px] animate-[sotraWhatsappPopup_420ms_ease-out] overflow-hidden border border-black/10 bg-white text-[#121212] shadow-[0_22px_70px_rgba(0,0,0,0.22)]"
       aria-label="Contact on WhatsApp"
     >
       <button

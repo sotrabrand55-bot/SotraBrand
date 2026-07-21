@@ -101,7 +101,7 @@ const Contact = () => {
                 alt={contactImageAlt}
                 className="h-full w-full object-cover"
                 wrapperClassName="aspect-[4/5] h-full w-full md:aspect-[5/4]"
-                skeletonClassName="nancy-cool-shimmer bg-[#EAEAEA]"
+                skeletonClassName="sotra-cool-shimmer bg-[#EAEAEA]"
                 loading="lazy"
                 draggable="false"
               />

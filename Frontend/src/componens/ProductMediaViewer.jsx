@@ -66,7 +66,7 @@ const ProductMediaViewer = ({
               alt={image.alt || `${product.name} image ${index + 1}`}
               className="h-full w-full object-contain"
               wrapperClassName="h-full w-full"
-              skeletonClassName="nancy-cool-shimmer bg-[#EAEAEA]"
+              skeletonClassName="sotra-cool-shimmer bg-[#EAEAEA]"
               loading={Math.abs(index - initialIndex) <= 1 ? "eager" : "lazy"}
               draggable="false"
             />

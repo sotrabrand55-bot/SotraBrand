@@ -1,4 +1,4 @@
-﻿/* eslint-disable react/prop-types */
+/* eslint-disable react/prop-types */
 import { useContext, useEffect, useMemo, useState } from "react";
 import axios from "axios";
 import {
@@ -25,7 +25,7 @@ import {
 const isObjectId = (value) =>
   typeof value === "string" && /^[a-f0-9]{24}$/i.test(value);
 const ORDER_NOTE_STORAGE_KEY = "sotra_order_note";
-const LEGACY_ORDER_NOTE_STORAGE_KEY = "nancy_order_note";
+const LEGACY_ORDER_NOTE_STORAGE_KEY = "sotra_order_note";
 const LAST_ORDER_STORAGE_KEY = "sotra_last_order";
 const isObject = (value) => value && typeof value === "object";
 const isRealSize = (value) =>

@@ -321,7 +321,7 @@ const SetPicturePreview = ({ entry, section, products = [] }) => {
         <MiniMedia item={item} className="aspect-[9/16] w-full md:aspect-[2/1]" />
         <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/45 to-transparent p-4 text-white">
           <p className="text-xs font-bold uppercase tracking-[0.18em]">
-            {item?.label || "Be Radiant Set"}
+            {item?.label || "SotraBrand Set"}
           </p>
           {buttonLabel && (
             <p className="mt-2 inline-flex border-b border-white pb-1 text-[10px] font-bold uppercase tracking-[0.18em]">
