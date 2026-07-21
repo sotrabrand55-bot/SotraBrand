@@ -2318,3 +2318,15 @@ Last updated: 2026-07-20
   - added Open Graph image metadata for secure URL, type, width, height, and alt text.
 - Verification after this checkpoint:
   - frontend production build passed.
+
+## LetsDwebs Footer Link
+
+- User requested:
+  - update the LetsDwebs footer Instagram link.
+- Updated:
+  - `Frontend/src/componens/ScandiFooter.jsx`
+  - `Frontend/src/componens/Footer.jsx`
+- Changes:
+  - changed the footer credit link to `https://www.instagram.com/letsdweb?igsh=MzE5NWJ2NnN5eW8w`.
+- Verification after this checkpoint:
+  - frontend production build passed.

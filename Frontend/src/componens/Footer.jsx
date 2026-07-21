@@ -62,7 +62,7 @@ const SocialLinks = ({ links }) => (
 
 const LetsDwebsCredit = () => (
   <a
-    href="https://www.instagram.com/letsdwebs/"
+    href="https://www.instagram.com/letsdweb?igsh=MzE5NWJ2NnN5eW8w"
     target="_blank"
     rel="noopener noreferrer"
     className="inline-flex items-center gap-2 text-white/70 transition hover:text-white"

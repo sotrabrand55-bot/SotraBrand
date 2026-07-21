@@ -94,7 +94,7 @@ const ScandiFooter = () => {
       <div className="px-5 pb-7 text-center text-[13px] text-[#121212]/70">
         <p>&copy; {new Date().getFullYear()}, SotraBrand</p>
         <a
-          href="https://www.instagram.com/letsdwebs/"
+          href="https://www.instagram.com/letsdweb?igsh=MzE5NWJ2NnN5eW8w"
           target="_blank"
           rel="noopener noreferrer"
           className="mt-2 inline-flex items-center justify-center gap-2 hover:text-[#121212] hover:underline"
