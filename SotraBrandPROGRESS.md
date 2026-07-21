@@ -2330,3 +2330,42 @@ Last updated: 2026-07-20
   - changed the footer credit link to `https://www.instagram.com/letsdweb?igsh=MzE5NWJ2NnN5eW8w`.
 - Verification after this checkpoint:
   - frontend production build passed.
+
+## Nancy Cleanup + Admin iPhone Desktop View
+
+- User requested:
+  - remove leftover Nancy/Radiant components, assets, backend seed data, routes, and names without damaging the Sotra/Scandi storefront.
+  - make the admin mobile view, including iPhone, look like the laptop admin layout.
+- Updated:
+  - `Admin/index.html`
+  - `Admin/src/App.jsx`
+  - `Admin/src/index.css`
+  - `Admin/src/pages/SotraHomeControl.jsx`
+  - `Admin/src/components/ProductSotraMediaEditor.jsx`
+  - `Admin/src/components/SotraProductLivePreview.jsx`
+  - `Frontend/src/App.jsx`
+  - `Frontend/src/componens/SotraPreviewLoader.jsx`
+  - `Frontend/src/componens/FeaturedProducts.jsx`
+  - `Frontend/src/componens/LuxuryVideoGallery.jsx`
+  - `Frontend/src/index.css`
+  - `Frontend/src/context/ShopContext.jsx`
+  - `Backend/package.json`
+  - `Backend/controllers/homepageSectionController.js`
+  - `Backend/controllers/scentFamilyController.js`
+  - `Backend/controllers/userController.js`
+  - `Backend/middleware/authUser.js`
+  - `Backend/middleware/adminAuth.js`
+  - `Backend/routes/orderRoute.js`
+  - `Backend/routes/orderNotifyRoute.js`
+- Changes:
+  - renamed the active admin Home Studio, product media editor, product live preview, and frontend loader from Nancy names to Sotra names.
+  - removed old unused Nancy storefront pages/components/data/assets and the old Nancy backend seed script.
+  - removed the old `/nancy-home` admin route.
+  - changed Sotra auth cookies and local storage keys away from old Nancy names.
+  - kept the Scandi/Sotra storefront structure intact.
+  - changed admin viewport to a 1280px desktop canvas and set admin body/app minimum width to preserve the laptop-style layout on iPhone/mobile browsers.
+- Verification after this checkpoint:
+  - frontend production build passed.
+  - admin production build passed.
+  - backend changed files passed `node --check`.
+  - scans found no Nancy/Radiant text or filenames inside `Frontend`, `Admin`, or `Backend`.
