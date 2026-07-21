@@ -199,31 +199,6 @@ html, body {
   transform: scale(1.015);
 }
 
-.sotra-preview-loader-mark {
-  position: relative;
-  width: 5rem;
-  height: 5rem;
-}
-
-.sotra-preview-loader-mark span {
-  position: absolute;
-  inset: 0;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-  border-radius: 9999px;
-  animation: sotra-preview-loader-ring 1.15s ease-in-out infinite;
-}
-
-.sotra-preview-loader-mark span:nth-child(2) {
-  inset: 0.65rem;
-  animation-delay: 120ms;
-}
-
-.sotra-preview-loader-mark span:nth-child(3) {
-  inset: 1.3rem;
-  background: #000;
-  animation-delay: 240ms;
-}
-
 button:disabled {
   cursor: default;
 }
@@ -656,18 +631,6 @@ button:disabled {
   }
   to {
     transform: translateX(100%);
-  }
-}
-
-@keyframes sotra-preview-loader-ring {
-  0%,
-  100% {
-    opacity: 0.28;
-    transform: scale(0.94);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1);
   }
 }
 
