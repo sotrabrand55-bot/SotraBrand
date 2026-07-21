@@ -34,25 +34,13 @@ const envAllowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGI
   .filter(Boolean);
 
 const allowedOrigins = [
-  'http://localhost:5173',
-  'http://localhost:5174',
-  'http://localhost:5175',
-  'http://localhost:5176',
-  'http://localhost:5177',
-  'http://127.0.0.1:5173',
-  'http://127.0.0.1:5174',
-  'http://127.0.0.1:5175',
-  'http://127.0.0.1:5176',
-  'http://127.0.0.1:5177',
-  'http://[::1]:5173',
-  'http://[::1]:5174',
-  'https://nancy-project.onrender.com',
-  'https://nancy-project-frontend.onrender.com',
-   'https://radiantbynancy.com',
-  'https://www.radiantbynancy.com',
-  'http://192.168.10.104:5173',
+
+ 'https://admin-sotrabrand.onrender.com',
+ 'https://sotrabrand.onrender.com',
+ 'http://192.168.10.104:5173',
 'http://192.168.10.104:5174',
   ...envAllowedOrigins,
+
 ].map(normalizeOrigin);
 
 const corsOptions = {
