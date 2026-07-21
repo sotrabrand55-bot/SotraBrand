@@ -2305,3 +2305,16 @@ Last updated: 2026-07-20
   - admin production build passed.
   - frontend production build passed.
   - backend email/settings files passed `node --check`.
+
+## Frontend Link Preview Logo
+
+- User requested:
+  - make the frontend shared link show the Sotra logo preview like the admin shared link.
+- Updated:
+  - `Frontend/index.html`
+- Changes:
+  - changed canonical and Open Graph URL from relative `/` to `https://sotrabrand.onrender.com/`.
+  - changed Open Graph and Twitter image URLs from relative `/sotra-logo.jpeg` to absolute `https://sotrabrand.onrender.com/sotra-logo.jpeg`.
+  - added Open Graph image metadata for secure URL, type, width, height, and alt text.
+- Verification after this checkpoint:
+  - frontend production build passed.

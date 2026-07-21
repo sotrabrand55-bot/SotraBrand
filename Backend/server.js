@@ -34,7 +34,8 @@ const envAllowedOrigins = (process.env.ALLOWED_ORIGINS || process.env.CORS_ORIGI
   .filter(Boolean);
 
 const allowedOrigins = [
-
+'https://www.sotrabrand.com',
+'https://sotrabrand.com',
  'https://admin-sotrabrand.onrender.com',
  'https://sotrabrand.onrender.com',
  'http://192.168.10.104:5173',
