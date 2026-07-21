@@ -246,6 +246,9 @@ const addProduct = async (req, res) => {
       active,          // "true"/"false" -> boolean (default true)
       outOfStock,      // "true"/"false" -> boolean
       stock            // numeric stock count
+      ,fitMin
+      ,fitMax
+      ,fitUnit
       ,featuredSlot
       ,showSmallImages
       ,shadeOptions
@@ -297,6 +300,9 @@ const addProduct = async (req, res) => {
       active: active === undefined ? true : toBool(active, true), // default true
       outOfStock: toBool(outOfStock, false),
       stock: toStock(stock, undefined),
+      fitMin: toNum(fitMin),
+      fitMax: toNum(fitMax),
+      fitUnit: fitUnit || "kg",
       featuredSlot: toNum(featuredSlot),
       showSmallImages: showSmallImages === undefined ? true : toBool(showSmallImages, true),
       shadeOptions: parsedShadeOptions,
@@ -418,6 +424,9 @@ const updateProduct = async (req, res) => {
       active,         // "true"/"false"
       outOfStock,     // "true"/"false"
       stock           // numeric stock count
+      ,fitMin
+      ,fitMax
+      ,fitUnit
       ,featuredSlot
       ,showSmallImages
       ,shadeOptions
@@ -481,6 +490,15 @@ const updateProduct = async (req, res) => {
       active: toBool(active, product.active),
       outOfStock: toBool(outOfStock, product.outOfStock),
       stock: toStock(stock, product.stock),
+      fitMin:
+        fitMin !== undefined && fitMin !== ""
+          ? Number(fitMin)
+          : (fitMin === "" ? undefined : product.fitMin),
+      fitMax:
+        fitMax !== undefined && fitMax !== ""
+          ? Number(fitMax)
+          : (fitMax === "" ? undefined : product.fitMax),
+      fitUnit: fitUnit !== undefined ? (fitUnit || "kg") : product.fitUnit || "kg",
       featuredSlot:
         featuredSlot !== undefined && featuredSlot !== ""
           ? Number(featuredSlot)
@@ -523,6 +541,9 @@ const updateProduct = async (req, res) => {
     product.active = next.active;
     product.outOfStock = next.outOfStock;
     product.stock = next.stock;
+    product.fitMin = next.fitMin;
+    product.fitMax = next.fitMax;
+    product.fitUnit = next.fitUnit;
     product.featuredSlot = next.featuredSlot;
     product.showSmallImages = next.showSmallImages;
     product.shadeOptions = next.shadeOptions;

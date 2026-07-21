@@ -7,9 +7,6 @@ import ProductNancyMediaEditor, {
   stripProductMediaPrivateFields,
 } from "../components/ProductNancyMediaEditor";
 import NancyProductLivePreview from "../components/NancyProductLivePreview";
-import ProductSetContentsEditor, {
-  stripSetContentPrivateFields,
-} from "../components/ProductSetContentsEditor";
 import {
   defaultCategoryGroups,
   getActiveCategoryGroups,
@@ -24,8 +21,7 @@ const fieldClass =
 const labelClass =
   "mb-1.5 block text-[10px] font-semibold uppercase leading-4 tracking-[0.14em] text-[#4b5563]";
 
-const volumeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
-const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Parfum"];
+const hasFitRange = (min, max) => String(min || "").trim() !== "" && String(max || "").trim() !== "";
 
 const placementOptions = [
   {
@@ -74,12 +70,13 @@ const Add = ({ token }) => {
   const [concentration, setConcentration] = useState("");
   const [perfumeTypes, setPerfumeTypes] = useState([]);
   const [sizes, setSizes] = useState([]);
+  const [fitMin, setFitMin] = useState("50");
+  const [fitMax, setFitMax] = useState("110");
 
   const [newArrival, setnewArrival] = useState(false);
   const [onSales, setonSales] = useState(false);
   const [active, setActive] = useState(true);
   const [outOfStock, setOutOfStock] = useState(false);
-  const [featuredSlot, setFeaturedSlot] = useState("");
   const [showSmallImages, setShowSmallImages] = useState(true);
   const [shadeOptions, setShadeOptions] = useState([]);
   const [storyImages, setStoryImages] = useState([]);
@@ -180,11 +177,12 @@ const Add = ({ token }) => {
     setConcentration("");
     setPerfumeTypes([]);
     setSizes([]);
+    setFitMin("50");
+    setFitMax("110");
     setnewArrival(false);
     setonSales(false);
     setActive(true);
     setOutOfStock(false);
-    setFeaturedSlot("");
     setShowSmallImages(true);
     setShadeOptions([]);
     setStoryImages([]);
@@ -201,13 +199,17 @@ const Add = ({ token }) => {
     }
 
     if (!subCategory) {
-      toast.error("Please select a subcategory.");
+      toast.error("Please select a storefront category.");
       return;
     }
 
     const stockNumber = stock === "" ? 0 : Number(stock);
     if (!Number.isFinite(stockNumber) || stockNumber < 0) {
       toast.error("Please enter a valid stock count.");
+      return;
+    }
+    if ((String(fitMin).trim() || String(fitMax).trim()) && !hasFitRange(fitMin, fitMax)) {
+      toast.error("Please enter both minimum and maximum KG, or leave both empty.");
       return;
     }
 
@@ -241,11 +243,13 @@ const Add = ({ token }) => {
       formData.append("concentration", perfumeTypes[0] || concentration || "");
       formData.append("perfumeTypes", JSON.stringify(perfumeTypes));
       formData.append("sizes", JSON.stringify(sizes));
+      formData.append("fitMin", hasFitRange(fitMin, fitMax) ? fitMin : "");
+      formData.append("fitMax", hasFitRange(fitMin, fitMax) ? fitMax : "");
+      formData.append("fitUnit", "kg");
       formData.append("newArrival", newArrival ? "true" : "false");
       formData.append("onSales", onSales ? "true" : "false");
       formData.append("active", active ? "true" : "false");
       formData.append("outOfStock", outOfStock ? "true" : "false");
-      formData.append("featuredSlot", featuredSlot);
       formData.append("showSmallImages", "true");
       formData.append(
         "shadeOptions",
@@ -257,24 +261,13 @@ const Add = ({ token }) => {
       );
       formData.append(
         "setContents",
-        JSON.stringify(setContents.map(stripSetContentPrivateFields))
+        JSON.stringify([])
       );
       shadeOptions.forEach((option, index) => {
         if (option._file) formData.append(`shadeImage${index}`, option._file);
       });
       storyImages.forEach((story, index) => {
         if (story._file) formData.append(`storyImage${index}`, story._file);
-      });
-      setContents.forEach((item, index) => {
-        if (item._file) formData.append(`setContentImage${index}`, item._file);
-        (item.gallery || []).forEach((galleryItem, galleryIndex) => {
-          if (galleryItem._file) {
-            formData.append(
-              `setContentGallery${index}_${galleryIndex}`,
-              galleryItem._file
-            );
-          }
-        });
       });
 
       const res = await axios.post(backendUrl + "/api/product/add", formData, {
@@ -293,16 +286,6 @@ const Add = ({ token }) => {
       toast.error(`Failed to add product: ${serverMsg}`);
     }
   };
-
-  const toggleSize = (val) =>
-    setSizes((prev) =>
-      prev.includes(val) ? prev.filter((s) => s !== val) : [...prev, val]
-    );
-
-  const togglePerfumeType = (val) =>
-    setPerfumeTypes((prev) =>
-      prev.includes(val) ? prev.filter((item) => item !== val) : [...prev, val]
-    );
 
   const updatePlacement = (id) => {
     if (id === "active") setActive((prev) => !prev);
@@ -332,7 +315,7 @@ const Add = ({ token }) => {
             Add Product
           </h1>
           <p className="mt-2 text-sm text-[#4b5563]">
-            Create Be Radiant products for the live collection.
+            Create SotraBrand pieces for the live collection.
           </p>
         </div>
         <div className="flex gap-2">
@@ -389,7 +372,7 @@ const Add = ({ token }) => {
                     const nextCategory = e.target.value;
                     setCategory(nextCategory);
                     setSubCategory(
-                      getSubcategoriesForCategory(categoryGroups, nextCategory)?.[0]?.label || ""
+                      getSubcategoriesForCategory(categoryGroups, nextCategory)?.[0]?.label || nextCategory
                     );
                   }}
                   value={category}
@@ -403,18 +386,10 @@ const Add = ({ token }) => {
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Subcategory</label>
-                <select
-                  onChange={(e) => setSubCategory(e.target.value)}
-                  value={subCategory}
-                  className={fieldClass}
-                >
-                  {visibleSubcategories.map((family) => (
-                    <option key={family.slug || family.label} value={family.label}>
-                      {family.label}
-                    </option>
-                  ))}
-                </select>
+                <label className={labelClass}>Storefront Group</label>
+                <div className={`${fieldClass} flex items-center text-[#4b5563]`}>
+                  {subCategory || category}
+                </div>
               </div>
               <p className="rounded-md border border-black/10 bg-[#f7f7f7] px-3 py-2 text-xs leading-5 text-[#4b5563] sm:col-span-2">
                 These options come from{" "}
@@ -431,7 +406,7 @@ const Add = ({ token }) => {
                 onChange={(e) => setDescription(e.target.value)}
                 value={description}
                 className={`${fieldClass} min-h-24 resize-none`}
-                placeholder="Write the perfume story, main notes, and feeling."
+                placeholder="Write the fabric, modest fit, styling notes, and care details."
                 required
               />
             </div>
@@ -498,22 +473,47 @@ const Add = ({ token }) => {
           </div>
 
           <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
-            <div className="mb-3">
-              <p className={labelClass}>Featured Product Placement</p>
-              <p className="text-xs leading-5 text-[#4b5563]">
-                Slot 1 and Slot 4 control the homepage featured product sections. Feature 2 and 3 are set pictures in Home Studio.
-              </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-[220px_1fr]">
-              <select
-                value={featuredSlot}
-                onChange={(event) => setFeaturedSlot(event.target.value)}
-                className={fieldClass}
+            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className={labelClass}>Optional KG Fit</p>
+                <p className="text-xs leading-5 text-[#4b5563]">
+                  Set a range when customers should choose their approximate KG fit. Leave both fields empty to hide it.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setFitMin("");
+                  setFitMax("");
+                }}
+                className="self-start rounded-full border border-black/15 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-black/55 transition hover:border-black hover:text-black"
               >
-                <option value="">No featured slot</option>
-                <option value="1">FeaturedProducts 1</option>
-                <option value="4">FeaturedProducts 4</option>
-              </select>
+                Clear KG
+              </button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className={labelClass}>Minimum KG</label>
+                <input
+                  value={fitMin}
+                  onChange={(event) => setFitMin(event.target.value)}
+                  className={fieldClass}
+                  type="number"
+                  min="1"
+                  step="1"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Maximum KG</label>
+                <input
+                  value={fitMax}
+                  onChange={(event) => setFitMax(event.target.value)}
+                  className={fieldClass}
+                  type="number"
+                  min="1"
+                  step="1"
+                />
+              </div>
             </div>
           </div>
 
@@ -524,65 +524,11 @@ const Add = ({ token }) => {
             setStoryImages={setStoryImages}
           />
 
-          <ProductSetContentsEditor
-            items={setContents}
-            setItems={setSetContents}
-            submitLabel="Save Product With Set Items"
-          />
-
-          <div className="mt-5 grid gap-4">
-            <div className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
-              <label className={labelClass}>Perfume Type</label>
-              <p className="mb-3 text-xs leading-5 text-[#4b5563]">
-                Optional. Select when this product should display Eau de Parfum, Eau de Toilette, or Parfum.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {perfumeTypeOptions.map((type) => (
-                  <button
-                    key={type}
-                    type="button"
-                    onClick={() => togglePerfumeType(type)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] transition ${
-                      perfumeTypes.includes(type)
-                        ? "border-[#000000] bg-[#000000] text-white"
-                        : "border-[#d4d4d4] bg-[#ffffff] text-[#374151] hover:border-[#000000]"
-                    }`}
-                  >
-                    {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
-              <label className={labelClass}>Size / Volume</label>
-              <p className="mb-3 text-xs leading-5 text-[#4b5563]">
-                Optional. Leave empty when this product has no selectable size.
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {volumeOptions.map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => toggleSize(size)}
-                    className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] transition ${
-                      sizes.includes(size)
-                        ? "border-[#000000] bg-[#000000] text-white"
-                        : "border-[#d4d4d4] bg-[#ffffff] text-[#374151] hover:border-[#000000]"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
           <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
             <div className="mb-3">
               <p className={labelClass}>Frontend Placement</p>
               <p className="text-xs leading-5 text-[#4b5563]">
-                These toggles control Nancy catalog badges and storefront states.
+                These toggles control SotraBrand catalog badges and storefront states.
               </p>
             </div>
 
@@ -638,6 +584,9 @@ const Add = ({ token }) => {
             concentration={perfumeTypes[0] || concentration}
             perfumeTypes={perfumeTypes}
             sizes={sizes}
+            fitMin={fitMin}
+            fitMax={fitMax}
+            fitUnit="kg"
             newArrival={newArrival}
             onSales={onSales}
             active={active}

@@ -14,7 +14,7 @@ const Contact = () => {
   const [contactImageAlt, setContactImageAlt] = useState("SotraBrand contact");
   const { form, status, handleChange, handleSubmit } = useContactForm();
   const socialLinks = siteSettings?.socialLinks || {};
-  const contactEmail = siteSettings?.brandEmail || socialLinks.email || "Serinachendeb133@gmail.com";
+  const contactEmail = siteSettings?.brandEmail || socialLinks.email || "sotrabrand7@gmail.com";
   const contactPhone = siteSettings?.brandPhone || socialLinks.phone || "71872919";
   const socials = useMemo(
     () => [

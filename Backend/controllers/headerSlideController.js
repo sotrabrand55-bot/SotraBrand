@@ -6,14 +6,18 @@ import {
 
 const publicSlide = (slide) => {
   const item = typeof slide?.toObject === "function" ? slide.toObject() : slide;
-  if (!item) return item;
-  const { title, blurb, badges, ...headerMedia } = item;
-  return headerMedia;
+  return item;
 };
 
 export const addSlide = async (req, res) => {
   try {
-    const { order = 0, active = "true" } = req.body;
+    const {
+      order = 0,
+      active = "true",
+      title = "SOTRA\nBringing Modesty to Every Wardrobe",
+      buttonLabel = "Discover More",
+      to = "/collection",
+    } = req.body;
     const mobileFile = req.files?.image?.[0];
     const desktopFile = req.files?.desktopImage?.[0];
 
@@ -31,6 +35,9 @@ export const addSlide = async (req, res) => {
       imageFileId: imageAsset?.fileId || "",
       desktopImage: desktopAsset?.url || "",
       desktopImageFileId: desktopAsset?.fileId || "",
+      title: String(title || "").trim() || "SOTRA\nBringing Modesty to Every Wardrobe",
+      buttonLabel: String(buttonLabel || "").trim() || "Discover More",
+      to: String(to || "").trim() || "/collection",
       order: Number(order),
       active: active === "true",
     });
@@ -59,10 +66,18 @@ export const updateSlide = async (req, res) => {
     }
 
     const patch = {};
-    const { order, active, clearDesktopImage } = req.body;
+    const { order, active, clearDesktopImage, title, buttonLabel, to } = req.body;
 
     if (order !== undefined) patch.order = Number(order);
     if (active !== undefined) patch.active = active === "true";
+    if (title !== undefined) {
+      patch.title =
+        String(title || "").trim() || "SOTRA\nBringing Modesty to Every Wardrobe";
+    }
+    if (buttonLabel !== undefined) {
+      patch.buttonLabel = String(buttonLabel || "").trim() || "Discover More";
+    }
+    if (to !== undefined) patch.to = String(to || "").trim() || "/collection";
     if (clearDesktopImage === "true") {
       await deleteImageKitAssets([
         { url: current.desktopImage, fileId: current.desktopImageFileId },

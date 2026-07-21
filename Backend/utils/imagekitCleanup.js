@@ -12,7 +12,7 @@ const getFileNameFromUrl = (url) => {
   }
 };
 
-export const uploadImageKitAsset = async (file, fallbackName = "nancy-asset") => {
+export const uploadImageKitAsset = async (file, fallbackName = "sotra-asset") => {
   if (!file?.buffer) return null;
 
   const uploaded = await imagekit.upload({

@@ -112,7 +112,7 @@ const ProductNancyMediaEditor = ({
     <section className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
       <div className="mb-4 flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <p className={labelClass}>Nancy Product Media</p>
+          <p className={labelClass}>Sotra Product Media</p>
           <h3 className="font-serif text-2xl text-[#000000]">
             Story images and small images
           </h3>

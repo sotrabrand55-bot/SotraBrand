@@ -18,7 +18,7 @@ export const submitContact = async (req, res) => {
   }
 
   try {
-    const to = process.env.CONTACT_TO_EMAIL || process.env.ADMIN_ORDER_EMAIL || process.env.GMAIL_USER;
+    const to = process.env.GMAIL_USER || process.env.CONTACT_TO_EMAIL || process.env.ADMIN_ORDER_EMAIL;
     logInfo('CONTACT_EMAIL_RECIPIENT', { to, from: process.env.GMAIL_USER });
 
     await sendMail({

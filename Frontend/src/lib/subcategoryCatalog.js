@@ -36,6 +36,8 @@ export const mapCategoryGroups = (groups = rawSubcategoryGroups) =>
     .map((group) => ({
       label: group.label,
       slug: group.slug || slugifySubcategory(group.label),
+      image: group.image || "",
+      imageFileId: group.imageFileId || "",
       active: group.active !== false,
       order: group.order ?? 0,
       children: (Array.isArray(group.children) ? group.children : [])

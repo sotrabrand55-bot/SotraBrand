@@ -1,34 +1,45 @@
 export const defaultCategoryGroups = [
   {
-    label: "Pheromone Touch",
-    slug: "pheromone-touch",
+    label: "Abaya",
+    slug: "abaya",
     active: true,
     order: 0,
-    children: [
-      { label: "Pheromone Touch", slug: "pheromone-touch", active: true, order: 0 },
-      { label: "Body lotion pheromone", slug: "body-lotion-pheromone", active: true, order: 1 },
-      { label: "Body oil pheromone", slug: "body-oil-pheromone", active: true, order: 2 },
-      { label: "Body splash pheromone", slug: "body-splash-pheromone", active: true, order: 3 },
-      { label: "Body scrub pheromone", slug: "body-scrub-pheromone", active: true, order: 4 },
-    ],
+    children: [{ label: "Abaya", slug: "abaya", active: true, order: 0 }],
   },
   {
-    label: "Mystique Set",
-    slug: "mystique-set",
+    label: "Dresses",
+    slug: "dresses",
     active: true,
     order: 1,
+    children: [{ label: "Dresses", slug: "dresses", active: true, order: 0 }],
+  },
+  {
+    label: "Hijabs",
+    slug: "hijabs",
+    active: true,
+    order: 2,
+    children: [{ label: "Hijabs", slug: "hijabs", active: true, order: 0 }],
+  },
+  {
+    label: "Islamic Essentials",
+    slug: "islamic-essentials",
+    active: true,
+    order: 3,
     children: [
-      { label: "Mystique parfum", slug: "mystique-parfum", active: true, order: 0 },
-      { label: "Body lotion mystique", slug: "body-lotion-mystique", active: true, order: 1 },
-      { label: "Body splash mystique", slug: "body-splash-mystique", active: true, order: 2 },
+      {
+        label: "Islamic Essentials",
+        slug: "islamic-essentials",
+        active: true,
+        order: 0,
+      },
     ],
   },
   {
-    label: "Roll-on",
-    slug: "roll-on",
+    label: "Blouses",
+    slug: "blouses",
     active: true,
-    order: 2,
-    children: [{ label: "Radiant charm", slug: "radiant-charm", active: true, order: 0 }],
+    order: 4,
+    children: [{ label: "Blouses", slug: "blouses", active: true, order: 0 }],
   },
 ];
 

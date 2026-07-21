@@ -26,6 +26,7 @@ const isObjectId = (value) =>
   typeof value === "string" && /^[a-f0-9]{24}$/i.test(value);
 const ORDER_NOTE_STORAGE_KEY = "sotra_order_note";
 const LEGACY_ORDER_NOTE_STORAGE_KEY = "nancy_order_note";
+const LAST_ORDER_STORAGE_KEY = "sotra_last_order";
 const isObject = (value) => value && typeof value === "object";
 const isRealSize = (value) =>
   Boolean(value) &&
@@ -37,7 +38,7 @@ const needsFitSelection = (product) =>
   Number.isFinite(Number(product?.fitMin)) && Number.isFinite(Number(product?.fitMax));
 const formatPrice = (value, currency = "$") =>
   `${currency || "$"}${(Number(value) || 0).toFixed(2)}`;
-const WISH_MONEY_NUMBER = "+96181238570";
+const WISH_MONEY_NUMBER = "71872919";
 const DEFAULT_LEBANON_DELIVERY = 5;
 const TRIPOLI_DELIVERY = 2;
 
@@ -289,18 +290,6 @@ const Placeorder = () => {
 
   const onSubmitHandler = async (event) => {
     event.preventDefault();
-    if (!token) {
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      toast.info(
-        <div className="space-y-1 leading-5">
-          <p>Please log in before placing your order.</p>
-          <p dir="rtl">يرجى تسجيل الدخول قبل إرسال طلبك.</p>
-        </div>,
-        { position: "top-center", autoClose: 2200 }
-      );
-      window.setTimeout(() => navigate("/login?mode=login&redirect=/place-order"), 900);
-      return;
-    }
     if (!cartRows.length) return toast.error("Your cart is empty.");
 
     const items = buildItemsFromCart();
@@ -365,13 +354,17 @@ const Placeorder = () => {
           : "Lebanon delivery applied at $5",
       },
     };
+    const requestConfig = token ? { headers: { token } } : undefined;
+    const notifyHeaders = token
+      ? { "Content-Type": "application/json", token }
+      : { "Content-Type": "application/json" };
 
     setSubmitting(true);
     try {
       const response = await axios.post(
         `${backendUrl}/api/order/place`,
         orderData,
-        { headers: { token } }
+        requestConfig
       );
 
       if (!response.data?.success) {
@@ -380,15 +373,33 @@ const Placeorder = () => {
       }
 
       toast.success(response.data.message || "Order placed!");
+      const localOrder = {
+        ...orderData,
+        ...(response.data?.order || {}),
+        _id: response.data?.orderId || response.data?.order?._id || `LOCAL-${Date.now()}`,
+        date: response.data?.order?.date || Date.now(),
+        status: response.data?.order?.status || "Order Placed",
+        subtotal: orderSubtotal,
+        discount: orderDiscount,
+        shipping: orderShipping,
+        amount: response.data?.amount || orderTotal,
+        coupon: appliedCoupon?.code || null,
+      };
       setCartItems({});
       setShowFireworks(true);
       try {
+        localStorage.setItem(LAST_ORDER_STORAGE_KEY, JSON.stringify(localOrder));
         localStorage.removeItem(ORDER_NOTE_STORAGE_KEY);
         localStorage.removeItem(LEGACY_ORDER_NOTE_STORAGE_KEY);
       } catch {
         // The completed order is not affected when storage is unavailable.
       }
-      window.setTimeout(() => navigate("/orders"), 950);
+      window.setTimeout(() => {
+        navigate("/orders");
+        window.requestAnimationFrame(() => {
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        });
+      }, 950);
 
       axios
         .post(
@@ -408,12 +419,13 @@ const Placeorder = () => {
               shipping: orderShipping,
               total: orderTotal,
             },
+            delivery: orderData.delivery,
             meta: {
               orderId: response.data?.orderId || response.data?.data?._id || "",
               deliveryZone: tripoliDeliverySelected ? "Tripoli" : "Lebanon",
             },
           },
-          { headers: { "Content-Type": "application/json", token } }
+          { headers: notifyHeaders }
         )
         .catch(() => {
           // Notification must never block a completed order.
@@ -460,7 +472,7 @@ const Placeorder = () => {
               <div className="grid gap-x-5 gap-y-5 py-6 md:grid-cols-2">
                 <CheckoutField name="firstName" label="First Name" value={formData.firstName} onChange={onChangeHandler} required />
                 <CheckoutField name="lastName" label="Last Name" value={formData.lastName} onChange={onChangeHandler} required />
-                <CheckoutField name="email" label="Email" value={formData.email} onChange={onChangeHandler} type="email" required />
+                <CheckoutField name="email" label="Email" value={formData.email} onChange={onChangeHandler} type="email" />
                 <CheckoutField name="phone" label="Phone" value={formData.phone} onChange={onChangeHandler} required />
                 <CheckoutField name="country" label="Country" value={formData.country} onChange={onChangeHandler} required />
                 <CheckoutField name="city" label="City" value={formData.city} onChange={onChangeHandler} required />
@@ -657,7 +669,7 @@ const Placeorder = () => {
 
                   {method === "Wish Money" && (
                     <a
-                      href={`tel:${WISH_MONEY_NUMBER}`}
+                      href={`tel:+961${WISH_MONEY_NUMBER}`}
                       className="flex items-center justify-between border border-black/15 px-4 py-3 text-xs font-semibold uppercase tracking-[0.12em] text-black transition hover:border-black"
                     >
                       <span className="inline-flex items-center gap-2">

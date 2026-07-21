@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom'; // we import those to setup the routing
+import { Navigate, Route, Routes } from 'react-router-dom'; // we import those to setup the routing
 import Navbar from './components/Navbar';
 import Sidebar from './components/Sidebar';
 import Add from './pages/Add'
@@ -14,7 +14,6 @@ import AddCoupon from './pages/AddCoupon';
 import Dashboard from './pages/Dashboard';
 import NancyHomeControl from './pages/NancyHomeControl';
 import CategoriesManager from './pages/CategoriesManager';
-import SubcategoryStudio from './pages/SubcategoryStudio';
 import PageImagesManager from './pages/PageImagesManager';
 
 export const backendUrl = String(import.meta.env.VITE_BACKEND_URL || "").replace(/\/+$/, "") // this how we get the env var
@@ -55,8 +54,8 @@ const App = () => {
         <Route path="/maintenance" element={<MaintenanceControl token={token} />} />
         <Route path="/products" element={<ProductsList token={token} />} />
         <Route path="/edit/:id" element={<EditProduct token={token} />} />
-        <Route path="/nancy-home" element={<NancyHomeControl token={token} />} />
-        <Route path="/subcategory-studio" element={<SubcategoryStudio token={token} />} />
+        <Route path="/sotra-home" element={<NancyHomeControl token={token} />} />
+        <Route path="/nancy-home" element={<Navigate to="/sotra-home" replace />} />
         <Route path="/categories" element={<CategoriesManager token={token} />} />
         <Route path="/page-images" element={<PageImagesManager token={token} />} />
         <Route path='/add' element={<Add token={token}/>} /> 

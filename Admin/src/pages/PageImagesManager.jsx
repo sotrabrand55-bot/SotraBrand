@@ -118,7 +118,7 @@ const PageImagesManager = ({ token }) => {
     <main className="min-h-screen bg-white text-black">
       <div className="mb-6 border border-black/15 bg-white p-5 shadow-[0_18px_46px_rgba(0,0,0,0.05)]">
         <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#c47b92]">
-          Nancy Studio
+          Sotra Studio
         </p>
         <h1 className="mt-2 text-3xl font-black uppercase tracking-[0.03em]">
           Page Images

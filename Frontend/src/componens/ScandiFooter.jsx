@@ -24,7 +24,7 @@ const sotraSocialFallbacks = {
 const ScandiFooter = () => {
   const { siteSettings } = useContext(ShopContext);
   const socialLinks = siteSettings?.socialLinks || {};
-  const email = siteSettings?.brandEmail || socialLinks.email || "Serinachendeb133@gmail.com";
+  const email = siteSettings?.brandEmail || socialLinks.email || "sotrabrand7@gmail.com";
   const phone = siteSettings?.brandPhone || socialLinks.phone || "71872919";
   const socials = [
     {
@@ -93,6 +93,16 @@ const ScandiFooter = () => {
 
       <div className="px-5 pb-7 text-center text-[13px] text-[#121212]/70">
         <p>&copy; {new Date().getFullYear()}, SotraBrand</p>
+        <a
+          href="https://www.instagram.com/letsdwebs/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="mt-2 inline-flex items-center justify-center gap-2 hover:text-[#121212] hover:underline"
+          aria-label="LetsDwebs on Instagram"
+        >
+          <FaInstagram className="h-3.5 w-3.5" />
+          Created by LetsDwebs
+        </a>
       </div>
     </footer>
   );

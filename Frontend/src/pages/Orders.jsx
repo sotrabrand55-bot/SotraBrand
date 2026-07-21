@@ -5,6 +5,8 @@ import { toast } from "react-toastify";
 import { ShimmerImage } from "../componens/Skeletons";
 import { ShopContext } from "../context/ShopContext";
 
+const LAST_ORDER_STORAGE_KEY = "sotra_last_order";
+
 const formatPrice = (value, currency = "$") => {
   const amount = Number(value);
   return `${currency}${Number.isFinite(amount) ? amount.toFixed(2) : "0.00"}`;
@@ -48,13 +50,25 @@ const pickOrderImage = (image) => {
   return image || "";
 };
 
+const loadGuestOrders = () => {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LAST_ORDER_STORAGE_KEY) || "null");
+    return saved ? [saved] : [];
+  } catch {
+    return [];
+  }
+};
+
 const Orders = () => {
   const { backendUrl, currency, token, navigate } = useContext(ShopContext);
   const [orderData, setOrderData] = useState([]);
 
   const loadOrderData = useCallback(async () => {
     try {
-      if (!token) return;
+      if (!token) {
+        setOrderData(loadGuestOrders());
+        return;
+      }
 
       const response = await axios.post(
         `${backendUrl}/api/order/userorder`,
@@ -76,43 +90,26 @@ const Orders = () => {
   }, [loadOrderData]);
 
   useEffect(() => {
-    if (token) return undefined;
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
 
-    toast.info(
-      <div className="space-y-1 leading-5">
-        <p>Please log in to view your orders.</p>
-        <p dir="rtl">يرجى تسجيل الدخول لعرض طلباتك.</p>
-      </div>,
-      { position: "top-center", autoClose: 1800 }
-    );
-
-    const redirectTimer = window.setTimeout(() => {
-      navigate("/login?mode=login");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }, 1200);
-
-    return () => window.clearTimeout(redirectTimer);
-  }, [navigate, token]);
-
-  const renderEmptyState = ({ loginRequired = false } = {}) => (
+  const renderEmptyState = () => (
     <div className="mx-auto mt-10 max-w-md border-y border-black/15 bg-white p-8 text-center">
       <div className="mx-auto grid h-14 w-14 place-items-center border border-black/20 text-black">
         <FiPackage className="h-6 w-6" />
       </div>
       <p className="mt-5 text-2xl font-black uppercase">
-        {loginRequired ? "Sign in to view orders." : "No orders yet."}
+        No orders yet.
       </p>
       <p className="mt-3 text-sm leading-7 text-black/55">
-        {loginRequired
-          ? "Your SotraBrand order history appears after you log in."
-          : "When you place an order, its status and details will appear here."}
+        When you place an order, its status and details will appear here. Log in to keep a full order history.
       </p>
       <button
         type="button"
-        onClick={() => navigate(loginRequired ? "/login?mode=login" : "/collection")}
+        onClick={() => navigate("/collection")}
         className="mt-6 inline-flex h-12 items-center justify-center gap-3 bg-black px-7 text-xs font-bold uppercase tracking-[0.18em] text-white transition hover:bg-[#222]"
       >
-        {loginRequired ? "Login" : "Shop Collection"}
+        Shop Collection
         <FiArrowRight className="h-4 w-4" />
       </button>
     </div>
@@ -133,9 +130,7 @@ const Orders = () => {
           </p>
         </div>
 
-        {!token ? (
-          renderEmptyState({ loginRequired: true })
-        ) : orderData.length === 0 ? (
+        {orderData.length === 0 ? (
           renderEmptyState()
         ) : (
           <div className="mt-12 space-y-5">
@@ -144,7 +139,9 @@ const Orders = () => {
               const statusStyle = getStatusStyle(status);
               const orderNumber = order._id
                 ? `#${String(order._id).slice(-6).toUpperCase()}`
-                : `#BR-${String(index + 1).padStart(4, "0")}`;
+                : `#SO-${String(index + 1).padStart(4, "0")}`;
+              const deliveryZone = order.delivery?.zone || (Number(order.shipping) === 2 ? "Tripoli" : "Lebanon");
+              const deliveryNote = order.delivery?.note || "";
 
               return (
                 <article
@@ -210,7 +207,12 @@ const Orders = () => {
                               {title}
                             </p>
                             <div className="mt-3 flex flex-wrap gap-2">
-                              {[item.perfumeType || item.concentration, item.size, item.color, `Qty ${qty}`]
+                              {[
+                                item.perfumeType || item.concentration,
+                                item.size ? `Fit ${item.size}` : null,
+                                item.colorLabel || item.selectedColor || item.color,
+                                `Qty ${qty}`,
+                              ]
                                 .filter(Boolean)
                                 .map((label) => (
                                   <span
@@ -221,6 +223,18 @@ const Orders = () => {
                                   </span>
                                 ))}
                             </div>
+                            {(item.colorImage || item.selectedColorImage) && (
+                              <div className="mt-3 flex items-center gap-2 text-[10px] font-bold uppercase tracking-[0.12em] text-black/45">
+                                <span className="h-6 w-6 overflow-hidden rounded-full border border-black/20 bg-white">
+                                  <img
+                                    src={item.colorImage || item.selectedColorImage}
+                                    alt={item.colorLabel || item.selectedColor || item.color || "Selected color"}
+                                    className="h-full w-full object-cover"
+                                  />
+                                </span>
+                                Selected Color
+                              </div>
+                            )}
                           </div>
 
                           <div className="text-left sm:text-right">
@@ -250,6 +264,9 @@ const Orders = () => {
                         ]
                           .filter(Boolean)
                           .join(", ") || "Delivery details saved with order."}
+                      </p>
+                      <p className="mt-2 text-xs font-bold uppercase tracking-[0.14em] text-black">
+                        {deliveryZone} delivery{deliveryNote ? ` / ${deliveryNote}` : ""}
                       </p>
                     </div>
 

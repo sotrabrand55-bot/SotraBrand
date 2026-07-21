@@ -63,6 +63,12 @@ function normalizeSize(value) {
   return text
 }
 
+function normalizeFitKg(value) {
+  const text = normalizeSize(value)
+  const match = text.match(/(\d+(?:\.\d+)?)/)
+  return match ? Number(match[1]) : NaN
+}
+
 function normalizeSizes(value = []) {
   return [
     ...new Set(
@@ -171,12 +177,9 @@ const placeOrder = async (req, res) => {
       customerNote = '',
       paymentMethod = 'COD',
       totals = {},
+      delivery = {},
       appliedCoupon,
     } = req.body;
-
-    if (!userId) {
-      return res.status(401).json({ success: false, message: 'Unauthorized: missing userId' });
-    }
 
     const rawItems = Array.isArray(items) ? items : [];
     if (!rawItems.length) {
@@ -226,6 +229,11 @@ const placeOrder = async (req, res) => {
 
       const productSizes = normalizeSizes(p.sizes);
       const requestedSize = normalizeSize(it.size);
+      const fitMin = Number(p.fitMin);
+      const fitMax = Number(p.fitMax);
+      const hasFitRange =
+        Number.isFinite(fitMin) && Number.isFinite(fitMax) && fitMin > 0 && fitMax >= fitMin;
+
       if (productSizes.length && !requestedSize) {
         return res.status(400).json({
           success: false,
@@ -237,6 +245,21 @@ const placeOrder = async (req, res) => {
           success: false,
           message: `${requestedSize} is not available for ${p.name}`,
         });
+      }
+      if (hasFitRange) {
+        const requestedFit = normalizeFitKg(requestedSize);
+        if (!Number.isFinite(requestedFit)) {
+          return res.status(400).json({
+            success: false,
+            message: `${p.name} needs a KG fit selection`,
+          });
+        }
+        if (requestedFit < fitMin || requestedFit > fitMax) {
+          return res.status(400).json({
+            success: false,
+            message: `${p.name} supports ${fitMin}-${fitMax} ${p.fitUnit || 'kg'}`,
+          });
+        }
       }
 
       const productPerfumeTypes = normalizePerfumeTypes(p.perfumeTypes);
@@ -284,7 +307,7 @@ const placeOrder = async (req, res) => {
         subCategory: p.subCategory || '',
         concentration: orderPerfumeType || p.concentration || '',
         perfumeType: orderPerfumeType || null,
-        size: productSizes.length ? requestedSize : null,
+        size: productSizes.length || hasFitRange ? requestedSize : null,
         color: requestedColor || null,
         colorLabel: selectedColorLabel || requestedColor || null,
         colorImage: selectedColorImage || null,
@@ -301,14 +324,24 @@ const placeOrder = async (req, res) => {
     const discount = validCoupon ? Number(totals?.discount || 0) : 0;
     const shipping = Number(totals?.shipping || 0);
     const finalTotal = subtotal - discount + shipping;
+    const deliveryZone = String(delivery?.zone || (shipping === 2 ? 'Tripoli' : 'Lebanon')).trim();
+    const deliveryNote =
+      String(delivery?.note || '').trim() ||
+      (deliveryZone.toLowerCase() === 'tripoli'
+        ? 'Tripoli delivery applied at $2'
+        : 'Lebanon delivery applied at $5');
 
     const orderData = {
-      userId,
+      userId: userId || '',
       items: orderItems,
       address,
       subtotal,
       discount,               // ✅ only if coupon active
       shipping,
+      delivery: {
+        zone: deliveryZone,
+        note: deliveryNote,
+      },
       amount: finalTotal,     // ✅ total after discount + shipping
       paymentMethod,
       payment: false,
@@ -321,13 +354,16 @@ const placeOrder = async (req, res) => {
     const newOrder = new orderModel(orderData);
     await newOrder.save();
 
-    await userModel.findByIdAndUpdate(userId, { cartData: {} });
+    if (userId) {
+      await userModel.findByIdAndUpdate(userId, { cartData: {} });
+    }
 
     return res.json({
       success: true,
       message: 'Order Placed',
       orderId: newOrder._id,
       amount: finalTotal,
+      order: newOrder,
     });
   } catch (error) {
     logError("placeOrder", error);

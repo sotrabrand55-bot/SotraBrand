@@ -1,24 +1,15 @@
 import categoryGroupModel from "../models/categoryGroupModel.js";
+import {
+  deleteImageKitAssets,
+  uploadImageKitAsset,
+} from "../utils/imagekitCleanup.js";
 
 const defaultCategoryGroups = [
-  {
-    label: "Pheromone Touch",
-    children: [
-      "Pheromone Touch",
-      "Body lotion pheromone",
-      "Body oil pheromone",
-      "Body splash pheromone",
-      "Body scrub pheromone",
-    ],
-  },
-  {
-    label: "Mystique Set",
-    children: ["Mystique parfum", "Body lotion mystique", "Body splash mystique"],
-  },
-  {
-    label: "Roll-on",
-    children: ["Radiant charm"],
-  },
+  { label: "Abaya", children: ["Abaya"] },
+  { label: "Dresses", children: ["Dresses"] },
+  { label: "Hijabs", children: ["Hijabs"] },
+  { label: "Islamic Essentials", children: ["Islamic Essentials"] },
+  { label: "Blouses", children: ["Blouses"] },
 ];
 
 const slugify = (value = "") =>
@@ -73,6 +64,8 @@ const normalizeGroups = (groups = []) =>
       return {
         label,
         slug: slugify(group?.slug || label),
+        image: String(group?.image || "").trim(),
+        imageFileId: String(group?.imageFileId || "").trim(),
         active: parseBool(group?.active, true),
         order: Number.isFinite(Number(group?.order)) ? Number(group.order) : groupIndex,
         children,
@@ -103,12 +96,49 @@ export const listCategoryGroups = async (_req, res) => {
 
 export const saveCategoryGroups = async (req, res) => {
   try {
+    const previousGroups = await categoryGroupModel.find({}).lean();
+    const previousByKey = new Map(
+      previousGroups.flatMap((group) => [
+        [group.slug, group],
+        [String(group.label || "").toLowerCase(), group],
+      ])
+    );
     const groups = normalizeGroups(parseGroups(req.body.groups));
     if (!groups.length) {
       return res
         .status(400)
         .json({ success: false, message: "At least one category group is required" });
     }
+
+    const removedAssets = [];
+    for (let index = 0; index < groups.length; index += 1) {
+      const group = groups[index];
+      const previous =
+        previousByKey.get(group.slug) ||
+        previousByKey.get(String(group.label || "").toLowerCase());
+      const file = req.files?.[`groupImage${index}`]?.[0];
+      if (file?.buffer) {
+        const asset = await uploadImageKitAsset(file, `category-${group.slug || index}`);
+        if (asset) {
+          if (previous?.image || previous?.imageFileId) {
+            removedAssets.push({ url: previous.image, fileId: previous.imageFileId });
+          }
+          group.image = asset.url;
+          group.imageFileId = asset.fileId;
+        }
+      } else if (!group.image && previous?.image) {
+        group.image = previous.image;
+        group.imageFileId = previous.imageFileId || "";
+      }
+    }
+
+    const nextImageKeys = new Set(groups.map((group) => group.image).filter(Boolean));
+    previousGroups.forEach((group) => {
+      if (group.image && !nextImageKeys.has(group.image)) {
+        removedAssets.push({ url: group.image, fileId: group.imageFileId });
+      }
+    });
+    await deleteImageKitAssets(removedAssets);
 
     await categoryGroupModel.deleteMany({});
     await categoryGroupModel.insertMany(groups, { ordered: true });

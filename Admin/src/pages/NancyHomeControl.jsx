@@ -19,33 +19,9 @@ const mediaSections = [
     label: "Luxury Video Gallery",
     hint: "9:16 videos or images. Storefront videos show as 15-second presentation clips.",
   },
-  {
-    key: "featured-set-1",
-    label: "Featured Set Picture 1",
-    hint: "Single set image. Mobile: 9:16 vertical. Laptop: wide 2:1. Link it to the product opened by See Full Set.",
-    singleItem: true,
-    allowProductLink: true,
-  },
-  {
-    key: "featured-set-2",
-    label: "Featured Set Picture 2",
-    hint: "Single set image. Mobile: 9:16 vertical. Laptop: wide 2:1. Link it to the product opened by See Full Set.",
-    singleItem: true,
-    allowProductLink: true,
-  },
-  {
-    key: "single-campaign",
-    label: "Single Campaign Video",
-    hint: "Use one 9:16 mobile media file. Optional desktop file should be 2:1 wide.",
-  },
-  {
-    key: "from-the-gram",
-    label: "From The Gram",
-    hint: "Use 9:16 image/video items. Laptop storefront shows a clean four-column layout.",
-  },
 ];
 
-const featuredSlots = [1, 4];
+const featuredSlots = [];
 const maxHeaderSlides = 4;
 const volumeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
 const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Parfum"];
@@ -57,12 +33,14 @@ const emptySettings = {
   freeShippingEnabled: true,
   freeShippingText: "Delivery $5 All Over Lebanon",
   availableNowText: "AVAILABLE NOW",
-  brandEmail: "beradiantnancy@gmail.com",
+  brandEmail: "sotrabrand7@gmail.com",
   socialLinks: {
-    instagram: "",
-    facebook: "",
-    tiktok: "",
-    email: "",
+    instagram: "https://www.instagram.com/sotra_brand_hijab?igsh=MWZiNzdkM3BuZnVndA%3D%3D&utm_source=qr",
+    facebook: "https://www.facebook.com/share/1Cnd12KNGw/?mibextid=wwXIfr",
+    tiktok: "https://www.tiktok.com/@sotrabrand133?_r=1&_t=ZS-98BbAHXPjTc",
+    whatsapp: "https://wa.me/96171872919",
+    email: "sotrabrand7@gmail.com",
+    phone: "71872919",
   },
 };
 
@@ -71,6 +49,9 @@ const emptySlideDraft = {
   desktopImage: null,
   existingImage: "",
   existingDesktopImage: "",
+  title: "SOTRA\nBringing Modesty to Every Wardrobe",
+  buttonLabel: "Discover More",
+  to: "/collection",
   order: 0,
   active: true,
   _imagePreview: "",
@@ -136,7 +117,7 @@ const cloneSection = (section) => ({
     posterFileId: item.posterFileId || "",
     alt: item.alt || "",
     label: item.label || "",
-    buttonLabel: item.buttonLabel ?? "See Full Set",
+    buttonLabel: item.buttonLabel ?? "See Full Collections",
     productId: item.productId || "",
     order: Number.isFinite(Number(item.order)) ? Number(item.order) : index,
     active: item.active !== false,
@@ -445,27 +426,58 @@ const MiniProduct = ({ product, title }) => {
   );
 };
 
-const HomeSimulator = ({ settings, slides, products, sections }) => {
+const CategoryCollectionsPreview = ({ products = [], categoryGroups = defaultCategoryGroups }) => {
+  const groups = getActiveCategoryGroups(categoryGroups);
+  const fallbackGroups = getActiveCategoryGroups(defaultCategoryGroups);
+  const tiles = (groups.length ? groups : fallbackGroups)
+    .map((group) => {
+      const product = products.find(
+        (item) =>
+          String(item.category || "").toLowerCase() === String(group.label || "").toLowerCase() ||
+          String(item.subCategory || "").toLowerCase() === String(group.label || "").toLowerCase()
+      );
+
+      return {
+        label: group.label,
+        image: group.image || firstProductImage(product),
+      };
+    })
+    .filter((tile) => tile.label)
+    .slice(0, 6);
+
+  return (
+    <section className="bg-white px-4 py-7">
+      <h3 className="font-serif text-3xl leading-none text-black">Collections</h3>
+      <div className="mt-5 grid grid-cols-2 gap-x-2 gap-y-5">
+        {tiles.map((tile) => (
+          <article key={tile.label}>
+            <div className="aspect-[4/3] overflow-hidden bg-[#EAEAEA]">
+              {tile.image ? (
+                <img src={tile.image} alt={tile.label} className="h-full w-full object-cover" />
+              ) : (
+                <div className="grid h-full w-full place-items-center px-3 text-center text-[9px] font-bold uppercase tracking-[0.16em] text-black/35">
+                  {tile.label}
+                </div>
+              )}
+            </div>
+            <p className="mt-2 font-serif text-lg leading-tight text-black">
+              {tile.label} <span aria-hidden="true">-&gt;</span>
+            </p>
+          </article>
+        ))}
+      </div>
+    </section>
+  );
+};
+
+const HomeSimulator = ({ settings, slides, products, sections, categoryGroups }) => {
   const activeSlides = sortByOrder(slides).filter((slide) => slide.active !== false && slide.image);
   const hero = activeSlides[0];
   const heroImage = hero?.desktopImage || hero?.image || "";
-  const featureProducts = [1, 4].reduce((entries, slot) => {
-    entries[slot] = products.find((item) => Number(item.featuredSlot) === slot) || null;
-    return entries;
-  }, {});
+  const [headline, subheadline] = String(
+    hero?.title || "SOTRA\nBringing Modesty to Every Wardrobe"
+  ).split("\n");
   const luxuryItems = sortByOrder(sections["luxury-gallery"]?.items || []).filter(
-    (item) => item.active !== false && getMediaPreviewSrc(item)
-  );
-  const setOneItem = sortByOrder(sections["featured-set-1"]?.items || []).find(
-    (item) => item.active !== false && getMediaPreviewSrc(item)
-  );
-  const setTwoItem = sortByOrder(sections["featured-set-2"]?.items || []).find(
-    (item) => item.active !== false && getMediaPreviewSrc(item)
-  );
-  const singleItem = sortByOrder(sections["single-campaign"]?.items || []).find(
-    (item) => item.active !== false && getMediaPreviewSrc(item)
-  );
-  const gramItems = sortByOrder(sections["from-the-gram"]?.items || []).filter(
     (item) => item.active !== false && getMediaPreviewSrc(item)
   );
 
@@ -476,13 +488,24 @@ const HomeSimulator = ({ settings, slides, products, sections }) => {
       </div>
       <div className="relative aspect-[9/16] bg-[#EAEAEA] md:aspect-[2/1]">
         {heroImage ? (
-          <img src={heroImage} alt="Be Radiant by Nancy header" className="h-full w-full object-cover" />
+          <img src={heroImage} alt="SotraBrand header" className="h-full w-full object-cover" />
         ) : (
           <div className="grid h-full w-full place-items-center text-xs font-bold uppercase tracking-[0.2em] text-black/35">
             Header Image
           </div>
         )}
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/15 to-transparent" />
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-4 text-center text-[#f4efe8] drop-shadow">
+          <p className="font-serif text-4xl leading-none">{headline}</p>
+          {subheadline && (
+            <p className="mx-auto mt-1 max-w-[320px] font-serif text-2xl leading-[0.95]">
+              {subheadline}
+            </p>
+          )}
+          <p className="mx-auto mt-4 inline-flex border-2 border-black bg-white px-5 py-2 font-serif text-lg text-black">
+            {hero?.buttonLabel || "Discover More"}
+          </p>
+        </div>
       </div>
       <div className="overflow-hidden border-b border-black/10 bg-white py-3">
         <p className="whitespace-nowrap text-center text-2xl font-black uppercase tracking-[0.05em]">
@@ -490,19 +513,7 @@ const HomeSimulator = ({ settings, slides, products, sections }) => {
         </p>
       </div>
 
-      <MiniProduct product={featureProducts[1]} title="Featured Product 1" />
-
-      <SetPicturePreview
-        entry={mediaSections.find((entry) => entry.key === "featured-set-1")}
-        section={{ items: setOneItem ? [setOneItem] : [] }}
-        products={products}
-      />
-
-      <SetPicturePreview
-        entry={mediaSections.find((entry) => entry.key === "featured-set-2")}
-        section={{ items: setTwoItem ? [setTwoItem] : [] }}
-        products={products}
-      />
+      <CategoryCollectionsPreview products={products} categoryGroups={categoryGroups} />
 
       <section className="bg-white px-3 py-4">
         <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
@@ -516,36 +527,6 @@ const HomeSimulator = ({ settings, slides, products, sections }) => {
         <div className="mt-2 h-1 bg-black/15">
           <div className="h-full w-1/3 bg-black" />
         </div>
-      </section>
-
-      <MiniProduct product={featureProducts[4]} title="Featured Product 4" />
-
-      <section className="bg-white px-3 py-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
-          Single Campaign
-        </p>
-        <MiniMedia item={singleItem} className="mt-3 aspect-[9/16] w-full md:aspect-[2/1]" />
-      </section>
-
-      <section className="bg-white px-3 py-4">
-        <p className="text-center text-lg font-black uppercase">From The Gram</p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {(gramItems.length ? gramItems : [null, null, null, null]).slice(0, 4).map((item, index) => (
-            <MiniMedia key={item?.id || index} item={item} className="aspect-[9/16]" />
-          ))}
-        </div>
-      </section>
-
-      <section className="border-t border-black/15 px-4 py-7">
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/45">
-          Be Radiant By Nancy
-        </p>
-        <h3 className="mt-3 font-serif text-3xl">A Note From Nancy</h3>
-        <p className="mt-3 line-clamp-4 text-sm leading-6 text-black/60">
-          Thank you for choosing Be Radiant By Nancy for your skincare needs. This
-          final letter is stable in the preview and can be connected later if Nancy
-          wants to edit it from Admin.
-        </p>
       </section>
     </div>
   );
@@ -573,6 +554,9 @@ const HeaderLivePreview = ({ settings, slides }) => {
   const activeSlides = sortByOrder(slides).filter((slide) => slide.active !== false && slide.image);
   const hero = activeSlides[0];
   const heroImage = hero?.desktopImage || hero?.image || "";
+  const [headline, subheadline] = String(
+    hero?.title || "SOTRA\nBringing Modesty to Every Wardrobe"
+  ).split("\n");
 
   return (
     <div className="bg-white">
@@ -587,6 +571,17 @@ const HeaderLivePreview = ({ settings, slides }) => {
             Header Image
           </div>
         )}
+        <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-4 text-center text-[#f4efe8] drop-shadow">
+          <p className="font-serif text-4xl leading-none">{headline}</p>
+          {subheadline && (
+            <p className="mx-auto mt-1 max-w-[320px] font-serif text-2xl leading-[0.95]">
+              {subheadline}
+            </p>
+          )}
+          <p className="mx-auto mt-4 inline-flex border-2 border-black bg-white px-5 py-2 font-serif text-lg text-black">
+            {hero?.buttonLabel || "Discover More"}
+          </p>
+        </div>
       </div>
       <div className="border-t border-black/10 px-3 py-3 text-center">
         <p className="text-xl font-black uppercase tracking-[0.05em]">
@@ -607,34 +602,6 @@ const MediaSectionLivePreview = ({ entry, section, products }) => {
   const items = sortByOrder(section?.items || []).filter(
     (item) => item.active !== false && getMediaPreviewSrc(item)
   );
-
-  if (entry.allowProductLink) {
-    return <SetPicturePreview entry={entry} section={section} products={products} />;
-  }
-
-  if (entry.key === "single-campaign") {
-    return (
-      <section className="bg-white px-3 py-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.22em] text-black/40">
-          {entry.label}
-        </p>
-        <MiniMedia item={items[0]} className="mt-3 aspect-[9/16] w-full md:aspect-[2/1]" />
-      </section>
-    );
-  }
-
-  if (entry.key === "from-the-gram") {
-    return (
-      <section className="bg-white px-3 py-4">
-        <p className="text-center text-lg font-black uppercase">From The Gram</p>
-        <div className="mt-3 grid grid-cols-2 gap-2">
-          {(items.length ? items : [null, null, null, null]).slice(0, 4).map((item, index) => (
-            <MiniMedia key={item?.id || index} item={item} className="aspect-[9/16]" />
-          ))}
-        </div>
-      </section>
-    );
-  }
 
   return (
     <section className="bg-white px-3 py-4">
@@ -785,7 +752,7 @@ const NancyHomeControl = ({ token }) => {
         setCategoryGroups(nextGroups.length ? nextGroups : defaultCategoryGroups);
       }
     } catch (error) {
-      toast.error(error?.response?.data?.message || "Failed to load Nancy Home Studio");
+      toast.error(error?.response?.data?.message || "Failed to load Sotra Home Studio");
     } finally {
       setLoading(false);
     }
@@ -801,6 +768,9 @@ const NancyHomeControl = ({ token }) => {
     desktopImage: null,
     existingImage: slide.image || "",
     existingDesktopImage: slide.desktopImage || "",
+    title: slide.title || "SOTRA\nBringing Modesty to Every Wardrobe",
+    buttonLabel: slide.buttonLabel || "Discover More",
+    to: slide.to || "/collection",
     order: Number(slide.order || 0),
     active: slide.active !== false,
     _imagePreview: "",
@@ -811,6 +781,31 @@ const NancyHomeControl = ({ token }) => {
     entries[slot] = products.find((item) => item._id === featuredSelections[slot]) || null;
     return entries;
   }, {});
+  const previewHeaderSlides = useMemo(() => {
+    const draftSlide = {
+      _id: selectedSlideId === "new" ? "__draft_header_slide__" : selectedSlideId,
+      image: slideDraft._imagePreview || slideDraft.existingImage || "",
+      desktopImage:
+        slideDraft._desktopPreview ||
+        slideDraft.existingDesktopImage ||
+        slideDraft._imagePreview ||
+        slideDraft.existingImage ||
+        "",
+      title: slideDraft.title,
+      buttonLabel: slideDraft.buttonLabel,
+      to: slideDraft.to,
+      order: Number(slideDraft.order || 0),
+      active: slideDraft.active !== false,
+    };
+
+    if (selectedSlideId === "new") {
+      return draftSlide.image ? [...slides, draftSlide] : slides;
+    }
+
+    return slides.map((slide) =>
+      slide._id === selectedSlideId ? { ...slide, ...draftSlide } : slide
+    );
+  }, [selectedSlideId, slideDraft, slides]);
   const featuredPreviewProducts = featuredSlots.reduce((entries, slot) => {
     const product = selectedProducts[slot];
     entries[slot] = product
@@ -941,6 +936,9 @@ const NancyHomeControl = ({ token }) => {
       const form = new FormData();
       if (slideDraft.image) form.append("image", slideDraft.image);
       if (slideDraft.desktopImage) form.append("desktopImage", slideDraft.desktopImage);
+      form.append("title", slideDraft.title || "");
+      form.append("buttonLabel", slideDraft.buttonLabel || "");
+      form.append("to", slideDraft.to || "/collection");
       form.append("order", String(slideDraft.order || 0));
       form.append("active", String(slideDraft.active !== false));
 
@@ -1111,8 +1109,8 @@ const NancyHomeControl = ({ token }) => {
   };
 
   const appendProductDraft = (form, product, draft, slot) => {
-    form.append("name", draft.name || product.name || "Be Radiant Product");
-    form.append("description", draft.description || product.description || "Be Radiant By Nancy product.");
+    form.append("name", draft.name || product.name || "SotraBrand Product");
+    form.append("description", draft.description || product.description || "SotraBrand product.");
     form.append("price", String(Number(draft.price) || 0));
     form.append("stock", draft.stock === "" ? "" : String(Math.max(0, Number(draft.stock) || 0)));
     form.append("discountPrice", draft.discountPrice === "" ? "" : String(Number(draft.discountPrice) || 0));
@@ -1299,9 +1297,9 @@ const NancyHomeControl = ({ token }) => {
       <div className="mb-5 flex flex-col gap-3 border-b border-black/15 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#c47b92]">
-            Be Radiant by Nancy
+            SotraBrand
           </p>
-          <h1 className="mt-1 font-serif text-4xl leading-none">Nancy Home Studio</h1>
+          <h1 className="mt-1 font-serif text-4xl leading-none">Sotra Home Studio</h1>
           <p className="mt-2 max-w-3xl text-sm text-black/55">
             A mini homepage simulator for the live storefront. Menubar, footer, and purchase actions stay locked; content, media, product details, and prices are editable.
           </p>
@@ -1319,16 +1317,22 @@ const NancyHomeControl = ({ token }) => {
       <div className="mb-8 border border-black/15 bg-white p-4">
         <SectionTitle eyebrow="Locked Overview" title="Full Mini Homepage" />
         <div className="mx-auto max-w-[520px]">
-          <HomeSimulator settings={settings} slides={slides} products={products} sections={sections} />
+          <HomeSimulator
+            settings={settings}
+            slides={previewHeaderSlides}
+            products={products}
+            sections={sections}
+            categoryGroups={categoryGroups}
+          />
         </div>
       </div>
 
       <div className="space-y-8">
         <StudioSection
           eyebrow="Homepage Header"
-          title="Velvet Fade Header"
+          title="Fade Header"
           note="Edit the header pictures and order while seeing only the header slice live."
-          preview={<HeaderLivePreview settings={settings} slides={slides} />}
+          preview={<HeaderLivePreview settings={settings} slides={previewHeaderSlides} />}
         >
           <section className={panelClass}>
             <SectionTitle eyebrow="Edit Header" title="Header Pictures" />
@@ -1370,7 +1374,7 @@ const NancyHomeControl = ({ token }) => {
                           Slide {index + 1}
                         </button>
                         <p className="mt-1 text-[10px] uppercase tracking-[0.14em] text-black/45">
-                          Order {index + 1}
+                          {slide.title ? slide.title.split("\n")[0] : `Order ${index + 1}`}
                         </p>
                         <div className="mt-2 flex flex-wrap gap-1.5">
                           <button
@@ -1413,6 +1417,51 @@ const NancyHomeControl = ({ token }) => {
                 </div>
               </div>
               <div className="grid gap-4 lg:grid-cols-2">
+                <div className="lg:col-span-2">
+                  <label className={labelClass}>Hero Title</label>
+                  <textarea
+                    className={`${fieldClass} min-h-24 resize-none`}
+                    value={slideDraft.title}
+                    placeholder={"SOTRA\nBringing Modesty to Every Wardrobe"}
+                    onChange={(event) =>
+                      setSlideDraft((current) => ({
+                        ...current,
+                        title: event.target.value,
+                      }))
+                    }
+                  />
+                  <p className="mt-1 text-[11px] text-black/45">
+                    Use a new line between SOTRA and the subtitle.
+                  </p>
+                </div>
+                <div>
+                  <label className={labelClass}>Button Text</label>
+                  <input
+                    className={fieldClass}
+                    value={slideDraft.buttonLabel}
+                    placeholder="Discover More"
+                    onChange={(event) =>
+                      setSlideDraft((current) => ({
+                        ...current,
+                        buttonLabel: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
+                <div>
+                  <label className={labelClass}>Button Link</label>
+                  <input
+                    className={fieldClass}
+                    value={slideDraft.to}
+                    placeholder="/collection"
+                    onChange={(event) =>
+                      setSlideDraft((current) => ({
+                        ...current,
+                        to: event.target.value,
+                      }))
+                    }
+                  />
+                </div>
                 <div>
                   <label className={labelClass}>Order</label>
                   <input type="number" className={fieldClass} value={slideDraft.order} onChange={(event) => setSlideDraft((current) => ({ ...current, order: Number(event.target.value) }))} />
@@ -1452,38 +1501,29 @@ const NancyHomeControl = ({ token }) => {
           </section>
         </StudioSection>
 
-        {[1].map((slot) => (
-          <StudioSection
-            key={slot}
-            eyebrow="Editable Product"
-            title={`Featured Product ${slot}`}
-            note="Choose a product visually, then preview image swiping and shade clicks like the storefront card."
-            preview={<ProductFeaturePreview product={featuredPreviewProducts[slot]} title={`Featured Product ${slot}`} />}
-          >
-            <FeaturedEditor
-              slot={slot}
-              products={products}
-              selectedProduct={selectedProducts[slot]}
-              selectedId={featuredSelections[slot]}
-              draft={productDrafts[slot]}
-              saving={saving === `product-${slot}`}
-              onSelect={(productId) => selectFeaturedProduct(slot, productId)}
-              onChange={(key, value) => updateProductDraft(slot, key, value)}
-              onCategoryChange={(category) => changeFeaturedProductCategory(slot, category)}
-              onToggleSize={(size) => toggleFeaturedProductSize(slot, size)}
-              onTogglePerfumeType={(type) => toggleFeaturedProductPerfumeType(slot, type)}
-              categoryGroups={categoryGroups}
-              onSave={() => saveFeaturedProduct(slot)}
-              onClear={() => clearFeaturedProduct(slot)}
-              clearing={saving === `product-clear-${slot}`}
-              mediaDraft={featuredMediaDrafts[slot] || emptyProductMediaDraft()}
-              setShadeOptions={(updater) => setFeaturedShadeOptions(slot, updater)}
-              setStoryImages={(updater) => setFeaturedStoryImages(slot, updater)}
-            />
-          </StudioSection>
-        ))}
+        <StudioSection
+          eyebrow="Homepage Collections"
+          title="Collection Tiles"
+          note="This follows the live Sotra homepage: header first, then category collection pictures."
+          preview={<CategoryCollectionsPreview products={products} categoryGroups={categoryGroups} />}
+        >
+          <section className={panelClass}>
+            <SectionTitle eyebrow="Automatic Section" title="Sotra Categories" />
+            <p className="text-sm leading-6 text-black/55">
+              Category tiles pull their pictures from live products in each category. Edit the product pictures or category names to update this homepage section.
+            </p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link to="/products" className={buttonLine}>
+                Products
+              </Link>
+              <Link to="/categories" className={buttonBlack}>
+                Categories
+              </Link>
+            </div>
+          </section>
+        </StudioSection>
 
-        {["featured-set-1", "featured-set-2", "luxury-gallery"].map((key) => {
+        {["luxury-gallery"].map((key) => {
           const entry = mediaSections.find((item) => item.key === key);
           return (
           <StudioSection
@@ -1508,62 +1548,6 @@ const NancyHomeControl = ({ token }) => {
           </StudioSection>
           );
         })}
-
-        {[4].map((slot) => (
-          <StudioSection
-            key={slot}
-            eyebrow="Editable Product"
-            title={`Featured Product ${slot}`}
-            note="Feature Product 4 stays as a full product section after the set pictures and Luxury Video."
-            preview={<ProductFeaturePreview product={featuredPreviewProducts[slot]} title={`Featured Product ${slot}`} />}
-          >
-            <FeaturedEditor
-              slot={slot}
-              products={products}
-              selectedProduct={selectedProducts[slot]}
-              selectedId={featuredSelections[slot]}
-              draft={productDrafts[slot]}
-              saving={saving === `product-${slot}`}
-              onSelect={(productId) => selectFeaturedProduct(slot, productId)}
-              onChange={(key, value) => updateProductDraft(slot, key, value)}
-              onCategoryChange={(category) => changeFeaturedProductCategory(slot, category)}
-              onToggleSize={(size) => toggleFeaturedProductSize(slot, size)}
-              onTogglePerfumeType={(type) => toggleFeaturedProductPerfumeType(slot, type)}
-              categoryGroups={categoryGroups}
-              onSave={() => saveFeaturedProduct(slot)}
-              onClear={() => clearFeaturedProduct(slot)}
-              clearing={saving === `product-clear-${slot}`}
-              mediaDraft={featuredMediaDrafts[slot] || emptyProductMediaDraft()}
-              setShadeOptions={(updater) => setFeaturedShadeOptions(slot, updater)}
-              setStoryImages={(updater) => setFeaturedStoryImages(slot, updater)}
-            />
-          </StudioSection>
-        ))}
-
-        {mediaSections
-          .filter((entry) => !["featured-set-1", "luxury-gallery", "featured-set-2"].includes(entry.key))
-          .map((entry) => (
-          <StudioSection
-            key={entry.key}
-            eyebrow="Editable Media"
-            title={entry.label}
-            note={entry.hint}
-            preview={<MediaSectionLivePreview entry={entry} section={sections[entry.key]} products={products} />}
-          >
-            <MediaSectionEditor
-              entry={entry}
-              section={sections[entry.key]}
-              products={products}
-              saving={saving === `section-${entry.key}`}
-              onSectionChange={(patch) => updateSection(entry.key, patch)}
-              onItemChange={(index, patch) => updateItem(entry.key, index, patch)}
-              onFile={(index, field, file) => chooseSectionFile(entry.key, index, field, file)}
-              onAdd={() => addMediaItem(entry.key)}
-              onRemove={(index) => removeMediaItem(entry.key, index)}
-              onSave={() => saveSection(entry.key)}
-            />
-          </StudioSection>
-        ))}
 
         <StudioSection
           eyebrow="Site Layer"
@@ -1594,7 +1578,7 @@ const NancyHomeControl = ({ token }) => {
                 />
               </div>
               <div>
-                <label className={labelClass}>Nancy Email</label>
+                <label className={labelClass}>Sotra Email</label>
                 <input
                   className={fieldClass}
                   value={settings.brandEmail}
@@ -1635,7 +1619,7 @@ const NancyHomeControl = ({ token }) => {
                   onChange={(event) => setAnnouncementText(event.target.value)}
                 />
               </div>
-              {["instagram", "facebook", "tiktok", "email"].map((key) => (
+              {["instagram", "facebook", "tiktok", "whatsapp", "email", "phone"].map((key) => (
                 <div key={key}>
                   <label className={labelClass}>{key}</label>
                   <input
@@ -2128,7 +2112,7 @@ const ProductFeaturePreview = ({ product, title = "Featured Product" }) => {
         </div>
       )}
       <p className="mt-5 text-[10px] font-light uppercase tracking-[0.22em] text-black/45">
-        {[product.category, product.subCategory].filter(Boolean).join(" / ") || "Be Radiant"}
+        {[product.category, product.subCategory].filter(Boolean).join(" / ") || "SotraBrand"}
       </p>
       <h3 className="mt-2 text-2xl font-black uppercase leading-tight tracking-[0.08em]">
         {product.name}

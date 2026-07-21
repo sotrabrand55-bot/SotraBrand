@@ -34,6 +34,9 @@ const productSchema = new mongoose.Schema({
   active: { type: Boolean, default: true },       // ✅ new field
   outOfStock: { type: Boolean, default: false },  // ✅ new field
   stock: { type: Number, min: 0 },
+  fitMin: { type: Number },
+  fitMax: { type: Number },
+  fitUnit: { type: String, default: "kg" },
   featuredSlot: { type: Number },
   showSmallImages: { type: Boolean, default: true },
   shadeOptions: {

@@ -301,6 +301,9 @@ export const mockHeaderSlides = sotraHeroSlides.map((slide, index) => ({
   _id: slide.id,
   image: slide.image,
   desktopImage: slide.desktopImage,
+  title: slide.title,
+  buttonLabel: slide.buttonLabel,
+  to: slide.to,
   order: index,
   active: true,
 }));
@@ -393,7 +396,7 @@ export const mockSettings = {
   freeShippingEnabled: true,
   freeShippingText: "Delivery $5 All Over Lebanon",
   availableNowText: "SOTRA Modest Fashion",
-  brandEmail: "Serinachendeb133@gmail.com",
+  brandEmail: "sotrabrand7@gmail.com",
   brandPhone: "71872919",
   socialLinks: {
     instagram:
@@ -401,7 +404,7 @@ export const mockSettings = {
     facebook: "https://www.facebook.com/share/1Cnd12KNGw/?mibextid=wwXIfr",
     tiktok: "https://www.tiktok.com/@sotrabrand133?_r=1&_t=ZS-98BbAHXPjTc",
     whatsapp: "https://wa.me/96171872919",
-    email: "Serinachendeb133@gmail.com",
+    email: "sotrabrand7@gmail.com",
     phone: "71872919",
   },
 };

@@ -218,7 +218,7 @@ const MobileAccordion = ({ id, title, openId, setOpenId, children }) => {
 const Footer = () => {
   const [openId, setOpenId] = useState("contact");
   const { siteSettings } = useContext(ShopContext);
-  const brandEmail = siteSettings?.brandEmail || siteSettings?.socialLinks?.email || "hello@sotrabrand.com";
+  const brandEmail = siteSettings?.brandEmail || siteSettings?.socialLinks?.email || "sotrabrand7@gmail.com";
   const brandSocialLinks = getBrandSocialLinks(siteSettings);
 
   return (

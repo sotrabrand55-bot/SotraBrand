@@ -66,7 +66,8 @@ const buildAddress = (user = {}) =>
 const buildItemsHtml = (items = []) =>
   normalizeItems(items)
     .map((item) => {
-      const meta = [item.perfumeType || item.concentration, item.subCategory || item.category, item.size]
+      const fitLabel = item.size ? `Fit: ${item.size}` : '';
+      const meta = [item.perfumeType || item.concentration, item.subCategory || item.category]
         .filter(Boolean)
         .map(escapeHtml)
         .join(' / ');
@@ -86,7 +87,7 @@ const buildItemsHtml = (items = []) =>
                 <td valign="top" style="padding-right:12px;">
                   <div style="font-family:Georgia,serif;font-size:18px;color:#000000;line-height:1.2;">${escapeHtml(item.title)}</div>
                   <div style="margin-top:5px;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:#4b5563;">${meta || 'SotraBrand product'}</div>
-                  <div style="margin-top:7px;font-size:13px;color:#374151;">Qty ${item.quantity}${item.color ? ` / Color: ${escapeHtml(item.color)}` : ''}</div>
+                  <div style="margin-top:7px;font-size:13px;color:#374151;">Qty ${item.quantity}${fitLabel ? ` / ${escapeHtml(fitLabel)}` : ''}${item.color ? ` / Color: ${escapeHtml(item.color)}` : ''}</div>
                   ${
                     item.colorImage
                       ? `<div style="margin-top:8px;font-size:12px;color:#374151;">
@@ -115,6 +116,7 @@ const buildHtml = ({
   customerNote = '',
   paymentMethod = 'COD',
   appliedCoupon = null,
+  delivery = {},
 }) => {
   const safeName = escapeHtml(text(user.name, 'Customer'));
   const orderId = escapeHtml(text(meta.orderId || meta.sessionId, 'Pending order id'));
@@ -125,6 +127,8 @@ const buildHtml = ({
   const total = Number(totals.total || subtotal - discount + shipping);
   const safeNote = escapeHtml(text(customerNote, '')).replace(/\n/g, '<br />');
   const couponCode = escapeHtml(text(appliedCoupon?.code, 'None'));
+  const deliveryZone = escapeHtml(text(delivery.zone || meta.deliveryZone || (shipping === 2 ? 'Tripoli' : 'Lebanon'), 'Lebanon'));
+  const deliveryNote = escapeHtml(text(delivery.note, ''));
 
   return `
     <div style="margin:0;padding:0;background:#ffffff;color:#000000;font:14px/1.55 -apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;">
@@ -178,8 +182,13 @@ const buildHtml = ({
                     </tr>
                     <tr>
                       <td style="padding:5px 0;color:#4b5563;">Delivery</td>
-                      <td align="right" style="padding:5px 0;color:#000000;font-weight:700;">${money(shipping)}</td>
+                      <td align="right" style="padding:5px 0;color:#000000;font-weight:700;">${money(shipping)} / ${deliveryZone}</td>
                     </tr>
+                    ${
+                      deliveryNote
+                        ? `<tr><td style="padding:5px 0;color:#4b5563;">Delivery Note</td><td align="right" style="padding:5px 0;color:#000000;font-weight:700;">${deliveryNote}</td></tr>`
+                        : ''
+                    }
                     ${
                       discount > 0
                         ? `<tr><td style="padding:5px 0;color:#7b2d2d;">Discount</td><td align="right" style="padding:5px 0;color:#7b2d2d;font-weight:700;">-${money(discount)}</td></tr>`
@@ -222,11 +231,12 @@ export const notifyAdminCheckout = async (req, res) => {
       customerNote = '',
       paymentMethod = 'COD',
       appliedCoupon = null,
+      delivery = {},
     } = req.body || {};
     if (!Array.isArray(items)) throw new Error('items must be an array');
 
     const userWithAddress = { ...user, ...address };
-    const to = process.env.ADMIN_ORDER_EMAIL || process.env.GMAIL_USER;
+    const to = process.env.GMAIL_USER || process.env.ADMIN_ORDER_EMAIL;
     const replyTo = userWithAddress.email || undefined;
     logInfo('ORDER_EMAIL_RECIPIENT', { to, from: process.env.GMAIL_USER });
 
@@ -243,6 +253,7 @@ export const notifyAdminCheckout = async (req, res) => {
         customerNote,
         paymentMethod,
         appliedCoupon,
+        delivery,
       }),
     });
 

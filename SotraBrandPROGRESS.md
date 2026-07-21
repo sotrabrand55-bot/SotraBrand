@@ -2205,3 +2205,103 @@ Last updated: 2026-07-20
   - Local `/collection` route returned 200.
   - Local `/contact` route returned 200.
   - Local `/subcategory/abaya` route returned 200.
+
+## Admin Product + Home Studio Cleanup
+
+- User requested:
+  - remove featured product placement from Add Product and Edit Product.
+  - remove review stars from the add/edit live product preview.
+  - add KG fit visibility to admin live product previews.
+  - simplify Home Studio to match the live Sotra homepage flow.
+- Updated:
+  - `Admin/src/pages/Add.jsx`
+  - `Admin/src/pages/EditProduct.jsx`
+  - `Admin/src/components/NancyProductLivePreview.jsx`
+  - `Admin/src/pages/ProductsList.jsx`
+  - `Admin/src/pages/NancyHomeControl.jsx`
+- Changes:
+  - removed the old `Featured Product Placement` selector from product add/edit forms.
+  - removed the review-star preview row from live product preview.
+  - added a clean `Choose Your Fit` KG range block to add/edit live product preview.
+  - added KG range text to Admin product cards when a product has fit range data.
+  - removed Home Studio sections for Featured Product 1, Featured Product 4, Featured Collection Picture 1, Featured Collection Picture 2, Single Campaign Video, From The Gram, and the old Nancy note.
+  - kept Header editing, automatic Sotra category collection preview, Luxury Video Gallery editing, and footer/announcement controls.
+- Verification after this checkpoint:
+  - Admin production build passed.
+
+## Admin Editing + Guest Orders + Email Defaults
+
+- User requested:
+  - make header slide titles editable from admin.
+  - let Category Manager upload a homepage picture for each category and have new categories appear automatically.
+  - change admin Home Studio route away from `/nancy-home` while keeping old links working.
+  - preserve KG/color/Tripoli delivery details in order save, admin, and email notifications.
+  - make orders visible even when the customer is not logged in.
+  - keep login optional and show logout options when an already logged-in customer opens Login.
+  - make order/contact emails follow the Gmail env by default.
+  - replace frontend/admin favicon with a clean Sotra-style `S`.
+- Updated:
+  - `Backend/models/headerSlideModel.js`
+  - `Backend/controllers/headerSlideController.js`
+  - `Backend/models/categoryGroupModel.js`
+  - `Backend/controllers/categoryGroupController.js`
+  - `Backend/routes/categoryGroupRoute.js`
+  - `Backend/models/orderModel.js`
+  - `Backend/controllers/orderController.js`
+  - `Backend/controllers/notifyController.js`
+  - `Backend/controllers/contactController.js`
+  - `Backend/.env.example`
+  - `Admin/index.html`
+  - `Admin/src/App.jsx`
+  - `Admin/src/components/Navbar.jsx`
+  - `Admin/src/components/Sidebar.jsx`
+  - `Admin/src/pages/CategoriesManager.jsx`
+  - `Admin/src/pages/NancyHomeControl.jsx`
+  - `Admin/src/pages/Add.jsx`
+  - `Admin/src/pages/EditProduct.jsx`
+  - `Admin/src/pages/Orders.jsx`
+  - `Frontend/index.html`
+  - `Frontend/public/favicon.svg`
+  - `Frontend/public/sotra-favicon.svg`
+  - `Frontend/src/componens/SotraNavbar.jsx`
+  - `Frontend/src/componens/Navbar.jsx`
+  - `Frontend/src/lib/mockData.js`
+  - `Frontend/src/lib/subcategoryCatalog.js`
+  - `Frontend/src/pages/SotraHome.jsx`
+  - `Frontend/src/pages/Placeorder.jsx`
+  - `Frontend/src/pages/Orders.jsx`
+- Changes:
+  - added `title`, `buttonLabel`, and `to` fields to backend header slides and admin slide editor.
+  - added category image upload/remove support in Category Manager; live Sotra home and admin Home Studio previews use these images.
+  - changed Admin Home Studio route to `/sotra-home`; `/nancy-home` redirects to it.
+  - added Sotra favicon assets for admin/frontend using a large serif `S`.
+  - made Add/Edit Product KG fit optional for every category, with clear min/max fields and no category-switch reset.
+  - made Shop menu categories use live Category Manager data, so new categories appear automatically.
+  - saved delivery zone/note on orders and displayed delivery, color, and fit details in admin orders and email notifications.
+  - changed order/contact email recipients to default to `GMAIL_USER`, so changing Gmail + app password in `.env` is enough.
+  - after checkout, customers are sent to `/orders`, the page scrolls to top, and guest orders show using the saved local receipt.
+  - changed the live navbar login action so logged-in customers open the account page with Orders and Logout options instead of being sent straight to Orders.
+- Verification after this checkpoint:
+  - backend changed files passed `node --check`.
+  - frontend production build passed.
+  - admin production build passed.
+
+## Email + Header Preview Follow-Up
+
+- User requested:
+  - make frontend-visible contact email match the SotraBrand order email.
+  - make Admin Home Studio header title edits update in the live preview before saving.
+- Updated:
+  - `Frontend/src/pages/Contact.jsx`
+  - `Frontend/src/componens/Footer.jsx`
+  - `Frontend/src/componens/ScandiFooter.jsx`
+  - `Frontend/src/lib/mockData.js`
+  - `Admin/src/pages/NancyHomeControl.jsx`
+  - `Backend/models/siteSettingsModel.js`
+- Changes:
+  - changed SotraBrand frontend/admin/backend fallback contact emails to `sotrabrand7@gmail.com`.
+  - Home Studio now merges the current header slide draft into the mini homepage and header live previews, so title/button/link edits preview immediately.
+- Verification after this checkpoint:
+  - admin production build passed.
+  - frontend production build passed.
+  - backend email/settings files passed `node --check`.

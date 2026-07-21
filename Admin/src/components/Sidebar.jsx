@@ -17,10 +17,9 @@ const navGroups = [
     ],
   },
   {
-    label: "Nancy Studio",
+    label: "Sotra Studio",
     items: [
-      { to: "/nancy-home", label: "Home Studio", icon: "HS" },
-      { to: "/subcategory-studio", label: "Subcategory Studio", icon: "SS" },
+      { to: "/sotra-home", label: "Home Studio", icon: "HS" },
       { to: "/categories", label: "Categories", icon: "CA" },
       { to: "/page-images", label: "Page Images", icon: "PI" },
     ],
@@ -41,14 +40,14 @@ const Sidebar = () => {
       <div className="mb-7 border-b border-black/10 pb-5">
         <div className="flex items-center gap-3">
           <div className="grid h-11 w-11 shrink-0 place-items-center rounded-none bg-black font-serif text-lg text-white">
-            R
+            S
           </div>
           <div className="hidden min-w-0 xl:block">
             <p className="font-serif text-2xl leading-none tracking-[0.12em] text-black">
-              BE RADIANT
+              SOTRA
             </p>
-            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#c47b92]">
-              by Nancy Admin
+            <p className="mt-1 text-[10px] font-bold uppercase tracking-[0.22em] text-[#ad9a7d]">
+              Modesty Admin
             </p>
           </div>
         </div>

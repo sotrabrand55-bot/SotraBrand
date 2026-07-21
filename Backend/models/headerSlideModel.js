@@ -7,6 +7,12 @@ const headerSlideSchema = new mongoose.Schema(
     imageFileId: { type: String, default: "" },
     desktopImage: { type: String, default: "" },
     desktopImageFileId: { type: String, default: "" },
+    title: {
+      type: String,
+      default: "SOTRA\nBringing Modesty to Every Wardrobe",
+    },
+    buttonLabel: { type: String, default: "Discover More" },
+    to: { type: String, default: "/collection" },
     order: { type: Number, default: 0 },
     active: { type: Boolean, default: true },
   },

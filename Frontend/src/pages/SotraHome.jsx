@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import {
   FiArrowRight,
   FiCheckCircle,
@@ -8,7 +9,9 @@ import {
   FiPackage,
   FiTruck,
 } from "react-icons/fi";
-import { sotraCategoryTiles, sotraHeroSlides } from "../lib/mockData";
+import { sotraCategoryTiles, sotraHeroSlides, useMockData } from "../lib/mockData";
+import { ShopContext } from "../context/ShopContext";
+import { getPrimaryProductImage } from "../utils/productMapping";
 import { ShimmerImage } from "../componens/Skeletons";
 import LuxuryVideoGallery from "../componens/LuxuryVideoGallery";
 
@@ -18,21 +21,28 @@ const SectionTitle = ({ children }) => (
   </h2>
 );
 
-const HeroCarousel = () => {
+const heroFallbackTitle = "SOTRA\nBringing Modesty to Every Wardrobe";
+
+const HeroCarousel = ({ slides = sotraHeroSlides }) => {
   const [current, setCurrent] = useState(0);
+  const activeSlides = slides.length ? slides.slice(0, 3) : sotraHeroSlides.slice(0, 3);
 
   useEffect(() => {
-    if (sotraHeroSlides.length < 2) return undefined;
+    setCurrent(0);
+  }, [slides]);
+
+  useEffect(() => {
+    if (activeSlides.length < 2) return undefined;
     const interval = window.setInterval(() => {
-      setCurrent((value) => (value + 1) % sotraHeroSlides.length);
+      setCurrent((value) => (value + 1) % activeSlides.length);
     }, 3200);
     return () => window.clearInterval(interval);
-  }, []);
+  }, [activeSlides.length]);
 
   return (
     <section className="relative h-[450px] overflow-hidden bg-[#eeeeee] sm:h-[680px] lg:h-[min(74vh,790px)]">
-      {sotraHeroSlides.slice(0, 3).map((slide, index) => {
-        const [headline, subheadline] = String(slide.title || "").split("\n");
+      {activeSlides.map((slide, index) => {
+        const [headline, subheadline] = String(slide.title || heroFallbackTitle).split("\n");
 
         return (
           <div
@@ -66,10 +76,10 @@ const HeroCarousel = () => {
               )}
             </h1>
             <Link
-              to={slide.to}
+              to={slide.to || "/collection"}
               className="mt-6 inline-flex min-w-[170px] items-center justify-center rounded-[13px] border-2 border-[#111] bg-white px-6 py-3 font-serif text-[20px] leading-none tracking-[0.04em] text-[#121212] shadow-[0_2px_0_rgba(0,0,0,0.22)] transition hover:bg-[#f7f7f7] sm:mt-8 sm:min-w-[260px] sm:rounded-[18px] sm:px-8 sm:py-5 sm:text-[28px]"
             >
-              {slide.buttonLabel}
+              {slide.buttonLabel || "Discover More"}
             </Link>
           </div>
         </div>
@@ -224,19 +234,84 @@ const HomePromiseSection = () => (
 );
 
 const SotraHome = () => {
+  const { backendUrl, products, categoryGroups } = useContext(ShopContext);
+  const [heroSlides, setHeroSlides] = useState(sotraHeroSlides);
+
+  const categoryTiles = useMemo(() => {
+    const fallbackByLabel = new Map(
+      sotraCategoryTiles.map((item) => [String(item.label).toLowerCase(), item])
+    );
+    const groups = Array.isArray(categoryGroups) && categoryGroups.length ? categoryGroups : [];
+    const liveTiles = groups
+      .filter((group) => group?.active !== false)
+      .map((group) => {
+        const label = group.label || "";
+        const fallback = fallbackByLabel.get(String(label).toLowerCase());
+        const firstProduct = products.find(
+          (product) =>
+            String(product.category || "").toLowerCase() === String(label).toLowerCase() ||
+            String(product.subCategory || "").toLowerCase() === String(label).toLowerCase()
+        );
+        const firstChild = Array.isArray(group.children) ? group.children[0] : null;
+
+        return {
+          label,
+          slug: firstChild?.slug || group.slug || fallback?.slug || "",
+          image: group.image || fallback?.image || getPrimaryProductImage(firstProduct),
+        };
+      })
+      .filter((item) => item.label && item.slug);
+
+    return liveTiles.length ? liveTiles : sotraCategoryTiles;
+  }, [categoryGroups, products]);
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
+  useEffect(() => {
+    if (useMockData) {
+      setHeroSlides(sotraHeroSlides);
+      return;
+    }
+
+    const loadSlides = async () => {
+      try {
+        const res = await axios.get(`${backendUrl}/api/header-slides/list`);
+        const nextSlides = (res.data?.slides || [])
+          .filter((slide) => slide.active !== false && slide.image)
+          .sort((a, b) => (Number(a.order) || 0) - (Number(b.order) || 0))
+          .map((slide, index) => ({
+            ...sotraHeroSlides[index % sotraHeroSlides.length],
+            ...slide,
+            title: slide.title || heroFallbackTitle,
+            buttonLabel: slide.buttonLabel || "Discover More",
+            to: slide.to || "/collection",
+          }));
+        setHeroSlides(nextSlides.length ? nextSlides : sotraHeroSlides);
+      } catch {
+        setHeroSlides(sotraHeroSlides);
+      }
+    };
+
+    loadSlides();
+    const interval = window.setInterval(loadSlides, 12000);
+    window.addEventListener("focus", loadSlides);
+    return () => {
+      window.clearInterval(interval);
+      window.removeEventListener("focus", loadSlides);
+    };
+  }, [backendUrl]);
+
   return (
     <main className="bg-white text-black">
-      <HeroCarousel />
+      <HeroCarousel slides={heroSlides} />
 
       <section className="px-4 pb-14 pt-10 sm:px-8 lg:px-12">
         <div className="mx-auto max-w-[1600px]">
           <SectionTitle>Collections</SectionTitle>
           <div className="mt-7 grid grid-cols-2 gap-x-1.5 gap-y-6 sm:gap-x-4 lg:grid-cols-4 lg:gap-x-6 lg:gap-y-12">
-            {sotraCategoryTiles.map((item) => (
+            {categoryTiles.map((item) => (
               <CategoryTile key={item.label} item={item} />
             ))}
           </div>

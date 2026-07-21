@@ -52,6 +52,7 @@ export const updateSiteSettings = async (req, res) => {
       freeShippingText,
       availableNowText,
       brandEmail,
+      brandPhone,
       socialLinks,
     } = req.body;
 
@@ -83,6 +84,7 @@ export const updateSiteSettings = async (req, res) => {
     if (freeShippingText !== undefined) patch.freeShippingText = String(freeShippingText);
     if (availableNowText !== undefined) patch.availableNowText = String(availableNowText);
     if (brandEmail !== undefined) patch.brandEmail = String(brandEmail).trim();
+    if (brandPhone !== undefined) patch.brandPhone = String(brandPhone).trim();
     if (socialLinks !== undefined) {
       let nextSocialLinks = socialLinks;
       if (typeof socialLinks === "string") {

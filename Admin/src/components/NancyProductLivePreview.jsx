@@ -37,6 +37,9 @@ const NancyProductLivePreview = ({
   concentration,
   perfumeTypes = [],
   sizes = [],
+  fitMin,
+  fitMax,
+  fitUnit = "kg",
   newArrival,
   onSales,
   active,
@@ -75,6 +78,13 @@ const NancyProductLivePreview = ({
     : Number.isFinite(basePrice)
       ? basePrice
       : 0;
+  const numericFitMin = Number(fitMin);
+  const numericFitMax = Number(fitMax);
+  const hasFitRange =
+    Number.isFinite(numericFitMin) &&
+    Number.isFinite(numericFitMax) &&
+    numericFitMin > 0 &&
+    numericFitMax >= numericFitMin;
 
   return (
     <section className="rounded-md border border-[#e5e5e5] bg-white p-4 shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
@@ -169,12 +179,6 @@ const NancyProductLivePreview = ({
           <h3 className="mt-3 text-2xl font-black uppercase leading-tight tracking-[0.06em] text-black">
             {name || "Product Name"}
           </h3>
-          <div className="mt-3 flex items-center gap-1 text-black" aria-label="5 star preview">
-            {Array.from({ length: 5 }).map((_, index) => (
-              <span key={index} className="text-lg leading-none">★</span>
-            ))}
-            <span className="ml-1 text-sm text-black/55">preview</span>
-          </div>
 
           <div className="mt-4 flex flex-wrap items-baseline gap-2">
             <span className={`sotra-price text-2xl font-bold ${hasDiscount ? "sotra-sale-price" : ""}`}>
@@ -194,6 +198,17 @@ const NancyProductLivePreview = ({
             {outOfStock ? "Out of stock" : `${stock || 0} in stock`}
             {concentration && !perfumeTypes.length ? ` / ${concentration}` : ""}
           </p>
+
+          {hasFitRange && (
+            <div className="mt-3 border border-black/15 bg-[#fafafa] px-3 py-2">
+              <p className="text-[9px] font-bold uppercase tracking-[0.18em] text-black/45">
+                Choose Your Fit
+              </p>
+              <p className="mt-1 text-sm font-semibold uppercase tracking-[0.12em] text-black">
+                {numericFitMin}-{numericFitMax} {fitUnit || "kg"}
+              </p>
+            </div>
+          )}
 
           {Array.isArray(perfumeTypes) && perfumeTypes.length > 0 && (
             <div className="mt-3 flex flex-wrap gap-1.5">

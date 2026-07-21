@@ -59,6 +59,13 @@ const getStockCount = (product) => {
   return Number.isFinite(stock) ? stock : null;
 };
 
+const getFitRange = (product) => {
+  const min = Number(product?.fitMin);
+  const max = Number(product?.fitMax);
+  if (!Number.isFinite(min) || !Number.isFinite(max) || min <= 0 || max < min) return "";
+  return `${min}-${max} ${product?.fitUnit || "kg"}`;
+};
+
 const hasValidDiscount = (product) => {
   const price = Number(product?.price || 0);
   const discount = Number(product?.discountPrice);
@@ -173,7 +180,7 @@ const ProductsList = ({ token }) => {
             Products
           </h1>
           <p className="mt-2 text-sm text-[#4b5563]">
-            Manage the live perfume catalog and storefront placement.
+            Manage the live SotraBrand catalog and storefront placement.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -216,7 +223,7 @@ const ProductsList = ({ token }) => {
         <section className="rounded-md border border-[#e5e5e5] bg-[#ffffff] p-10 text-center shadow-[0_18px_45px_rgba(62,45,28,0.08)]">
           <p className="font-serif text-3xl text-[#000000]">No products yet</p>
           <p className="mt-3 text-sm text-[#4b5563]">
-            Add the first Be Radiant product to start building the catalog.
+            Add the first SotraBrand product to start building the catalog.
           </p>
           <Link
             to="/add"
@@ -238,6 +245,7 @@ const ProductsList = ({ token }) => {
             const discount = hasValidDiscount(product);
             const price = Number(product.price || 0);
             const discountPrice = Number(product.discountPrice);
+            const fitRange = getFitRange(product);
 
             return (
               <article
@@ -259,7 +267,7 @@ const ProductsList = ({ token }) => {
 
                   <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
                     <span className="rounded-full bg-white/88 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#51483f] shadow-sm">
-                      {product.subCategory || product.category || "Fragrance"}
+                      {product.subCategory || product.category || "SotraBrand"}
                     </span>
                     {product.active === false && (
                       <span className="rounded-full bg-[#000000]/85 px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-white shadow-sm">
@@ -324,6 +332,11 @@ const ProductsList = ({ token }) => {
                   >
                     {soldOut ? "Out of stock" : stock !== null ? `${stock} in stock` : "Stock not set"}
                   </p>
+                  {fitRange && (
+                    <p className="mt-1 text-[10px] font-semibold uppercase tracking-[0.14em] text-[#746657]">
+                      Fit: {fitRange}
+                    </p>
+                  )}
 
                   <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
                     <div className="flex items-baseline gap-2">

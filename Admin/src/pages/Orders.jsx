@@ -25,7 +25,7 @@ const formatPrice = (value) => {
 
 const shortOrderId = (id = "") => {
   const text = String(id);
-  return text ? `BR-${text.slice(-6).toUpperCase()}` : "BR-ORDER";
+  return text ? `SO-${text.slice(-6).toUpperCase()}` : "SO-ORDER";
 };
 
 const formatDate = (value) => {
@@ -86,6 +86,7 @@ const normalizeItems = (order) => {
         item.concentration ??
         null,
       size: item.size ?? item.selectedSize ?? item.variantSize ?? null,
+      fit: item.fit ?? item.fitKg ?? item.size ?? item.selectedSize ?? item.variantSize ?? null,
       color:
         item.colorLabel ??
         item.selectedColor ??
@@ -117,6 +118,12 @@ const getOrderTotals = (order) => {
     shipping,
     amount,
   };
+};
+
+const getDeliveryLabel = (order) => {
+  const zone = order?.delivery?.zone || (Number(order?.shipping) === 2 ? "Tripoli" : "Lebanon");
+  const note = order?.delivery?.note || "";
+  return note ? `${zone} / ${note}` : zone;
 };
 
 const statusTone = (status = "") => {
@@ -264,7 +271,7 @@ const Orders = ({ token }) => {
   };
 
   const exportOrders = () => {
-    const header = ["order", "date", "customer", "status", "payment", "method", "items", "total", "note"];
+    const header = ["order", "date", "customer", "status", "payment", "method", "items", "delivery", "total", "note"];
     const rows = orders.map((order) => [
       shortOrderId(order._id),
       formatDateTime(order.date),
@@ -273,6 +280,7 @@ const Orders = ({ token }) => {
       order.payment ? "Paid" : "Pending",
       order.paymentMethod || "-",
       normalizeItems(order).reduce((sum, item) => sum + item.quantity, 0),
+      getDeliveryLabel(order),
       Number(order.amount || 0).toFixed(2),
       order.customerNote || "",
     ]);
@@ -289,7 +297,7 @@ const Orders = ({ token }) => {
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "be-radiant-nancy-orders.csv";
+    link.download = "sotrabrand-orders.csv";
     link.click();
     URL.revokeObjectURL(url);
   };
@@ -433,7 +441,7 @@ const Orders = ({ token }) => {
                                 {item.name}
                               </p>
                               <p className="mt-1 truncate text-[11px] text-[#4b5563]">
-                                {[item.perfumeType, item.size, item.color].filter(Boolean).join(" / ") || "-"} / Qty {item.quantity}
+                                {[item.perfumeType, item.fit ? `Fit ${item.fit}` : null, item.color].filter(Boolean).join(" / ") || "-"} / Qty {item.quantity}
                               </p>
                               {item.colorThumb && (
                                 <div className="mt-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#6b7280]">
@@ -470,7 +478,7 @@ const Orders = ({ token }) => {
                         </span>
                       </div>
                       <div className="mt-2 flex items-center justify-between text-xs text-[#4b5563]">
-                        <span>Delivery</span>
+                        <span>Delivery ({getDeliveryLabel(order)})</span>
                         <span className="sotra-price font-semibold text-[#000000]">
                           {formatPrice(totals.shipping)}
                         </span>
@@ -677,7 +685,7 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
                   {item.name}
                 </p>
                 <p className="mt-1 text-xs text-[#4b5563]">
-                  {[item.perfumeType, item.size, item.color].filter(Boolean).join(" / ") || "-"} / Qty {item.quantity}
+                  {[item.perfumeType, item.fit ? `Fit ${item.fit}` : null, item.color].filter(Boolean).join(" / ") || "-"} / Qty {item.quantity}
                 </p>
                 {item.colorThumb && (
                   <div className="mt-2 flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.12em] text-[#6b7280]">
@@ -709,7 +717,7 @@ const OrderDetails = ({ order, onStatusChange, onDelete }) => {
             </span>
           </div>
           <div className="flex items-center justify-between text-[#4b5563]">
-            <span>Delivery</span>
+            <span>Delivery ({getDeliveryLabel(order)})</span>
             <span className="sotra-price font-semibold text-[#000000]">
               {formatPrice(totals.shipping)}
             </span>

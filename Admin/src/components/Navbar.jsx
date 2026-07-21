@@ -9,8 +9,7 @@ const pageTitles = [
   { match: /^\/edit/, eyebrow: "Product Manager", title: "Edit Product" },
   { match: /^\/add$/, eyebrow: "Product Manager", title: "Add Product" },
   { match: /^\/orders/, eyebrow: "Orders", title: "Order Control" },
-  { match: /^\/nancy-home/, eyebrow: "Nancy Studio", title: "Home Studio" },
-  { match: /^\/subcategory-studio/, eyebrow: "Nancy Studio", title: "Subcategory Studio" },
+  { match: /^\/sotra-home|^\/nancy-home/, eyebrow: "Sotra Studio", title: "Home Studio" },
   { match: /^\/categories/, eyebrow: "Menu", title: "Category Manager" },
   { match: /^\/maintenance/, eyebrow: "Settings", title: "Maintenance" },
   { match: /^\/delivery/, eyebrow: "Settings", title: "Delivery Control" },
@@ -20,7 +19,7 @@ const pageTitles = [
 const Navbar = ({ setToken }) => {
   const { pathname } = useLocation();
   const page = pageTitles.find((item) => item.match.test(pathname)) || {
-    eyebrow: "Nancy Admin",
+    eyebrow: "Sotra Admin",
     title: "Control Panel",
   };
 

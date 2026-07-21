@@ -9,9 +9,6 @@ import ProductNancyMediaEditor, {
   stripProductMediaPrivateFields,
 } from "../components/ProductNancyMediaEditor";
 import NancyProductLivePreview from "../components/NancyProductLivePreview";
-import ProductSetContentsEditor, {
-  stripSetContentPrivateFields,
-} from "../components/ProductSetContentsEditor";
 import {
   defaultCategoryGroups,
   getActiveCategoryGroups,
@@ -26,7 +23,7 @@ const fieldClass =
 const labelClass =
   "mb-1.5 block text-[10px] font-semibold uppercase leading-4 tracking-[0.14em] text-[#4b5563]";
 
-const volumeOptions = ["100ML", "120ML", "150ML", "30ML", "50ML", "10ML"];
+const hasFitRange = (min, max) => String(min || "").trim() !== "" && String(max || "").trim() !== "";
 const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Parfum"];
 
 const placementOptions = [
@@ -89,12 +86,13 @@ export default function EditProduct({ token }) {
   const [perfumeTypes, setPerfumeTypes] = useState([]);
   const [sizes, setSizes] = useState([]);
   const [colors, setColors] = useState([]);
+  const [fitMin, setFitMin] = useState("50");
+  const [fitMax, setFitMax] = useState("110");
 
   const [newArrival, setNewArrival] = useState(false);
   const [onSales, setOnSales] = useState(false);
   const [active, setActive] = useState(true);
   const [outOfStock, setOutOfStock] = useState(false);
-  const [featuredSlot, setFeaturedSlot] = useState("");
   const [showSmallImages, setShowSmallImages] = useState(true);
   const [shadeOptions, setShadeOptions] = useState([]);
   const [storyImages, setStoryImages] = useState([]);
@@ -158,12 +156,13 @@ export default function EditProduct({ token }) {
         ? product.sizes.map(normalizeVolumeSize).filter(Boolean)
         : []
     );
+    setFitMin(product.fitMin === 0 || product.fitMin ? String(product.fitMin) : "");
+    setFitMax(product.fitMax === 0 || product.fitMax ? String(product.fitMax) : "");
     setColors(Array.isArray(product.colors) ? product.colors : []);
     setNewArrival(Boolean(product.newArrival));
     setOnSales(Boolean(product.onSales));
     setActive(product.active !== false);
     setOutOfStock(Boolean(product.outOfStock));
-    setFeaturedSlot(product.featuredSlot ? String(product.featuredSlot) : "");
     setShowSmallImages(true);
     setShadeOptions(
       Array.isArray(product.shadeOptions)
@@ -281,16 +280,6 @@ export default function EditProduct({ token }) {
     setDiscountPrice(calcDiscountPrice(price, num));
   };
 
-  const toggleSize = (value) =>
-    setSizes((prev) =>
-      prev.includes(value) ? prev.filter((size) => size !== value) : [...prev, value]
-    );
-
-  const togglePerfumeType = (value) =>
-    setPerfumeTypes((prev) =>
-      prev.includes(value) ? prev.filter((item) => item !== value) : [...prev, value]
-    );
-
   const updatePlacement = (id) => {
     if (id === "active") setActive((prev) => !prev);
     if (id === "newArrival") setNewArrival((prev) => !prev);
@@ -308,13 +297,17 @@ export default function EditProduct({ token }) {
     }
 
     if (!subCategory) {
-      toast.error("Please select a subcategory.");
+      toast.error("Please select a storefront category.");
       return;
     }
 
     const stockNum = stock === "" ? 0 : Number(stock);
     if (!Number.isFinite(stockNum) || stockNum < 0) {
       toast.error("Please enter a valid stock count.");
+      return;
+    }
+    if ((String(fitMin).trim() || String(fitMax).trim()) && !hasFitRange(fitMin, fitMax)) {
+      toast.error("Please enter both minimum and maximum KG, or leave both empty.");
       return;
     }
 
@@ -344,12 +337,14 @@ export default function EditProduct({ token }) {
       form.append("concentration", perfumeTypes[0] || concentration || "");
       form.append("perfumeTypes", JSON.stringify(perfumeTypes));
       form.append("sizes", JSON.stringify(sizes));
+      form.append("fitMin", hasFitRange(fitMin, fitMax) ? fitMin : "");
+      form.append("fitMax", hasFitRange(fitMin, fitMax) ? fitMax : "");
+      form.append("fitUnit", "kg");
       form.append("colors", JSON.stringify(colors));
       form.append("newArrival", String(newArrival));
       form.append("onSales", String(onSales));
       form.append("active", String(active));
       form.append("outOfStock", String(outOfStock));
-      form.append("featuredSlot", featuredSlot);
       form.append("showSmallImages", "true");
       form.append(
         "shadeOptions",
@@ -361,24 +356,13 @@ export default function EditProduct({ token }) {
       );
       form.append(
         "setContents",
-        JSON.stringify(setContents.map(stripSetContentPrivateFields))
+        JSON.stringify([])
       );
       shadeOptions.forEach((option, index) => {
         if (option._file) form.append(`shadeImage${index}`, option._file);
       });
       storyImages.forEach((story, index) => {
         if (story._file) form.append(`storyImage${index}`, story._file);
-      });
-      setContents.forEach((item, index) => {
-        if (item._file) form.append(`setContentImage${index}`, item._file);
-        (item.gallery || []).forEach((galleryItem, galleryIndex) => {
-          if (galleryItem._file) {
-            form.append(
-              `setContentGallery${index}_${galleryIndex}`,
-              galleryItem._file
-            );
-          }
-        });
       });
 
       if (finalDiscount !== undefined) {
@@ -419,7 +403,7 @@ export default function EditProduct({ token }) {
             Edit Product
           </h1>
           <p className="mt-2 text-sm text-[#4b5563]">
-            Update this perfume product and keep storefront placement aligned.
+            Update this SotraBrand piece and keep storefront placement aligned.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -482,7 +466,7 @@ export default function EditProduct({ token }) {
                     const nextCategory = event.target.value;
                     setCategory(nextCategory);
                     setSubCategory(
-                      getSubcategoriesForCategory(categoryGroups, nextCategory)?.[0]?.label || ""
+                      getSubcategoriesForCategory(categoryGroups, nextCategory)?.[0]?.label || nextCategory
                     );
                   }}
                   value={category}
@@ -496,21 +480,13 @@ export default function EditProduct({ token }) {
                 </select>
               </div>
               <div>
-                <label className={labelClass}>Subcategory</label>
-                <select
-                  onChange={(event) => setSubCategory(event.target.value)}
-                  value={subCategory}
-                  className={fieldClass}
-                >
-                  {visibleScentFamilies.map((family) => (
-                    <option key={family.slug || family.label} value={family.label}>
-                      {family.label}
-                    </option>
-                  ))}
-                </select>
+                <label className={labelClass}>Storefront Group</label>
+                <div className={`${fieldClass} flex items-center text-[#4b5563]`}>
+                  {subCategory || category}
+                </div>
               </div>
               <p className="rounded-md border border-black/10 bg-[#f7f7f7] px-3 py-2 text-xs leading-5 text-[#4b5563] sm:col-span-2">
-                Category and subcategory options come from{" "}
+                Category options come from{" "}
                 <Link to="/categories" className="font-semibold text-black underline underline-offset-2">
                   Category Manager
                 </Link>
@@ -524,7 +500,7 @@ export default function EditProduct({ token }) {
                 onChange={(event) => setDescription(event.target.value)}
                 value={description}
                 className={`${fieldClass} min-h-24 resize-none`}
-                placeholder="Write the perfume story, main notes, and feeling."
+                placeholder="Write the fabric, modest fit, styling notes, and care details."
                 required
               />
             </div>
@@ -591,68 +567,47 @@ export default function EditProduct({ token }) {
           </div>
 
           <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
-            <label className={labelClass}>Perfume Type</label>
-            <p className="mb-3 text-xs leading-5 text-[#4b5563]">
-              Optional. Select when this product should display Eau de Parfum, Eau de Toilette, or Parfum.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {perfumeTypeOptions.map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => togglePerfumeType(type)}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] transition ${
-                    perfumeTypes.includes(type)
-                      ? "border-[#000000] bg-[#000000] text-white"
-                      : "border-[#d4d4d4] bg-[#ffffff] text-[#374151] hover:border-[#000000]"
-                  }`}
-                >
-                  {type}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
-            <label className={labelClass}>Size / Volume</label>
-            <p className="mb-3 text-xs leading-5 text-[#4b5563]">
-              Optional. Leave empty when this product has no selectable size.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {volumeOptions.map((size) => (
-                <button
-                  key={size}
-                  type="button"
-                  onClick={() => toggleSize(size)}
-                  className={`rounded-full border px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] transition ${
-                    sizes.includes(size)
-                      ? "border-[#000000] bg-[#000000] text-white"
-                      : "border-[#d4d4d4] bg-[#ffffff] text-[#374151] hover:border-[#000000]"
-                  }`}
-                >
-                  {size}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
-            <div className="mb-3">
-              <p className={labelClass}>Featured Product Placement</p>
-              <p className="text-xs leading-5 text-[#4b5563]">
-                Slot 1 and Slot 4 control the homepage featured product sections. Feature 2 and 3 are set pictures in Home Studio.
-              </p>
-            </div>
-            <div className="grid gap-3 sm:grid-cols-[220px_1fr]">
-              <select
-                value={featuredSlot}
-                onChange={(event) => setFeaturedSlot(event.target.value)}
-                className={fieldClass}
+            <div className="mb-3 flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+              <div>
+                <p className={labelClass}>Optional KG Fit</p>
+                <p className="text-xs leading-5 text-[#4b5563]">
+                  Set a range when customers should choose their approximate KG fit. Leave both fields empty to hide it.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setFitMin("");
+                  setFitMax("");
+                }}
+                className="self-start rounded-full border border-black/15 px-4 py-1.5 text-[10px] font-semibold uppercase tracking-[0.14em] text-black/55 transition hover:border-black hover:text-black"
               >
-                <option value="">No featured slot</option>
-                <option value="1">FeaturedProducts 1</option>
-                <option value="4">FeaturedProducts 4</option>
-              </select>
+                Clear KG
+              </button>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div>
+                <label className={labelClass}>Minimum KG</label>
+                <input
+                  value={fitMin}
+                  onChange={(event) => setFitMin(event.target.value)}
+                  className={fieldClass}
+                  type="number"
+                  min="1"
+                  step="1"
+                />
+              </div>
+              <div>
+                <label className={labelClass}>Maximum KG</label>
+                <input
+                  value={fitMax}
+                  onChange={(event) => setFitMax(event.target.value)}
+                  className={fieldClass}
+                  type="number"
+                  min="1"
+                  step="1"
+                />
+              </div>
             </div>
           </div>
 
@@ -661,13 +616,6 @@ export default function EditProduct({ token }) {
             setShadeOptions={setShadeOptions}
             storyImages={storyImages}
             setStoryImages={setStoryImages}
-          />
-
-          <ProductSetContentsEditor
-            items={setContents}
-            setItems={setSetContents}
-            submitLabel="Save Inside Sets"
-            saving={saving}
           />
 
           <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
@@ -730,6 +678,9 @@ export default function EditProduct({ token }) {
             concentration={perfumeTypes[0] || concentration}
             perfumeTypes={perfumeTypes}
             sizes={sizes}
+            fitMin={fitMin}
+            fitMax={fitMax}
+            fitUnit="kg"
             newArrival={newArrival}
             onSales={onSales}
             active={active}

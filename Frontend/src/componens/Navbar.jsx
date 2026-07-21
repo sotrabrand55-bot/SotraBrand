@@ -1,8 +1,7 @@
 ﻿/* eslint-disable react/prop-types */
-import { useContext, useEffect, useRef, useState } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import axios from 'axios'
-import { toast } from 'react-toastify'
 import { ShopContext } from '../context/ShopContext'
 import { FaFacebookF, FaInstagram, FaTiktok } from 'react-icons/fa'
 import { FiChevronDown, FiGlobe, FiHeart, FiLogOut, FiMenu, FiSearch, FiShoppingBag, FiUser, FiX } from 'react-icons/fi'
@@ -74,7 +73,6 @@ const Navbar = () => {
     useContext(ShopContext)
   const [bump, setBump] = useState(false)
   const location = useLocation()
-  const ordersRedirectTimerRef = useRef(null)
   const rawMenuCategories = categoryGroups?.length ? categoryGroups : fallbackMenuCategories
   const previewCategoryLabels = new Set(['Pheromone Touch', 'Mystique Set'])
   const menuCategories = customerPreviewLocked
@@ -128,15 +126,6 @@ const Navbar = () => {
     setAccountMenuOpen(false)
   }, [location.pathname, location.search])
 
-  useEffect(
-    () => () => {
-      if (ordersRedirectTimerRef.current) {
-        window.clearTimeout(ordersRedirectTimerRef.current)
-      }
-    },
-    []
-  )
-
   const closeMenu = () => {
     setOpen(false)
     window.scrollTo({ top: 0, behavior: 'smooth' })
@@ -163,27 +152,8 @@ const Navbar = () => {
 
     if (customerPreviewLocked) return
 
-    if (token) {
-      navigate('/orders')
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-      return
-    }
-
-    toast.info(
-      <div className="space-y-1 leading-5">
-        <p>Please log in to view your orders.</p>
-        <p dir="rtl">يرجى تسجيل الدخول لعرض طلباتك.</p>
-      </div>,
-      { position: 'top-center', autoClose: 1800 }
-    )
-
-    if (ordersRedirectTimerRef.current) {
-      window.clearTimeout(ordersRedirectTimerRef.current)
-    }
-    ordersRedirectTimerRef.current = window.setTimeout(() => {
-      navigate('/login?mode=login')
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    }, 1200)
+    navigate('/orders')
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   const handleAccountNavigation = () => {

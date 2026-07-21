@@ -9,7 +9,8 @@
   "scripts": {
     "start": "node server.js",
     "server": "nodemon server.js ",
-    "seed:nancy": "node scripts/seedNancyMockData.js"
+    "seed:nancy": "node scripts/seedNancyMockData.js",
+    "seed:sotra": "node scripts/seedSotraBrandData.js"
   },
   "dependencies": {
     "bcryptjs": "^3.0.2",

@@ -5,32 +5,34 @@ import { backendUrl } from "../App";
 
 const defaultGroups = [
   {
-    label: "Pheromone Touch",
+    label: "Abaya",
     active: true,
     order: 0,
-    children: [
-      { label: "Pheromone Touch", active: true, order: 0 },
-      { label: "Body lotion pheromone", active: true, order: 1 },
-      { label: "Body oil pheromone", active: true, order: 2 },
-      { label: "Body splash pheromone", active: true, order: 3 },
-      { label: "Body scrub pheromone", active: true, order: 4 },
-    ],
+    children: [{ label: "Abaya", active: true, order: 0 }],
   },
   {
-    label: "Mystique Set",
+    label: "Dresses",
     active: true,
     order: 1,
-    children: [
-      { label: "Mystique parfum", active: true, order: 0 },
-      { label: "Body lotion mystique", active: true, order: 1 },
-      { label: "Body splash mystique", active: true, order: 2 },
-    ],
+    children: [{ label: "Dresses", active: true, order: 0 }],
   },
   {
-    label: "Roll-on",
+    label: "Hijabs",
     active: true,
     order: 2,
-    children: [{ label: "Radiant charm", active: true, order: 0 }],
+    children: [{ label: "Hijabs", active: true, order: 0 }],
+  },
+  {
+    label: "Islamic Essentials",
+    active: true,
+    order: 3,
+    children: [{ label: "Islamic Essentials", active: true, order: 0 }],
+  },
+  {
+    label: "Blouses",
+    active: true,
+    order: 4,
+    children: [{ label: "Blouses", active: true, order: 0 }],
   },
 ];
 
@@ -45,6 +47,10 @@ const normalizeGroups = (groups = []) =>
     _localId: group._localId || group._id || `group-${Date.now()}-${groupIndex}`,
     label: group.label || "",
     slug: group.slug || "",
+    image: group.image || "",
+    imageFileId: group.imageFileId || "",
+    _imageFile: null,
+    _imagePreview: "",
     active: group.active !== false,
     order: group.order ?? groupIndex,
     children: (group.children || []).map((child, childIndex) => ({
@@ -111,6 +117,10 @@ const CategoriesManager = ({ token }) => {
         _localId: id,
         label: "",
         slug: "",
+        image: "",
+        imageFileId: "",
+        _imageFile: null,
+        _imagePreview: "",
         active: true,
         order: current.length,
         children: [],
@@ -159,13 +169,52 @@ const CategoriesManager = ({ token }) => {
       return next;
     });
 
+  const chooseGroupImage = (groupIndex, file) => {
+    if (!file) return;
+    setGroups((current) => {
+      const next = [...current];
+      const group = { ...next[groupIndex] };
+      if (group._imagePreview) URL.revokeObjectURL(group._imagePreview);
+      group._imageFile = file;
+      group._imagePreview = URL.createObjectURL(file);
+      next[groupIndex] = group;
+      return next;
+    });
+  };
+
+  const clearGroupImage = (groupIndex) =>
+    setGroups((current) => {
+      const next = [...current];
+      const group = { ...next[groupIndex] };
+      if (group._imagePreview) URL.revokeObjectURL(group._imagePreview);
+      group.image = "";
+      group.imageFileId = "";
+      group._imageFile = null;
+      group._imagePreview = "";
+      next[groupIndex] = group;
+      return next;
+    });
+
   const save = async () => {
     setSaving(true);
     try {
+      const form = new FormData();
+      form.append(
+        "groups",
+        JSON.stringify(
+          groups.map(({ _imageFile, _imagePreview, _localId, children, ...group }) => ({
+            ...group,
+            children: (children || []).map(({ _localId: _childLocalId, ...child }) => child),
+          }))
+        )
+      );
+      groups.forEach((group, index) => {
+        if (group._imageFile) form.append(`groupImage${index}`, group._imageFile);
+      });
       const res = await axios.post(
         `${backendUrl}/api/categories/save`,
-        { groups },
-        { headers: { token } }
+        form,
+        { headers: { token, "Content-Type": "multipart/form-data" } }
       );
       if (res.data?.success) {
         toast.success("Categories updated");
@@ -181,7 +230,7 @@ const CategoriesManager = ({ token }) => {
   };
 
   const restoreDefaults = async () => {
-    if (!confirm("Restore Nancy default categories?")) return;
+    if (!confirm("Restore SotraBrand default categories?")) return;
     try {
       const res = await axios.post(
         `${backendUrl}/api/categories/restore-defaults`,
@@ -211,11 +260,11 @@ const CategoriesManager = ({ token }) => {
       <div className="mb-5 flex flex-col gap-3 border-b border-black/15 pb-5 lg:flex-row lg:items-end lg:justify-between">
         <div>
           <p className="text-[11px] font-bold uppercase tracking-[0.24em] text-[#c47b92]">
-            Menu + Collection
+            Menu + Collections
           </p>
           <h1 className="mt-1 font-serif text-4xl leading-none">Category Manager</h1>
           <p className="mt-2 text-sm text-black/55">
-            Control desktop hover dropdowns, mobile menu dropdowns, and collection filters.
+            Control the storefront menu, product category options, and homepage collections.
           </p>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -253,13 +302,47 @@ const CategoriesManager = ({ token }) => {
             }}
             className="border border-black/15 bg-white p-4 shadow-[0_16px_38px_rgba(0,0,0,0.05)]"
           >
-            <div className="grid gap-3 border-b border-black/10 pb-4 lg:grid-cols-[minmax(0,1fr)_140px_120px_auto]">
+            <div className="grid gap-3 border-b border-black/10 pb-4 lg:grid-cols-[150px_minmax(0,1fr)_140px_120px_auto]">
+              <div>
+                <label className={labelClass}>Homepage Picture</label>
+                <div className="aspect-[4/3] overflow-hidden border border-black/15 bg-[#EAEAEA]">
+                  {group._imagePreview || group.image ? (
+                    <img
+                      src={group._imagePreview || group.image}
+                      alt={group.label || "Category"}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <div className="grid h-full w-full place-items-center px-3 text-center text-[9px] font-bold uppercase tracking-[0.14em] text-black/35">
+                      Category Image
+                    </div>
+                  )}
+                </div>
+                <label className="mt-2 block cursor-pointer border border-black px-3 py-2 text-center text-[10px] font-bold uppercase tracking-[0.14em] transition hover:bg-black hover:text-white">
+                  Upload
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={(event) => chooseGroupImage(groupIndex, event.target.files?.[0])}
+                  />
+                </label>
+                {(group._imagePreview || group.image) && (
+                  <button
+                    type="button"
+                    onClick={() => clearGroupImage(groupIndex)}
+                    className="mt-2 w-full border border-[#7b2d2d]/40 px-3 py-2 text-[10px] font-bold uppercase tracking-[0.14em] text-[#7b2d2d] transition hover:bg-[#7b2d2d] hover:text-white"
+                  >
+                    Remove Picture
+                  </button>
+                )}
+              </div>
               <div>
                 <label className={labelClass}>Main Category</label>
                 <input
                   className={fieldClass}
                   value={group.label}
-                  placeholder="Pheromone Touch"
+                  placeholder="Abaya"
                   onChange={(event) => updateGroup(groupIndex, { label: event.target.value })}
                 />
               </div>
@@ -311,11 +394,11 @@ const CategoriesManager = ({ token }) => {
                   className="grid gap-3 bg-[#f7f7f7] p-3 lg:grid-cols-[minmax(0,1fr)_150px_110px_auto]"
                 >
                   <div>
-                    <label className={labelClass}>Subcategory</label>
+                    <label className={labelClass}>Storefront Category</label>
                     <input
                       className={fieldClass}
                       value={child.label}
-                      placeholder="Body oil pheromone"
+                      placeholder="Abaya"
                       onChange={(event) =>
                         updateChild(groupIndex, childIndex, { label: event.target.value })
                       }
@@ -376,7 +459,7 @@ const CategoriesManager = ({ token }) => {
               onClick={() => addChild(groupIndex)}
               className="mt-4 border border-black px-5 py-2 text-xs font-bold uppercase tracking-[0.16em] transition hover:bg-black hover:text-white"
             >
-              Add Subcategory
+              Add Storefront Category
             </button>
           </section>
         ))}

@@ -1,5 +1,5 @@
 /* eslint-disable react/prop-types */
-import { useContext, useEffect, useRef, useState } from "react";
+import { useContext, useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import {
   FiChevronLeft,
@@ -17,22 +17,10 @@ import { ShopContext } from "../context/ShopContext";
 import { sotraCategoryTiles, sotraCollections } from "../lib/mockData";
 import sotraLogo from "../assets/sotraBrand/Logo_Sotra_wordmark.png";
 
-const shopLinks = sotraCategoryTiles.map((item) => ({
-  label: item.label,
-  to: `/subcategory/${item.slug}`,
-}));
-
 const collectionLinks = sotraCollections.map((label) => ({
   label,
   to: `/collection?conc=${encodeURIComponent(label)}`,
 }));
-
-const desktopNav = [
-  { label: "Home", to: "/" },
-  { label: "Shop", children: shopLinks },
-  { label: "Collections", children: collectionLinks },
-  { label: "On Sale", to: "/on-sale" },
-];
 
 const NAV_HEIGHT_FALLBACK = 58;
 const sotraSocialFallbacks = {
@@ -157,6 +145,7 @@ const SotraNavbar = () => {
     setShowSearch,
     siteSettings,
     token,
+    categoryGroups,
   } = useContext(ShopContext);
   const [open, setOpen] = useState(false);
   const [mobileShopOpen, setMobileShopOpen] = useState(false);
@@ -167,6 +156,32 @@ const SotraNavbar = () => {
   const announcementRef = useRef(null);
   const navRef = useRef(null);
   const location = useLocation();
+  const shopLinks = useMemo(() => {
+    const fallbackLinks = sotraCategoryTiles.map((item) => ({
+      label: item.label,
+      to: `/subcategory/${item.slug}`,
+    }));
+    const liveLinks = (Array.isArray(categoryGroups) ? categoryGroups : [])
+      .filter((group) => group?.active !== false && group?.label)
+      .map((group) => {
+        const firstChild = Array.isArray(group.children) ? group.children[0] : null;
+        const slug = firstChild?.slug || group.slug || "";
+        return slug ? { label: group.label, to: `/subcategory/${slug}` } : null;
+      })
+      .filter(Boolean);
+
+    return liveLinks.length ? liveLinks : fallbackLinks;
+  }, [categoryGroups]);
+
+  const desktopNav = useMemo(
+    () => [
+      { label: "Home", to: "/" },
+      { label: "Shop", children: shopLinks },
+      { label: "Collections", children: collectionLinks },
+      { label: "On Sale", to: "/on-sale" },
+    ],
+    [shopLinks]
+  );
 
   useEffect(() => {
     setOpen(false);
@@ -300,11 +315,11 @@ const SotraNavbar = () => {
             </button>
             <button
               type="button"
-              onClick={() => navigate(token ? "/orders" : "/login?mode=login")}
+              onClick={() => navigate("/login?mode=login")}
               className="hidden hover:underline sm:inline"
-              aria-label={token ? "Account orders" : "Log in"}
+              aria-label={token ? "Account" : "Log in"}
             >
-              Log in
+              {token ? "Account" : "Log in"}
             </button>
             <button
               type="button"
@@ -426,13 +441,16 @@ const SotraNavbar = () => {
             <Link to="/Contact" className="block px-8 py-5">
               Contact Us
             </Link>
+            <Link to="/orders" className="block px-8 py-5">
+              Orders
+            </Link>
           </nav>
           </div>
 
           <div className="border-t border-[#eeeeee] bg-[#f7f7f7] px-8 py-6">
             <Link to="/login?mode=login" className="inline-flex items-center gap-4 font-serif text-[20px]">
               <FiUser className="h-7 w-7 stroke-[1.2]" />
-              <span>Log in</span>
+              <span>{token ? "Account" : "Log in"}</span>
             </Link>
 
             <div className="mt-7 flex items-center gap-7">
