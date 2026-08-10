@@ -26,6 +26,12 @@ const getPreviewMedia = (shadeOptions = [], storyImages = []) => {
 
 const previewKey = (item) => `${item?.type || "media"}-${item?.id || item?.index || 0}`;
 
+const getLimitedStock = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const number = Number(value);
+  return Number.isFinite(number) ? number : null;
+};
+
 const SotraProductLivePreview = ({
   name,
   description,
@@ -45,6 +51,7 @@ const SotraProductLivePreview = ({
   active,
   outOfStock,
   showSmallImages,
+  smallImageOptionLabel = "Choose An Option",
   shadeOptions,
   storyImages,
 }) => {
@@ -78,6 +85,13 @@ const SotraProductLivePreview = ({
     : Number.isFinite(basePrice)
       ? basePrice
       : 0;
+  const stockNumber = getLimitedStock(stock);
+  const stockLabel =
+    outOfStock || (stockNumber !== null && stockNumber <= 0)
+      ? "Out of stock"
+      : stockNumber !== null
+        ? `${stockNumber} in stock`
+        : "Stock not limited";
   const numericFitMin = Number(fitMin);
   const numericFitMax = Number(fitMax);
   const hasFitRange =
@@ -129,7 +143,7 @@ const SotraProductLivePreview = ({
             <div className="mb-4">
               <div className="mb-2 flex items-center justify-between gap-3">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.18em] text-black/45">
-                  Small Images
+                  {smallImageOptionLabel || "Choose An Option"}
                 </p>
                 {showSmallImages === false && (
                   <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-black/35">
@@ -195,7 +209,7 @@ const SotraProductLivePreview = ({
           </p>
 
           <p className="mt-3 text-[10px] font-semibold uppercase tracking-[0.16em] text-black/55">
-            {outOfStock ? "Out of stock" : `${stock || 0} in stock`}
+            {stockLabel}
             {concentration && !perfumeTypes.length ? ` / ${concentration}` : ""}
           </p>
 

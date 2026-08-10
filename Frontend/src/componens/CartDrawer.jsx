@@ -33,6 +33,11 @@ const formatMoney = (value, currency = "$") =>
   `${currency || "$"}${(Number(value) || 0).toFixed(2)}`;
 const normalizeOptionText = (value) =>
   String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
+const getLimitedStock = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const stock = Number(value);
+  return Number.isFinite(stock) ? stock : null;
+};
 const getSelectedColorOption = (product, color) => {
   const target = normalizeOptionText(color);
   if (!target || !Array.isArray(product?.shadeOptions)) return null;
@@ -56,18 +61,39 @@ const getSavedOrderNote = () => {
     return "";
   }
 };
-const getRowState = (product, quantity) => {
-  const stock =
-    product?.stock === undefined ||
-    product?.stock === null ||
-    product?.stock === ""
-      ? null
-      : Number(product.stock);
+const getRowState = (product, quantity, color = null) => {
+  const mainStock = getLimitedStock(product?.stock);
+  const colorOption = getSelectedColorOption(product, color);
+  const optionStock = getLimitedStock(colorOption?.stock);
+  const stockLimits = [mainStock, optionStock].filter((value) => value !== null);
+  const stock = stockLimits.length ? Math.min(...stockLimits) : null;
   const hasStock = stock !== null && Number.isFinite(stock);
-  const soldOut = Boolean(product?.outOfStock) || (hasStock && stock <= 0);
+  const optionSoldOut = optionStock !== null && optionStock <= 0;
+  const soldOut =
+    Boolean(product?.outOfStock) ||
+    (mainStock !== null && mainStock <= 0) ||
+    optionSoldOut;
   const unavailable = !product || product.active === false || soldOut;
   const overStock = hasStock && quantity > stock;
   return { stock: hasStock ? stock : null, unavailable, overStock };
+};
+
+const getProductSoldOutState = (product) => {
+  const mainStock = getLimitedStock(product?.stock);
+  const optionStocks = Array.isArray(product?.shadeOptions)
+    ? product.shadeOptions.map((option) => getLimitedStock(option?.stock))
+    : [];
+  const limitedOptionStocks = optionStocks.filter((stock) => stock !== null);
+  const allOptionsSoldOut =
+    limitedOptionStocks.length > 0 &&
+    limitedOptionStocks.length === optionStocks.length &&
+    limitedOptionStocks.every((stock) => stock <= 0);
+
+  return (
+    Boolean(product?.outOfStock) ||
+    (mainStock !== null && mainStock <= 0) ||
+    allOptionsSoldOut
+  );
 };
 
 const CartDrawer = ({ open, onClose }) => {
@@ -140,7 +166,7 @@ const CartDrawer = ({ open, onClose }) => {
             size,
             color: null,
             quantity: value,
-            ...getRowState(product, value),
+            ...getRowState(product, value, null),
           });
           return;
         }
@@ -157,7 +183,7 @@ const CartDrawer = ({ open, onClose }) => {
                   color: isRealOption(color) ? color : null,
                   perfumeType: null,
                   quantity: amount,
-                  ...getRowState(product, amount),
+                  ...getRowState(product, amount, isRealOption(color) ? color : null),
                 });
               }
               return;
@@ -174,7 +200,7 @@ const CartDrawer = ({ open, onClose }) => {
                 color: isRealOption(color) ? color : null,
                 perfumeType: isRealOption(perfumeType) ? perfumeType : null,
                 quantity: amount,
-                ...getRowState(product, amount),
+                ...getRowState(product, amount, isRealOption(color) ? color : null),
               });
             });
           });
@@ -207,10 +233,7 @@ const CartDrawer = ({ open, onClose }) => {
   const suggestion = useMemo(
     () =>
       (products || []).find((product) => {
-        const stock = Number(product?.stock);
-        const soldOut =
-          Boolean(product?.outOfStock) ||
-          (Number.isFinite(stock) && product?.stock !== "" && stock <= 0);
+        const soldOut = getProductSoldOutState(product);
         return (
           product?.active !== false &&
           !soldOut &&

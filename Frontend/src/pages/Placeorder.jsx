@@ -45,6 +45,12 @@ const TRIPOLI_DELIVERY = 2;
 const normalizeOptionText = (value) =>
   String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
 
+const getLimitedStock = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const stock = Number(value);
+  return Number.isFinite(stock) ? stock : null;
+};
+
 const getSelectedColorOption = (product, color) => {
   const target = normalizeOptionText(color);
   if (!target || !Array.isArray(product?.shadeOptions)) return null;
@@ -249,12 +255,10 @@ const Placeorder = () => {
         const colorOption = getSelectedColorOption(row.product, row.color);
         const colorImage = colorOption?.image || "";
         const colorLabel = colorOption?.label || row.color || "";
-        const stock =
-          row.product?.stock === undefined ||
-          row.product?.stock === null ||
-          row.product?.stock === ""
-            ? null
-            : Number(row.product.stock);
+        const mainStock = getLimitedStock(row.product?.stock);
+        const optionStock = getLimitedStock(colorOption?.stock);
+        const stockLimits = [mainStock, optionStock].filter((value) => value !== null);
+        const stock = stockLimits.length ? Math.min(...stockLimits) : null;
 
         return {
           perfumeType:
@@ -264,7 +268,7 @@ const Placeorder = () => {
             "",
           productId: row.productId,
           size: isRealSize(row.size) ? row.size : null,
-          color: row.color,
+          color: colorOption?.id || row.color,
           colorLabel,
           colorImage,
           selectedColor: colorLabel,
@@ -285,6 +289,10 @@ const Placeorder = () => {
             row.product.concentration ||
             "",
           stock: Number.isFinite(stock) ? stock : null,
+          unavailable:
+            Boolean(row.product?.outOfStock) ||
+            (mainStock !== null && mainStock <= 0) ||
+            (optionStock !== null && optionStock <= 0),
         };
       });
 
@@ -318,6 +326,10 @@ const Placeorder = () => {
       return toast.error(
         `${overStockItem.title || "Product"} has only ${overStockItem.stock} in stock.`
       );
+    }
+    const unavailableItem = items.find((item) => item.unavailable);
+    if (unavailableItem) {
+      return toast.error(`${unavailableItem.title || "Product"} is out of stock.`);
     }
     const orderSubtotal = items.reduce(
       (sum, item) => sum + item.price * item.quantity,

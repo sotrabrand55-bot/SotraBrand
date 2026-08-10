@@ -8,17 +8,35 @@ import {
 } from "../utils/productMapping";
 import { ShimmerImage } from "./Skeletons";
 
-const getStockState = (product) => {
-  const stock = Number(product?.stock);
-  const hasStockCount =
-    product?.stock !== undefined &&
-    product?.stock !== null &&
-    product?.stock !== "" &&
-    Number.isFinite(stock);
-  const soldOut = Boolean(product?.outOfStock) || (hasStockCount && stock <= 0);
-  const lowStock = !soldOut && hasStockCount && stock <= 5;
+const getLimitedStock = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const stock = Number(value);
+  return Number.isFinite(stock) ? stock : null;
+};
 
-  return { stock, hasStockCount, soldOut, lowStock };
+const getStockState = (product) => {
+  const mainStock = getLimitedStock(product?.stock);
+  const optionStocks = Array.isArray(product?.shadeOptions)
+    ? product.shadeOptions.map((option) => getLimitedStock(option?.stock))
+    : [];
+  const limitedOptionStocks = optionStocks.filter((stock) => stock !== null);
+  const allOptionsSoldOut =
+    limitedOptionStocks.length > 0 &&
+    limitedOptionStocks.length === optionStocks.length &&
+    limitedOptionStocks.every((stock) => stock <= 0);
+  const availableOptionStocks = limitedOptionStocks.filter((stock) => stock > 0);
+  const visibleStock =
+    availableOptionStocks.length > 0
+      ? Math.min(...availableOptionStocks)
+      : mainStock;
+  const hasStockCount = visibleStock !== null && Number.isFinite(visibleStock);
+  const soldOut =
+    Boolean(product?.outOfStock) ||
+    (mainStock !== null && mainStock <= 0) ||
+    allOptionsSoldOut;
+  const lowStock = !soldOut && hasStockCount && visibleStock <= 5;
+
+  return { stock: visibleStock, hasStockCount, soldOut, lowStock };
 };
 
 const CollectionProductCard = ({ product }) => {

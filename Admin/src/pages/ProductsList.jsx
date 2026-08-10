@@ -59,6 +59,30 @@ const getStockCount = (product) => {
   return Number.isFinite(stock) ? stock : null;
 };
 
+const getProductStockState = (product) => {
+  const mainStock = getStockCount(product);
+  const optionStocks = Array.isArray(product?.shadeOptions)
+    ? product.shadeOptions.map((option) => getStockCount(option))
+    : [];
+  const limitedOptionStocks = optionStocks.filter((stock) => stock !== null);
+  const allOptionsSoldOut =
+    limitedOptionStocks.length > 0 &&
+    limitedOptionStocks.length === optionStocks.length &&
+    limitedOptionStocks.every((stock) => stock <= 0);
+  const availableOptionStocks = limitedOptionStocks.filter((stock) => stock > 0);
+  const stock =
+    availableOptionStocks.length > 0
+      ? Math.min(...availableOptionStocks)
+      : mainStock;
+  const soldOut =
+    Boolean(product?.outOfStock) ||
+    (mainStock !== null && mainStock <= 0) ||
+    allOptionsSoldOut;
+  const lowStock = !soldOut && stock !== null && stock <= 5;
+
+  return { stock, soldOut, lowStock };
+};
+
 const getFitRange = (product) => {
   const min = Number(product?.fitMin);
   const max = Number(product?.fitMax);
@@ -112,8 +136,7 @@ const ProductsList = ({ token }) => {
     const newArrival = items.filter((item) => item.newArrival).length;
     const onSales = items.filter((item) => item.onSales).length;
     const outOfStock = items.filter((item) => {
-      const stock = getStockCount(item);
-      return item.outOfStock || (stock !== null && stock <= 0);
+      return getProductStockState(item).soldOut;
     }).length;
 
     return [
@@ -239,9 +262,7 @@ const ProductsList = ({ token }) => {
             const thumb = images[0] || "";
             const sizes = getSizes(product);
             const perfumeTypes = getPerfumeTypes(product);
-            const stock = getStockCount(product);
-            const soldOut = Boolean(product.outOfStock) || (stock !== null && stock <= 0);
-            const lowStock = !soldOut && stock !== null && stock <= 5;
+            const { stock, soldOut, lowStock } = getProductStockState(product);
             const discount = hasValidDiscount(product);
             const price = Number(product.price || 0);
             const discountPrice = Number(product.discountPrice);

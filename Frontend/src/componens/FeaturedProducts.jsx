@@ -11,6 +11,7 @@ import {
   FiPlus,
   FiSearch,
   FiShoppingCart,
+  FiX,
 } from "react-icons/fi";
 import { ShopContext } from "../context/ShopContext";
 import { FeaturedProductSkeleton, ShimmerImage } from "./Skeletons";
@@ -25,6 +26,12 @@ const isRealOption = (value) =>
   !["default", "_default", "_no_perfume_type"].includes(String(value).toLowerCase());
 
 const isSeasonLabel = (value) => /^(SS|FW)\d{2}$/i.test(String(value || "").trim());
+
+const getLimitedStock = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const stock = Number(value);
+  return Number.isFinite(stock) ? stock : null;
+};
 
 const getImages = (item) => {
   const images = Array.isArray(item?.image)
@@ -52,6 +59,7 @@ const getShadeOptions = (item) => {
         image: option.image || "",
         description: option.description || item.description,
         order: option.order ?? index + 1,
+        stock: getLimitedStock(option.stock),
       }));
   }
 
@@ -72,6 +80,7 @@ const normalizeStoryImage = (story, index) => {
     id: story?.id || `story-${index}`,
     image: story?.image || story?.url || "",
     alt: story?.alt || "",
+    description: story?.description || "",
     source: "story",
     order: story?.order ?? index + 1,
   };
@@ -139,6 +148,14 @@ const getOptionLabel = (product, index) => {
   const color = Array.isArray(product.colors) ? product.colors[index] : "";
   const fallback = product.subCategory || product.category || "Option";
   return color ? `${fallback} - ${String(color).toUpperCase()}` : `${fallback} ${index + 1}`;
+};
+
+const getFirstAvailableOptionIndex = (options = []) => {
+  const index = options.findIndex((option) => {
+    const stock = getLimitedStock(option?.stock);
+    return stock === null || stock > 0;
+  });
+  return index >= 0 ? index : 0;
 };
 
 const ProductGallery = ({ product, storyImages, targetIndex, targetVersion }) => {
@@ -299,8 +316,15 @@ const FeaturedProductCard = ({
     availablePerfumeTypes[0] ||
     (isSeasonLabel(product.concentration) ? "" : product.concentration || "");
   const brandLabel = product?.brand || "SOTRA BRAND";
-  const shadeOptions = getShadeOptions(product);
-  const storyImages = getStoryImages(product, shadeOptions);
+  const shadeOptions = useMemo(() => getShadeOptions(product), [product]);
+  const storyImages = useMemo(
+    () => getStoryImages(product, shadeOptions),
+    [product, shadeOptions]
+  );
+  const firstAvailableOptionIndex = useMemo(
+    () => getFirstAvailableOptionIndex(shadeOptions),
+    [shadeOptions]
+  );
   const [selectedImage, setSelectedImage] = useState(0);
   const [galleryTarget, setGalleryTarget] = useState({ index: 0, version: 0 });
   const [quantity, setQuantity] = useState(1);
@@ -316,16 +340,25 @@ const FeaturedProductCard = ({
   const selectedOption = shadeOptions[selectedImage] || null;
   const selectedOptionLabel =
     selectedOption?.label || (hasSmallImageChoices ? getOptionLabel(product, selectedImage) : "");
+  const smallImageOptionLabel =
+    String(product?.smallImageOptionLabel || "").trim() || "Choose An Option";
   const selectedDescription = selectedOption?.description || product.description;
   const totalDisplayPrice = displayPrice * quantity;
   const totalOriginalPrice = price * quantity;
-  const stockNumber =
-    product?.stock === undefined || product?.stock === null || product?.stock === ""
-      ? null
-      : Number(product.stock);
-  const hasStockCount = stockNumber !== null && Number.isFinite(stockNumber);
+  const stockNumber = getLimitedStock(product?.stock);
+  const selectedOptionStock = getLimitedStock(selectedOption?.stock);
+  const selectedOptionSoldOut =
+    selectedOptionStock !== null && selectedOptionStock <= 0;
+  const stockLimits = [stockNumber, selectedOptionStock].filter(
+    (value) => value !== null
+  );
+  const effectiveStockNumber = stockLimits.length ? Math.min(...stockLimits) : null;
+  const hasStockCount =
+    effectiveStockNumber !== null && Number.isFinite(effectiveStockNumber);
   const isSoldOut =
-    Boolean(product?.outOfStock) || (hasStockCount && stockNumber <= 0);
+    Boolean(product?.outOfStock) ||
+    (stockNumber !== null && stockNumber <= 0) ||
+    selectedOptionSoldOut;
   const hasSizes = availableSizes.length > 0;
   const fitMin = Number(product?.fitMin);
   const fitMax = Number(product?.fitMax);
@@ -343,8 +376,9 @@ const FeaturedProductCard = ({
     ? Array.from({ length: fitMax - fitMin + 1 }, (_, index) => fitMin + index)
     : [];
   const canSubmitOptions = !isSoldOut;
-  const isLowStock = hasStockCount && stockNumber > 0 && stockNumber <= 5;
-  const maximumQuantity = hasStockCount ? Math.max(1, stockNumber) : 99;
+  const isLowStock =
+    hasStockCount && effectiveStockNumber > 0 && effectiveStockNumber <= 5;
+  const maximumQuantity = hasStockCount ? Math.max(1, effectiveStockNumber) : 99;
 
   const selectOption = (index) => {
     if (selectedImage === index) {
@@ -366,28 +400,36 @@ const FeaturedProductCard = ({
   useEffect(() => {
     setSelectedSize("");
     setSelectedFitKg("");
-    setSelectedImage(0);
+    setSelectedImage(firstAvailableOptionIndex);
+    const shadeId = shadeOptions[firstAvailableOptionIndex]?.id;
+    const storyIndex = storyImages.findIndex(
+      (story) => story.shadeOptionId === shadeId
+    );
     setGalleryTarget((prev) => ({
-      index: 0,
+      index: storyIndex >= 0 ? storyIndex : 0,
       version: prev.version + 1,
     }));
     setDescriptionOpen(false);
     setFitPickerOpen(false);
-  }, [product._id]);
+  }, [firstAvailableOptionIndex, product._id, shadeOptions, storyImages]);
 
   useEffect(() => {
     if (selectedImage >= shadeOptions.length) {
-      setSelectedImage(0);
+      setSelectedImage(firstAvailableOptionIndex);
       setGalleryTarget((prev) => ({
         index: 0,
         version: prev.version + 1,
       }));
     }
-  }, [selectedImage, shadeOptions.length]);
+  }, [firstAvailableOptionIndex, selectedImage, shadeOptions.length]);
 
   useEffect(() => {
     setDescriptionOpen(false);
   }, [selectedImage]);
+
+  useEffect(() => {
+    setQuantity((current) => Math.max(1, Math.min(maximumQuantity, current)));
+  }, [maximumQuantity]);
 
   useEffect(() => {
     return () => {
@@ -416,6 +458,14 @@ const FeaturedProductCard = ({
   };
 
   const handleAddToCart = () => {
+    if (selectedOptionSoldOut) {
+      toast.info(`${selectedOptionLabel || "This option"} is out of stock.`, {
+        position: "top-center",
+        autoClose: 1400,
+        hideProgressBar: true,
+      });
+      return;
+    }
     if (isSoldOut) return;
     if (hasSizes && !selectedSize) {
       toast.info("Please choose a size first.", {
@@ -440,7 +490,7 @@ const FeaturedProductCard = ({
       addToCart?.(
         product._id,
         hasSizes ? selectedSize : selectedFitLabel || null,
-        selectedOption?.cartValue || null,
+        selectedOption?.id || selectedOption?.cartValue || null,
         quantity,
         perfumeTypeLabel || null
       );
@@ -519,7 +569,7 @@ const FeaturedProductCard = ({
             <button
               type="button"
               onClick={() => changeQuantity((prev) => prev + 1)}
-              disabled={hasStockCount && quantity >= stockNumber}
+              disabled={hasStockCount && quantity >= effectiveStockNumber}
               className="grid h-11 w-11 place-items-center rounded-full bg-[#f7f6f3] text-black/70 shadow-[0_8px_24px_rgba(0,0,0,0.04)] transition hover:bg-[#efebe4] active:scale-95 disabled:cursor-not-allowed disabled:opacity-35 lg:h-12 lg:w-12"
               aria-label="Increase quantity"
             >
@@ -540,40 +590,52 @@ const FeaturedProductCard = ({
 
         {hasSmallImageChoices && (
           <p className="mt-4 text-xs uppercase tracking-[0.08em] text-black/80 lg:mt-4 lg:text-xl">
-            Choose A Color{selectedOptionLabel ? `: ${selectedOptionLabel}` : ""}
+            {smallImageOptionLabel}{selectedOptionLabel ? `: ${selectedOptionLabel}` : ""}
           </p>
         )}
 
         {hasSmallImageChoices && (
           <div className="-mx-2 mt-3 flex items-center gap-3 overflow-x-auto px-2 py-2 no-scrollbar lg:mt-7 lg:gap-5">
-            {shadeOptions.map((option, index) => (
-              <button
-                key={option.id}
-                type="button"
-                onClick={() => selectOption(index)}
-                className={`grid h-12 w-12 shrink-0 place-items-center rounded-full border bg-white p-0.5 transition sm:h-14 sm:w-14 ${
-                  selectedImage === index
-                    ? "border-[#8e8e8e] ring-2 ring-[#8e8e8e] ring-offset-2 ring-offset-white"
-                    : "border-[#dddddd] shadow-[0_4px_14px_rgba(0,0,0,0.05)] hover:border-[#9c9c9c]"
-                }`}
-                aria-label={`Select ${option.label}`}
-              >
-                <span className="block h-full w-full overflow-hidden rounded-full bg-white">
-                  {option.image ? (
-                    <img
-                      src={option.image}
-                      alt=""
-                      className="h-full w-full scale-150 object-cover"
-                      draggable="false"
-                    />
-                  ) : (
-                    <span className="grid h-full w-full place-items-center rounded-full bg-[#f4f4f4] px-1 text-center text-[8px] font-bold uppercase leading-3 tracking-[0.06em] text-black/65">
-                      {option.label || `Option ${index + 1}`}
+            {shadeOptions.map((option, index) => {
+              const optionStock = getLimitedStock(option.stock);
+              const optionSoldOut = optionStock !== null && optionStock <= 0;
+
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  onClick={() => selectOption(index)}
+                  className={`relative grid h-12 w-12 shrink-0 place-items-center rounded-full border bg-white p-0.5 transition sm:h-14 sm:w-14 ${
+                    selectedImage === index
+                      ? "border-[#8e8e8e] ring-2 ring-[#8e8e8e] ring-offset-2 ring-offset-white"
+                      : "border-[#dddddd] shadow-[0_4px_14px_rgba(0,0,0,0.05)] hover:border-[#9c9c9c]"
+                  } ${optionSoldOut ? "opacity-65" : ""}`}
+                  aria-label={`Select ${option.label}${optionSoldOut ? " - out of stock" : ""}`}
+                >
+                  <span className="block h-full w-full overflow-hidden rounded-full bg-white">
+                    {option.image ? (
+                      <img
+                        src={option.image}
+                        alt=""
+                        className={`h-full w-full scale-150 object-cover ${
+                          optionSoldOut ? "grayscale" : ""
+                        }`}
+                        draggable="false"
+                      />
+                    ) : (
+                      <span className="grid h-full w-full place-items-center rounded-full bg-[#f4f4f4] px-1 text-center text-[8px] font-bold uppercase leading-3 tracking-[0.06em] text-black/65">
+                        {option.label || `Option ${index + 1}`}
+                      </span>
+                    )}
+                  </span>
+                  {optionSoldOut && (
+                    <span className="absolute inset-0 grid place-items-center rounded-full bg-white/55 text-black">
+                      <FiX className="h-5 w-5 stroke-[1.8]" />
                     </span>
                   )}
-                </span>
-              </button>
-            ))}
+                </button>
+              );
+            })}
           </div>
         )}
 
@@ -589,8 +651,8 @@ const FeaturedProductCard = ({
                 {isSoldOut
                   ? "Out of stock"
                   : isLowStock
-                    ? `${stockNumber} left in stock`
-                    : `${stockNumber} in stock`}
+                    ? `${effectiveStockNumber} left in stock`
+                    : `${effectiveStockNumber} in stock`}
                 {perfumeTypeLabel ? ` / ${perfumeTypeLabel}` : ""}
               </span>
             </div>

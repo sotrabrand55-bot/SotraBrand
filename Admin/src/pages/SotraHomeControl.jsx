@@ -268,15 +268,21 @@ const productToDraft = (product) => ({
   sizes: getProductSizes(product),
 });
 
-const emptyProductMediaDraft = () => ({ shadeOptions: [], storyImages: [] });
+const emptyProductMediaDraft = () => ({
+  smallImageOptionLabel: "Choose An Option",
+  shadeOptions: [],
+  storyImages: [],
+});
 
 const productToMediaDraft = (product) => ({
+  smallImageOptionLabel: product?.smallImageOptionLabel || "Choose An Option",
   shadeOptions: Array.isArray(product?.shadeOptions)
     ? product.shadeOptions.map((item, index) => ({
         id: item.id || `shade-${product?._id || "product"}-${index}`,
         label: item.label || "",
         cartValue: item.cartValue || item.label || "",
         description: item.description || "",
+        stock: item.stock === 0 || item.stock ? String(item.stock) : "",
         image: item.image || "",
         fileId: item.fileId || "",
         order: item.order ?? index + 1,
@@ -288,6 +294,7 @@ const productToMediaDraft = (product) => ({
     ? product.storyImages.map((item, index) => ({
         id: item.id || `story-${product?._id || "product"}-${index}`,
         alt: item.alt || "",
+        description: item.description || "",
         image: item.image || "",
         fileId: item.fileId || "",
         order: item.order ?? index + 1,
@@ -1089,9 +1096,22 @@ const SotraHomeControl = ({ token }) => {
       };
     });
 
+  const setFeaturedSmallImageOptionLabel = (slot, value) =>
+    setFeaturedMediaDrafts((current) => {
+      const media = current[slot] || emptyProductMediaDraft();
+      return {
+        ...current,
+        [slot]: { ...media, smallImageOptionLabel: value },
+      };
+    });
+
   const appendProductMediaDraft = (form, mediaDraft = emptyProductMediaDraft()) => {
     const shadeOptions = mediaDraft.shadeOptions || [];
     const storyImages = mediaDraft.storyImages || [];
+    form.append(
+      "smallImageOptionLabel",
+      mediaDraft.smallImageOptionLabel || "Choose An Option"
+    );
     form.append(
       "shadeOptions",
       JSON.stringify(shadeOptions.map(stripProductMediaPrivateFields))
@@ -1872,10 +1892,18 @@ const FeaturedEditor = ({
           >
             <div className="overflow-hidden">
               <ProductSotraMediaEditor
+                smallImageOptionLabel={mediaDraft?.smallImageOptionLabel || "Choose An Option"}
+                setSmallImageOptionLabel={(value) =>
+                  setFeaturedSmallImageOptionLabel(slot, value)
+                }
                 shadeOptions={mediaDraft?.shadeOptions || []}
                 setShadeOptions={setShadeOptions}
                 storyImages={mediaDraft?.storyImages || []}
                 setStoryImages={setStoryImages}
+                onStockAvailable={() => {
+                  updateProductDraft(slot, "stock", "");
+                  updateProductDraft(slot, "outOfStock", false);
+                }}
               />
             </div>
           </div>

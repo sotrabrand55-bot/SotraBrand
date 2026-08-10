@@ -128,6 +128,34 @@ export const normalizeProduct = (product = {}) => {
   const price = parseNumber(product.price, 0);
   const discountPrice = parseNumber(product.discountPrice, undefined);
   const stock = parseNumber(product.stock, undefined);
+  const shadeOptions = sortMediaItems(
+    Array.isArray(product.shadeOptions) ? product.shadeOptions : []
+  )
+    .map((item, index) => ({
+      ...item,
+      id: item?.id || item?._id || `shade-${index}`,
+      image: parseImageValue(item?.image),
+      label: String(item?.label || "").trim(),
+      cartValue: String(item?.cartValue || item?.label || "").trim(),
+      description: String(item?.description || "").trim(),
+      alt: String(item?.alt || item?.label || "").trim(),
+      order: parseNumber(item?.order, index + 1),
+      stock: parseNumber(item?.stock, undefined),
+    }))
+    .filter((item) => item.image || item.label || item.cartValue);
+  const storyImages = sortMediaItems(
+    Array.isArray(product.storyImages) ? product.storyImages : []
+  )
+    .map((item, index) => ({
+      ...item,
+      id: item?.id || item?._id || `story-${index}`,
+      image: parseImageValue(item?.image),
+      label: String(item?.label || "").trim(),
+      description: String(item?.description || "").trim(),
+      alt: String(item?.alt || item?.label || "").trim(),
+      order: parseNumber(item?.order, index + 1),
+    }))
+    .filter((item) => item.image);
   const sizes = sortPerfumeSizes([
     ...new Set(parseArray(product.sizes).map(normalizePerfumeSize).filter(Boolean)),
   ]);
@@ -181,6 +209,10 @@ export const normalizeProduct = (product = {}) => {
     image2: image[1] || "",
     image3: image[2] || "",
     image4: image[3] || "",
+    smallImageOptionLabel:
+      String(product.smallImageOptionLabel || "").trim() || "Choose An Option",
+    shadeOptions,
+    storyImages,
     category: product.category || "Fragrance",
     subCategory: product.subCategory || "",
     concentration: product.concentration || perfumeTypes[0] || "",

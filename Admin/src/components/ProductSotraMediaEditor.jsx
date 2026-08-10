@@ -8,6 +8,9 @@ const labelClass =
 
 export const stripProductMediaPrivateFields = (item) => {
   const { _file, _preview, ...publicItem } = item;
+  Object.keys(publicItem).forEach((key) => {
+    if (key.startsWith("_")) delete publicItem[key];
+  });
   if (_file && String(publicItem.image || "").startsWith("blob:")) {
     publicItem.image = "";
   }
@@ -22,6 +25,47 @@ const sortByOrder = (items = []) =>
     const bOrder = Number.isFinite(Number(b.order)) ? Number(b.order) : 9999;
     return aOrder - bOrder;
   });
+
+const getChoiceNameCopy = (value = "") => {
+  const cleaned = String(value || "")
+    .replace(/\bchoose\b/gi, "")
+    .replace(/\ban\b/gi, "")
+    .replace(/\ba\b/gi, "")
+    .replace(/\byour\b/gi, "")
+    .replace(/\boption\b/gi, "")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+  const noun = cleaned || "option";
+  return {
+    label: `Name your ${noun}`,
+    placeholder:
+      noun === "color"
+        ? "Black, Nude, Gold..."
+        : noun === "size"
+          ? "S, M, L, 30ML..."
+          : "Black, Nude, Gold, Small...",
+  };
+};
+
+const isStockUnlimited = (option = {}) =>
+  option._stockUnlimited !== undefined
+    ? Boolean(option._stockUnlimited)
+    : option.stock === undefined || option.stock === null || option.stock === "";
+
+const FileUploadField = ({ title = "Add Image", note = "Choose a clear product image.", file, onChange }) => (
+  <div>
+    <label className={labelClass}>{title}</label>
+    <label className="flex min-h-11 cursor-pointer items-center justify-between gap-3 rounded-md border border-dashed border-[#d4d4d4] bg-[#f7f7f7] px-3 py-2 text-sm text-[#111111] transition hover:border-black hover:bg-white">
+      <span className="min-w-0 truncate">{file?.name || "Choose image from computer"}</span>
+      <span className="shrink-0 rounded-full bg-white px-3 py-1 text-[9px] font-bold uppercase tracking-[0.14em] text-[#4b5563]">
+        Add Image
+      </span>
+      <input type="file" accept="image/*" className="sr-only" onChange={onChange} />
+    </label>
+    <p className="mt-1 text-[11px] leading-5 text-[#6b7280]">{note}</p>
+  </div>
+);
 
 const MediaPreview = ({ src, file, label }) => {
   const [filePreview, setFilePreview] = useState("");
@@ -53,17 +97,30 @@ const MediaPreview = ({ src, file, label }) => {
 };
 
 const ProductSotraMediaEditor = ({
+  smallImageOptionLabel = "Choose An Option",
+  setSmallImageOptionLabel,
   shadeOptions,
   setShadeOptions,
   storyImages,
   setStoryImages,
+  onStockAvailable,
 }) => {
-  const updateShade = (index, patch) =>
+  const choiceNameCopy = getChoiceNameCopy(smallImageOptionLabel);
+
+  const updateShade = (index, patch) => {
+    if (
+      Object.prototype.hasOwnProperty.call(patch, "stock") &&
+      patch._stockUnlimited === false &&
+      Number(patch.stock) > 0
+    ) {
+      onStockAvailable?.();
+    }
     setShadeOptions((current) => {
       const next = [...current];
       next[index] = { ...next[index], ...patch };
       return next;
     });
+  };
 
   const updateStory = (index, patch) =>
     setStoryImages((current) => {
@@ -80,6 +137,8 @@ const ProductSotraMediaEditor = ({
         label: "",
         cartValue: "",
         description: "",
+        stock: "",
+        _stockUnlimited: true,
         order: current.length + 1,
         image: "",
         fileId: "",
@@ -139,26 +198,54 @@ const ProductSotraMediaEditor = ({
         </div>
       </div>
 
-      <div className="grid gap-5 xl:grid-cols-2">
-        <div className="order-2">
+      <div className="rounded-md border border-[#e5e5e5] bg-[#f7f7f7] p-3">
+        <label className={labelClass}>Small Image Selector Title</label>
+        <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
+          <input
+            className={fieldClass}
+            value={smallImageOptionLabel}
+            placeholder="Choose An Option"
+            onChange={(event) => setSmallImageOptionLabel?.(event.target.value)}
+          />
+          <div className="flex flex-wrap gap-2 lg:justify-end">
+            {["Choose An Option", "Choose A Color", "Choose Size"].map((label) => (
+              <button
+                key={label}
+                type="button"
+                onClick={() => setSmallImageOptionLabel?.(label)}
+                className="rounded-full border border-[#d4d4d4] bg-white px-3 py-2 text-[9px] font-bold uppercase tracking-[0.12em] text-[#4b5563] transition hover:border-black hover:text-black"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+        <p className="mt-2 text-[11px] leading-5 text-[#4b5563]">
+          This is the title customers see above the circular choices on the product page.
+        </p>
+      </div>
+
+      <div className="mt-5 grid gap-5">
+        <div>
           <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
             Small Images
           </p>
           <div className="space-y-3">
             {sortByOrder(shadeOptions).map((option) => {
               const index = shadeOptions.indexOf(option);
+              const unlimitedStock = isStockUnlimited(option);
               return (
               <article
                 key={option.id || index}
-                className="grid gap-3 rounded-md border border-[#e5e5e5] bg-white p-3 sm:grid-cols-[80px_1fr]"
+                className="grid min-w-0 gap-3 rounded-md border border-[#e5e5e5] bg-white p-3 md:grid-cols-[80px_minmax(0,1fr)]"
               >
                 <MediaPreview
                   src={option._preview || option.image}
                   file={option._file}
                   label={option.label}
                 />
-                <div className="grid gap-3">
-                  <div className="grid gap-3 sm:grid-cols-2">
+                <div className="grid min-w-0 gap-3">
+                  <div className="grid gap-3 lg:grid-cols-[120px_minmax(0,1fr)]">
                     <div>
                       <label className={labelClass}>Image Order</label>
                       <input
@@ -171,26 +258,57 @@ const ProductSotraMediaEditor = ({
                         }
                       />
                     </div>
+                  </div>
+                  <div className="grid gap-3 lg:grid-cols-[minmax(0,1fr)_240px]">
                     <div>
-                      <label className={labelClass}>Label</label>
+                      <label className={labelClass}>{choiceNameCopy.label}</label>
                       <input
                         className={fieldClass}
                         value={option.label || ""}
+                        placeholder={choiceNameCopy.placeholder}
                         onChange={(event) =>
                           updateShade(index, {
                             label: event.target.value,
-                            cartValue: option.cartValue || event.target.value,
+                            cartValue: event.target.value,
                           })
                         }
                       />
                     </div>
                     <div>
-                      <label className={labelClass}>Cart Value</label>
+                      <label className={labelClass}>Small Image Stock</label>
+                      <label className="mb-2 flex min-h-11 items-center gap-2 rounded-md border border-[#d4d4d4] bg-[#f7f7f7] px-3 py-2 text-xs font-semibold text-[#111111]">
+                        <input
+                          type="checkbox"
+                          checked={unlimitedStock}
+                          onChange={(event) =>
+                            updateShade(index, {
+                              _stockUnlimited: event.target.checked,
+                              stock: event.target.checked ? "" : option.stock || "",
+                            })
+                          }
+                        />
+                        Unlimited stock for this small image
+                      </label>
                       <input
+                        type="number"
+                        min="0"
+                        step="1"
                         className={fieldClass}
-                        value={option.cartValue || ""}
+                        value={unlimitedStock ? "" : option.stock}
+                        placeholder={unlimitedStock ? "Type stock to limit this option" : "5"}
+                        onFocus={() => {
+                          if (unlimitedStock) {
+                            updateShade(index, {
+                              _stockUnlimited: false,
+                              stock: option.stock || "",
+                            });
+                          }
+                        }}
                         onChange={(event) =>
-                          updateShade(index, { cartValue: event.target.value })
+                          updateShade(index, {
+                            _stockUnlimited: false,
+                            stock: event.target.value,
+                          })
                         }
                       />
                     </div>
@@ -205,11 +323,11 @@ const ProductSotraMediaEditor = ({
                       }
                     />
                   </div>
-                  <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className={fieldClass}
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <FileUploadField
+                      title="Add Image"
+                      note="This image appears inside the circular customer choice."
+                      file={option._file}
                       onChange={(event) => {
                         const file = event.target.files?.[0];
                         if (!file) return;
@@ -240,7 +358,7 @@ const ProductSotraMediaEditor = ({
           </div>
         </div>
 
-        <div className="order-1">
+        <div>
           <p className="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-black/45">
             Story Images
           </p>
@@ -250,15 +368,16 @@ const ProductSotraMediaEditor = ({
               return (
               <article
                 key={story.id || index}
-                className="grid gap-3 rounded-md border border-[#e5e5e5] bg-white p-3 sm:grid-cols-[80px_1fr]"
+                className="grid min-w-0 gap-3 rounded-md border border-[#e5e5e5] bg-white p-3 md:grid-cols-[80px_minmax(0,1fr)]"
               >
                 <MediaPreview
                   src={story._preview || story.image}
                   file={story._file}
                   label={story.alt}
                 />
-                <div className="grid gap-3">
-                  <div>
+                <div className="grid min-w-0 gap-3">
+                  <div className="grid gap-3 lg:grid-cols-[120px_minmax(0,1fr)]">
+                    <div>
                     <label className={labelClass}>Image Order</label>
                     <input
                       type="number"
@@ -269,22 +388,35 @@ const ProductSotraMediaEditor = ({
                         updateStory(index, { order: Number(event.target.value) })
                       }
                     />
-                  </div>
-                  <div>
-                    <label className={labelClass}>Alt Text</label>
+                    </div>
+                    <div>
+                    <label className={labelClass}>Image Name</label>
                     <input
                       className={fieldClass}
                       value={story.alt || ""}
+                      placeholder="Front view, fabric detail, outfit..."
                       onChange={(event) =>
                         updateStory(index, { alt: event.target.value })
                       }
                     />
+                    </div>
                   </div>
-                  <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className={fieldClass}
+                  <div>
+                    <label className={labelClass}>Description</label>
+                    <textarea
+                      className={`${fieldClass} min-h-20 resize-none`}
+                      value={story.description || ""}
+                      placeholder="Optional note for this story image."
+                      onChange={(event) =>
+                        updateStory(index, { description: event.target.value })
+                      }
+                    />
+                  </div>
+                  <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
+                    <FileUploadField
+                      title="Add Image"
+                      note="This image appears in the main product gallery."
+                      file={story._file}
                       onChange={(event) => {
                         const file = event.target.files?.[0];
                         if (!file) return;

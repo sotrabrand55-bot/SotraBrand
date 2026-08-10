@@ -8,6 +8,30 @@ import {
   getPrimaryProductImage,
 } from "../utils/productMapping";
 
+const getLimitedStock = (value) => {
+  if (value === undefined || value === null || value === "") return null;
+  const stock = Number(value);
+  return Number.isFinite(stock) ? stock : null;
+};
+
+const getSoldOutState = (product) => {
+  const mainStock = getLimitedStock(product?.stock);
+  const optionStocks = Array.isArray(product?.shadeOptions)
+    ? product.shadeOptions.map((option) => getLimitedStock(option?.stock))
+    : [];
+  const limitedOptionStocks = optionStocks.filter((stock) => stock !== null);
+  const allOptionsSoldOut =
+    limitedOptionStocks.length > 0 &&
+    limitedOptionStocks.length === optionStocks.length &&
+    limitedOptionStocks.every((stock) => stock <= 0);
+
+  return (
+    Boolean(product?.outOfStock) ||
+    (mainStock !== null && mainStock <= 0) ||
+    allOptionsSoldOut
+  );
+};
+
 const SubcategoryProductResults = ({ products, subcategory, title }) => {
   const { currency } = useContext(ShopContext);
   const visibleProducts = products.slice(0, 4);
@@ -28,10 +52,7 @@ const SubcategoryProductResults = ({ products, subcategory, title }) => {
           {visibleProducts.map((product) => {
             const image = getPrimaryProductImage(product);
             const price = getEffectiveProductPrice(product);
-            const stock = Number(product.stock);
-            const soldOut =
-              Boolean(product.outOfStock) ||
-              (Number.isFinite(stock) && product.stock !== "" && stock <= 0);
+            const soldOut = getSoldOutState(product);
             const sizes = Array.isArray(product.sizes)
               ? product.sizes.filter((size) => size && String(size).toLowerCase() !== "default")
               : [];

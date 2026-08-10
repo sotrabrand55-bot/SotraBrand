@@ -59,6 +59,7 @@ const Add = ({ token }) => {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
+  const [unlimitedStock, setUnlimitedStock] = useState(true);
   const [discountPercent, setDiscountPercent] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
 
@@ -78,6 +79,7 @@ const Add = ({ token }) => {
   const [active, setActive] = useState(true);
   const [outOfStock, setOutOfStock] = useState(false);
   const [showSmallImages, setShowSmallImages] = useState(true);
+  const [smallImageOptionLabel, setSmallImageOptionLabel] = useState("Choose An Option");
   const [shadeOptions, setShadeOptions] = useState([]);
   const [storyImages, setStoryImages] = useState([]);
   const [setContents, setSetContents] = useState([]);
@@ -166,6 +168,7 @@ const Add = ({ token }) => {
     setDescription("");
     setPrice("");
     setStock("");
+    setUnlimitedStock(true);
     setDiscountPercent("");
     setDiscountPrice("");
     setCategory(categoryOptions[0] || "");
@@ -184,6 +187,7 @@ const Add = ({ token }) => {
     setActive(true);
     setOutOfStock(false);
     setShowSmallImages(true);
+    setSmallImageOptionLabel("Choose An Option");
     setShadeOptions([]);
     setStoryImages([]);
     setSetContents([]);
@@ -203,8 +207,8 @@ const Add = ({ token }) => {
       return;
     }
 
-    const stockNumber = stock === "" ? 0 : Number(stock);
-    if (!Number.isFinite(stockNumber) || stockNumber < 0) {
+    const stockNumber = unlimitedStock ? null : Number(stock);
+    if (!unlimitedStock && (!Number.isFinite(stockNumber) || stockNumber < 0)) {
       toast.error("Please enter a valid stock count.");
       return;
     }
@@ -232,7 +236,7 @@ const Add = ({ token }) => {
       formData.append("name", name);
       formData.append("description", description);
       formData.append("price", String(priceNumber));
-      formData.append("stock", String(Math.floor(stockNumber)));
+      formData.append("stock", unlimitedStock ? "" : String(Math.floor(stockNumber)));
 
       if (finalDiscount !== undefined) {
         formData.append("discountPrice", String(finalDiscount));
@@ -251,6 +255,7 @@ const Add = ({ token }) => {
       formData.append("active", active ? "true" : "false");
       formData.append("outOfStock", outOfStock ? "true" : "false");
       formData.append("showSmallImages", "true");
+      formData.append("smallImageOptionLabel", smallImageOptionLabel);
       formData.append(
         "shadeOptions",
         JSON.stringify(shadeOptions.map(stripProductMediaPrivateFields))
@@ -427,12 +432,33 @@ const Add = ({ token }) => {
               </div>
               <div>
                 <label className={labelClass}>Stock Count</label>
+                <label className="mb-2 flex min-h-12 items-center gap-2 rounded-md border border-[#d4d4d4] bg-[#f7f7f7] px-3 py-2 text-xs font-semibold text-[#111111]">
+                  <input
+                    type="checkbox"
+                    checked={unlimitedStock}
+                    onChange={(e) => {
+                      setUnlimitedStock(e.target.checked);
+                      if (e.target.checked) {
+                        setStock("");
+                        setOutOfStock(false);
+                      }
+                    }}
+                  />
+                  Unlimited stock
+                </label>
                 <input
-                  onChange={(e) => setStock(e.target.value)}
+                  onChange={(e) => {
+                    setUnlimitedStock(false);
+                    setStock(e.target.value);
+                    if (Number(e.target.value) > 0) setOutOfStock(false);
+                  }}
+                  onFocus={() => {
+                    if (unlimitedStock) setUnlimitedStock(false);
+                  }}
                   value={stock}
                   className={fieldClass}
                   type="number"
-                  placeholder="18"
+                  placeholder={unlimitedStock ? "Type stock to limit this product" : "18"}
                   min="0"
                   step="1"
                 />
@@ -518,10 +544,17 @@ const Add = ({ token }) => {
           </div>
 
           <ProductSotraMediaEditor
+            smallImageOptionLabel={smallImageOptionLabel}
+            setSmallImageOptionLabel={setSmallImageOptionLabel}
             shadeOptions={shadeOptions}
             setShadeOptions={setShadeOptions}
             storyImages={storyImages}
             setStoryImages={setStoryImages}
+            onStockAvailable={() => {
+              setUnlimitedStock(true);
+              setStock("");
+              setOutOfStock(false);
+            }}
           />
 
           <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
@@ -578,7 +611,7 @@ const Add = ({ token }) => {
             description={description}
             price={price}
             discountPrice={discountPrice}
-            stock={stock}
+            stock={unlimitedStock ? "" : stock}
             category={category}
             subCategory={subCategory}
             concentration={perfumeTypes[0] || concentration}
@@ -592,6 +625,7 @@ const Add = ({ token }) => {
             active={active}
             outOfStock={outOfStock}
             showSmallImages={true}
+            smallImageOptionLabel={smallImageOptionLabel}
             shadeOptions={shadeOptions}
             storyImages={storyImages}
           />

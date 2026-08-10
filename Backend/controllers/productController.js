@@ -58,6 +58,10 @@ const normalizePerfumeType = (value) => {
 const normalizePerfumeTypes = (value) => [
   ...new Set(toArray(value).map(normalizePerfumeType).filter(Boolean)),
 ];
+const normalizeOptionLabel = (value, fallback = "Choose An Option") => {
+  const text = String(value ?? "").replace(/\s+/g, " ").trim();
+  return text || fallback;
+};
 const toObjectArray = (v) => {
   if (v === undefined || v === null || v === "") return [];
   if (Array.isArray(v)) return v.filter((item) => item && typeof item === "object");
@@ -104,6 +108,12 @@ const normalizeMediaOptions = async ({ rawItems, files, prefix, fallbackName, al
     items[index].label = items[index].label || items[index].alt || "";
     items[index].cartValue = items[index].cartValue || items[index].label || "";
     items[index].description = items[index].description || "";
+    const optionStock = toStock(items[index].stock, undefined);
+    if (optionStock === undefined) {
+      delete items[index].stock;
+    } else {
+      items[index].stock = optionStock;
+    }
     items[index].alt = items[index].alt || items[index].label || "";
     items[index].order = Number.isFinite(Number(items[index].order))
       ? Number(items[index].order)
@@ -251,6 +261,7 @@ const addProduct = async (req, res) => {
       ,fitUnit
       ,featuredSlot
       ,showSmallImages
+      ,smallImageOptionLabel
       ,shadeOptions
       ,storyImages
       ,setContents
@@ -305,6 +316,7 @@ const addProduct = async (req, res) => {
       fitUnit: fitUnit || "kg",
       featuredSlot: toNum(featuredSlot),
       showSmallImages: showSmallImages === undefined ? true : toBool(showSmallImages, true),
+      smallImageOptionLabel: normalizeOptionLabel(smallImageOptionLabel),
       shadeOptions: parsedShadeOptions,
       storyImages: parsedStoryImages,
       setContents: parsedSetContents,
@@ -429,6 +441,7 @@ const updateProduct = async (req, res) => {
       ,fitUnit
       ,featuredSlot
       ,showSmallImages
+      ,smallImageOptionLabel
       ,shadeOptions
       ,storyImages
       ,setContents
@@ -489,7 +502,7 @@ const updateProduct = async (req, res) => {
           : (discountPrice === '' ? undefined : product.discountPrice),
       active: toBool(active, product.active),
       outOfStock: toBool(outOfStock, product.outOfStock),
-      stock: toStock(stock, product.stock),
+      stock: stock !== undefined ? toStock(stock, undefined) : product.stock,
       fitMin:
         fitMin !== undefined && fitMin !== ""
           ? Number(fitMin)
@@ -504,6 +517,10 @@ const updateProduct = async (req, res) => {
           ? Number(featuredSlot)
           : (featuredSlot === "" ? undefined : product.featuredSlot),
       showSmallImages: toBool(showSmallImages, product.showSmallImages),
+      smallImageOptionLabel:
+        smallImageOptionLabel !== undefined
+          ? normalizeOptionLabel(smallImageOptionLabel)
+          : normalizeOptionLabel(product.smallImageOptionLabel),
       shadeOptions: nextShadeOptions,
       storyImages: nextStoryImages,
       setContents: nextSetContents,
@@ -546,6 +563,7 @@ const updateProduct = async (req, res) => {
     product.fitUnit = next.fitUnit;
     product.featuredSlot = next.featuredSlot;
     product.showSmallImages = next.showSmallImages;
+    product.smallImageOptionLabel = next.smallImageOptionLabel;
     product.shadeOptions = next.shadeOptions;
     product.storyImages = next.storyImages;
     product.setContents = next.setContents;

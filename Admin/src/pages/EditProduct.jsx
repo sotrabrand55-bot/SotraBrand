@@ -74,6 +74,7 @@ export default function EditProduct({ token }) {
   const [description, setDescription] = useState("");
   const [price, setPrice] = useState("");
   const [stock, setStock] = useState("");
+  const [unlimitedStock, setUnlimitedStock] = useState(true);
   const [discountPercent, setDiscountPercent] = useState("");
   const [discountPrice, setDiscountPrice] = useState("");
 
@@ -94,6 +95,7 @@ export default function EditProduct({ token }) {
   const [active, setActive] = useState(true);
   const [outOfStock, setOutOfStock] = useState(false);
   const [showSmallImages, setShowSmallImages] = useState(true);
+  const [smallImageOptionLabel, setSmallImageOptionLabel] = useState("Choose An Option");
   const [shadeOptions, setShadeOptions] = useState([]);
   const [storyImages, setStoryImages] = useState([]);
   const [setContents, setSetContents] = useState([]);
@@ -124,7 +126,9 @@ export default function EditProduct({ token }) {
     setName(product.name || "");
     setDescription(product.description || "");
     setPrice(String(product.price ?? ""));
-    setStock(product.stock === 0 || product.stock ? String(product.stock) : "");
+    const hasLimitedStock = product.stock === 0 || product.stock;
+    setStock(hasLimitedStock ? String(product.stock) : "");
+    setUnlimitedStock(!hasLimitedStock);
     setDiscountPrice(
       product.discountPrice === 0 || product.discountPrice
         ? String(product.discountPrice)
@@ -164,6 +168,7 @@ export default function EditProduct({ token }) {
     setActive(product.active !== false);
     setOutOfStock(Boolean(product.outOfStock));
     setShowSmallImages(true);
+    setSmallImageOptionLabel(product.smallImageOptionLabel || "Choose An Option");
     setShadeOptions(
       Array.isArray(product.shadeOptions)
         ? product.shadeOptions.map((item, index) => ({
@@ -173,6 +178,7 @@ export default function EditProduct({ token }) {
             image: item.image || "",
             fileId: item.fileId || "",
             description: item.description || "",
+            stock: item.stock === 0 || item.stock ? String(item.stock) : "",
             order: item.order ?? index + 1,
             _file: null,
             _preview: "",
@@ -186,6 +192,7 @@ export default function EditProduct({ token }) {
             image: item.image || item.url || "",
             fileId: item.fileId || "",
             alt: item.alt || "",
+            description: item.description || "",
             order: item.order ?? index + 1,
             _file: null,
             _preview: "",
@@ -301,8 +308,8 @@ export default function EditProduct({ token }) {
       return;
     }
 
-    const stockNum = stock === "" ? 0 : Number(stock);
-    if (!Number.isFinite(stockNum) || stockNum < 0) {
+    const stockNum = unlimitedStock ? null : Number(stock);
+    if (!unlimitedStock && (!Number.isFinite(stockNum) || stockNum < 0)) {
       toast.error("Please enter a valid stock count.");
       return;
     }
@@ -331,7 +338,7 @@ export default function EditProduct({ token }) {
       form.append("name", name);
       form.append("description", description);
       form.append("price", String(priceNum));
-      form.append("stock", String(Math.floor(stockNum)));
+      form.append("stock", unlimitedStock ? "" : String(Math.floor(stockNum)));
       form.append("category", category);
       form.append("subCategory", subCategory);
       form.append("concentration", perfumeTypes[0] || concentration || "");
@@ -346,6 +353,7 @@ export default function EditProduct({ token }) {
       form.append("active", String(active));
       form.append("outOfStock", String(outOfStock));
       form.append("showSmallImages", "true");
+      form.append("smallImageOptionLabel", smallImageOptionLabel);
       form.append(
         "shadeOptions",
         JSON.stringify(shadeOptions.map(stripProductMediaPrivateFields))
@@ -521,12 +529,33 @@ export default function EditProduct({ token }) {
               </div>
               <div>
                 <label className={labelClass}>Stock Count</label>
+                <label className="mb-2 flex min-h-12 items-center gap-2 rounded-md border border-[#d4d4d4] bg-[#f7f7f7] px-3 py-2 text-xs font-semibold text-[#111111]">
+                  <input
+                    type="checkbox"
+                    checked={unlimitedStock}
+                    onChange={(event) => {
+                      setUnlimitedStock(event.target.checked);
+                      if (event.target.checked) {
+                        setStock("");
+                        setOutOfStock(false);
+                      }
+                    }}
+                  />
+                  Unlimited stock
+                </label>
                 <input
-                  onChange={(event) => setStock(event.target.value)}
+                  onChange={(event) => {
+                    setUnlimitedStock(false);
+                    setStock(event.target.value);
+                    if (Number(event.target.value) > 0) setOutOfStock(false);
+                  }}
+                  onFocus={() => {
+                    if (unlimitedStock) setUnlimitedStock(false);
+                  }}
                   value={stock}
                   className={fieldClass}
                   type="number"
-                  placeholder="18"
+                  placeholder={unlimitedStock ? "Type stock to limit this product" : "18"}
                   min="0"
                   step="1"
                 />
@@ -612,10 +641,17 @@ export default function EditProduct({ token }) {
           </div>
 
           <ProductSotraMediaEditor
+            smallImageOptionLabel={smallImageOptionLabel}
+            setSmallImageOptionLabel={setSmallImageOptionLabel}
             shadeOptions={shadeOptions}
             setShadeOptions={setShadeOptions}
             storyImages={storyImages}
             setStoryImages={setStoryImages}
+            onStockAvailable={() => {
+              setUnlimitedStock(true);
+              setStock("");
+              setOutOfStock(false);
+            }}
           />
 
           <div className="mt-5 rounded-md border border-[#e5e5e5] bg-[#ffffff] p-4">
@@ -672,7 +708,7 @@ export default function EditProduct({ token }) {
             description={description}
             price={price}
             discountPrice={discountPrice}
-            stock={stock}
+            stock={unlimitedStock ? "" : stock}
             category={category}
             subCategory={subCategory}
             concentration={perfumeTypes[0] || concentration}
@@ -686,6 +722,7 @@ export default function EditProduct({ token }) {
             active={active}
             outOfStock={outOfStock}
             showSmallImages={true}
+            smallImageOptionLabel={smallImageOptionLabel}
             shadeOptions={shadeOptions}
             storyImages={storyImages}
           />

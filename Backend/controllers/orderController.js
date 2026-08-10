@@ -168,6 +168,30 @@ const pickOrderProductImage = (product = {}) =>
   pickImageValue(product.image1) ||
   ''
 
+const getLimitedStock = (value) => {
+  if (value === undefined || value === null || value === '') return null
+  const stock = Number(value)
+  return Number.isFinite(stock) ? stock : null
+}
+
+const aggregateStockNeeds = (needs = [], getKey) => {
+  const grouped = new Map()
+
+  needs.forEach((need) => {
+    const key = getKey(need)
+    if (!key) return
+    const existing = grouped.get(key)
+    if (existing) {
+      existing.quantity += need.quantity
+      existing.stock = Math.min(existing.stock, need.stock)
+    } else {
+      grouped.set(key, { ...need })
+    }
+  })
+
+  return [...grouped.values()]
+}
+
 const placeOrder = async (req, res) => {
   try {
     const {
@@ -188,6 +212,8 @@ const placeOrder = async (req, res) => {
 
     const orderItems = [];
     let subtotal = 0;
+    const productStockNeeds = [];
+    const shadeStockNeeds = [];
 
     // ---------------------------
     // ✅ Validate coupon before proceeding
@@ -215,7 +241,7 @@ const placeOrder = async (req, res) => {
         return res.status(400).json({ success: false, message: `Product unavailable at index ${idx}` });
       }
 
-      const stock = p.stock === undefined || p.stock === null ? null : Number(p.stock);
+      const stock = getLimitedStock(p.stock);
       if (p.outOfStock || (stock !== null && stock <= 0)) {
         return res.status(400).json({ success: false, message: `${p.name} is out of stock` });
       }
@@ -286,6 +312,19 @@ const placeOrder = async (req, res) => {
         });
       }
       const shadeOption = getShadeOption(p, requestedColor);
+      const shadeStock = shadeOption ? getLimitedStock(shadeOption.stock) : null;
+      if (shadeStock !== null && shadeStock <= 0) {
+        return res.status(400).json({
+          success: false,
+          message: `${shadeOption.label || shadeOption.cartValue || p.name} is out of stock`,
+        });
+      }
+      if (shadeStock !== null && qty > shadeStock) {
+        return res.status(400).json({
+          success: false,
+          message: `${shadeOption.label || shadeOption.cartValue || p.name} has only ${shadeStock} in stock`,
+        });
+      }
       const selectedColorLabel =
         normalizeOption(it.colorLabel || it.selectedColor || shadeOption?.label || requestedColor);
       const selectedColorImage =
@@ -317,6 +356,26 @@ const placeOrder = async (req, res) => {
         unitPrice,
         subtotal: itemSubtotal,
       });
+
+      if (stock !== null) {
+        productStockNeeds.push({
+          productId: p._id,
+          quantity: qty,
+          stock,
+          name: p.name,
+        });
+      }
+      if (shadeOption && shadeStock !== null) {
+        shadeStockNeeds.push({
+          productId: p._id,
+          quantity: qty,
+          stock: shadeStock,
+          label: shadeOption.label || shadeOption.cartValue || p.name,
+          optionId: shadeOption.id || '',
+          optionMongoId: shadeOption._id || null,
+          cartValue: shadeOption.cartValue || '',
+        });
+      }
     }
 
     // ---------------------------
@@ -350,6 +409,74 @@ const placeOrder = async (req, res) => {
       coupon: validCoupon?.code || null, // ✅ only save if coupon is active
       customerNote: String(customerNote || '').trim().slice(0, 1200),
     };
+
+    const groupedProductStockNeeds = aggregateStockNeeds(
+      productStockNeeds,
+      (need) => String(need.productId || '')
+    )
+    const groupedShadeStockNeeds = aggregateStockNeeds(
+      shadeStockNeeds,
+      (need) =>
+        `${need.productId}:${need.optionId || need.optionMongoId || need.cartValue || need.label || ''}`
+    )
+
+    for (const need of groupedProductStockNeeds) {
+      const current = await productModel.findById(need.productId).select('stock name').lean();
+      const currentStock = getLimitedStock(current?.stock);
+      if (currentStock !== null && need.quantity > currentStock) {
+        return res.status(400).json({
+          success: false,
+          message: `${need.name} has only ${currentStock} in stock`,
+        });
+      }
+    }
+
+    for (const need of groupedShadeStockNeeds) {
+      if (need.quantity > need.stock) {
+        return res.status(400).json({
+          success: false,
+          message: `${need.label} has only ${need.stock} in stock`,
+        });
+      }
+    }
+
+    for (const need of groupedProductStockNeeds) {
+      const updateResult = await productModel.updateOne(
+        { _id: need.productId, stock: { $gte: need.quantity } },
+        { $inc: { stock: -need.quantity } }
+      );
+      if (!updateResult.modifiedCount) {
+        return res.status(400).json({
+          success: false,
+          message: `${need.name} does not have enough stock`,
+        });
+      }
+      await productModel.updateOne(
+        { _id: need.productId, stock: { $lte: 0 } },
+        { $set: { outOfStock: true } }
+      );
+    }
+
+    for (const need of groupedShadeStockNeeds) {
+      const shadeMatch = need.optionId
+        ? { id: need.optionId, stock: { $gte: need.quantity } }
+        : need.optionMongoId
+          ? { _id: need.optionMongoId, stock: { $gte: need.quantity } }
+          : { cartValue: need.cartValue, stock: { $gte: need.quantity } };
+      const updateResult = await productModel.updateOne(
+        {
+          _id: need.productId,
+          shadeOptions: { $elemMatch: shadeMatch },
+        },
+        { $inc: { "shadeOptions.$.stock": -need.quantity } }
+      );
+      if (!updateResult.modifiedCount) {
+        return res.status(400).json({
+          success: false,
+          message: `${need.label} does not have enough stock`,
+        });
+      }
+    }
 
     const newOrder = new orderModel(orderData);
     await newOrder.save();

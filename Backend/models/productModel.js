@@ -39,6 +39,7 @@ const productSchema = new mongoose.Schema({
   fitUnit: { type: String, default: "kg" },
   featuredSlot: { type: Number },
   showSmallImages: { type: Boolean, default: true },
+  smallImageOptionLabel: { type: String, default: "Choose An Option" },
   shadeOptions: {
     type: [
       {
@@ -48,6 +49,7 @@ const productSchema = new mongoose.Schema({
         image: { type: String, default: "" },
         fileId: { type: String, default: "" },
         description: { type: String, default: "" },
+        stock: { type: Number, min: 0 },
         order: { type: Number, default: 0 },
       },
     ],
@@ -60,6 +62,7 @@ const productSchema = new mongoose.Schema({
         image: { type: String, default: "" },
         fileId: { type: String, default: "" },
         alt: { type: String, default: "" },
+        description: { type: String, default: "" },
         order: { type: Number, default: 0 },
       },
     ],
