@@ -4,7 +4,7 @@ import axios from "axios";
 import { backendUrl } from "../App";
 
 const pageTitles = [
-  { match: /^\/dashboard|^\/$/, eyebrow: "Overview", title: "Dashboard" },
+  { match: /^\/dashboard|^\/$/, eyebrow: "Orders", title: "Order Control" },
   { match: /^\/products/, eyebrow: "Product Manager", title: "Products" },
   { match: /^\/edit/, eyebrow: "Product Manager", title: "Edit Product" },
   { match: /^\/add$/, eyebrow: "Product Manager", title: "Add Product" },

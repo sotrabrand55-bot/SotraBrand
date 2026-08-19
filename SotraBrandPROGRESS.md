@@ -2369,3 +2369,33 @@ Last updated: 2026-07-20
   - admin production build passed.
   - backend changed files passed `node --check`.
   - scans found no Nancy/Radiant text or filenames inside `Frontend`, `Admin`, or `Backend`.
+
+## API Request Cleanup - 2026-08-19
+
+- Applied the same latest request-cleanup update used on Amelora, UniqueBags, and BrandMarwa.
+- Storefront now refreshes main data only on page load/browser refresh instead of live polling:
+  - Site settings no longer refetch every 10 seconds.
+  - Products, scent families, and categories no longer refetch every 8 seconds.
+  - Header slides no longer refetch every 12 seconds.
+  - Luxury gallery media no longer refetches every 10 seconds.
+  - Focus-tab refresh listeners were removed from those same API areas.
+- Kept normal one-time frontend requests so the page still loads fresh data after refresh.
+- Removed React `StrictMode` wrappers from both frontend and admin dev entry files to stop dev-only duplicate API calls.
+- Admin Add Product now loads categories once instead of polling categories every 8 seconds.
+- Hid the admin dashboard/tracking page from the sidebar and redirected `/` and `/dashboard` to `/orders`.
+- Reduced Sotra Home Studio entry requests:
+  - Kept `/api/settings/site`.
+  - Kept `/api/header-slides/list`.
+  - Kept `/api/homepage-sections/list`.
+  - Stopped automatic `/api/product/list` and `/api/categories/list` when opening Home Studio.
+- Hid nonessential Sotra Home Studio preview panels that caused extra frontend-style reads:
+  - Full Mini Homepage.
+  - Fade Header live preview wrapper.
+  - Beauty Ritual Gallery live preview wrapper.
+  - Footer + Announcement live preview wrapper.
+- Kept the actual editable admin sections:
+  - Header Pictures.
+  - Beauty Ritual Gallery.
+  - Footer, announcement, delivery, and socials.
+- Backend was not changed for this cleanup.
+- No commit or push was made.

@@ -5,7 +5,6 @@ const navGroups = [
   {
     label: "Overview",
     items: [
-      { to: "/dashboard", label: "Dashboard", icon: "DB" },
       { to: "/orders", label: "Orders", icon: "OR" },
     ],
   },

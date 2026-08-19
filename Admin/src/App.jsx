@@ -11,7 +11,6 @@ import EditProduct from "./pages/EditProduct";
 import MaintenanceControl from './pages/MaintenanceControl';
 import DeliveryFeeControl from './pages/DeliveryFeeControl';
 import AddCoupon from './pages/AddCoupon';
-import Dashboard from './pages/Dashboard';
 import SotraHomeControl from './pages/SotraHomeControl';
 import CategoriesManager from './pages/CategoriesManager';
 import PageImagesManager from './pages/PageImagesManager';
@@ -49,8 +48,8 @@ const App = () => {
         <div className='mx-auto w-full max-w-[1700px] px-4 py-6 sm:px-6 lg:px-8'> 
 
         <Routes>
-        <Route path="/" element={<Dashboard token={token} />} />
-        <Route path="/dashboard" element={<Dashboard token={token} />} />
+        <Route path="/" element={<Navigate to="/orders" replace />} />
+        <Route path="/dashboard" element={<Navigate to="/orders" replace />} />
         <Route path="/maintenance" element={<MaintenanceControl token={token} />} />
         <Route path="/products" element={<ProductsList token={token} />} />
         <Route path="/edit/:id" element={<EditProduct token={token} />} />

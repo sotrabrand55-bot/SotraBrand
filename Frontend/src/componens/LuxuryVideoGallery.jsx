@@ -202,12 +202,8 @@ const LuxuryVideoGallery = () => {
     };
 
     loadSection();
-    const interval = window.setInterval(loadSection, 10000);
-    window.addEventListener("focus", loadSection);
     return () => {
       alive = false;
-      window.clearInterval(interval);
-      window.removeEventListener("focus", loadSection);
     };
   }, [backendUrl]);
 

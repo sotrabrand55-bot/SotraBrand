@@ -295,12 +295,6 @@ const SotraHome = () => {
     };
 
     loadSlides();
-    const interval = window.setInterval(loadSlides, 12000);
-    window.addEventListener("focus", loadSlides);
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener("focus", loadSlides);
-    };
   }, [backendUrl]);
 
   return (

@@ -694,12 +694,10 @@ const SotraHomeControl = ({ token }) => {
   const load = async () => {
     setLoading(true);
     try {
-      const [settingsRes, slidesRes, productsRes, sectionsRes, categoryRes] = await Promise.all([
+      const [settingsRes, slidesRes, sectionsRes] = await Promise.all([
         axios.get(`${backendUrl}/api/settings/site`),
         axios.get(`${backendUrl}/api/header-slides/list`),
-        axios.get(`${backendUrl}/api/product/list`),
         axios.get(`${backendUrl}/api/homepage-sections/list`),
-        axios.get(`${backendUrl}/api/categories/list`),
       ]);
 
       if (settingsRes.data?.success) {
@@ -718,24 +716,6 @@ const SotraHomeControl = ({ token }) => {
         }
       }
 
-      if (productsRes.data?.success) {
-        const nextProducts = productsRes.data.products || [];
-        setProducts(nextProducts);
-        const nextSelections = {};
-        const nextDrafts = {};
-        const nextMediaDrafts = {};
-        featuredSlots.forEach((slot, index) => {
-          const slotProduct = nextProducts.find((item) => Number(item.featuredSlot) === slot);
-          const fallbackProduct = slotProduct || nextProducts[index] || nextProducts[0] || null;
-          nextSelections[slot] = fallbackProduct?._id || "";
-          nextDrafts[slot] = productToDraft(fallbackProduct);
-          nextMediaDrafts[slot] = productToMediaDraft(fallbackProduct);
-        });
-        setFeaturedSelections(nextSelections);
-        setProductDrafts(nextDrafts);
-        setFeaturedMediaDrafts(nextMediaDrafts);
-      }
-
       if (sectionsRes.data?.success) {
         const byKey = {};
         (sectionsRes.data.sections || []).forEach((section) => {
@@ -752,11 +732,6 @@ const SotraHomeControl = ({ token }) => {
           }
         });
         setSections(byKey);
-      }
-
-      if (categoryRes.data?.success) {
-        const nextGroups = getActiveCategoryGroups(categoryRes.data.groups);
-        setCategoryGroups(nextGroups.length ? nextGroups : defaultCategoryGroups);
       }
     } catch (error) {
       toast.error(error?.response?.data?.message || "Failed to load Sotra Home Studio");
@@ -1334,25 +1309,11 @@ const SotraHomeControl = ({ token }) => {
         </div>
       </div>
 
-      <div className="mb-8 border border-black/15 bg-white p-4">
-        <SectionTitle eyebrow="Locked Overview" title="Full Mini Homepage" />
-        <div className="mx-auto max-w-[520px]">
-          <HomeSimulator
-            settings={settings}
-            slides={previewHeaderSlides}
-            products={products}
-            sections={sections}
-            categoryGroups={categoryGroups}
-          />
-        </div>
-      </div>
-
       <div className="space-y-8">
         <StudioSection
           eyebrow="Homepage Header"
-          title="Fade Header"
-          note="Edit the header pictures and order while seeing only the header slice live."
-          preview={<HeaderLivePreview settings={settings} slides={previewHeaderSlides} />}
+          title="Header Pictures"
+          note="Edit the header pictures, button text, links, order, and active state."
         >
           <section className={panelClass}>
             <SectionTitle eyebrow="Edit Header" title="Header Pictures" />
@@ -1551,7 +1512,6 @@ const SotraHomeControl = ({ token }) => {
             eyebrow="Editable Media"
             title={entry.label}
             note={entry.hint}
-            preview={<MediaSectionLivePreview entry={entry} section={sections[entry.key]} products={products} />}
           >
             <MediaSectionEditor
               entry={entry}
@@ -1573,7 +1533,6 @@ const SotraHomeControl = ({ token }) => {
           eyebrow="Site Layer"
           title="Footer + Announcement"
           note="Footer, social links, delivery, announcement, and free-shipping controls sit at the bottom like the storefront."
-          preview={<SiteLayerLivePreview settings={settings} announcementText={announcementText} />}
         >
           <section className={panelClass}>
             <SectionTitle eyebrow="Edit Footer" title="Announcement + Socials" />

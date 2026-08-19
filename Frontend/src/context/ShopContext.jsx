@@ -98,12 +98,6 @@ const ShopContextProvider = (props) => {
     };
 
     fetchSettings();
-    const interval = window.setInterval(fetchSettings, 10000);
-    window.addEventListener("focus", fetchSettings);
-    return () => {
-      window.clearInterval(interval);
-      window.removeEventListener("focus", fetchSettings);
-    };
   }, [backendUrl]);
 
   /*  why we use nagivate instad link ? 
@@ -500,28 +494,6 @@ const ShopContextProvider = (props) => {
     getScentFamilies({ silent: true });
     getCategoryGroups({ silent: true });
   }, []);
-
-  useEffect(() => {
-    if (useMockData) return;
-
-    const interval = setInterval(() => {
-      getProductsData({ silent: true });
-      getScentFamilies({ silent: true });
-      getCategoryGroups({ silent: true });
-    }, 8000);
-
-    const onFocus = () => {
-      getProductsData({ silent: true });
-      getScentFamilies({ silent: true });
-      getCategoryGroups({ silent: true });
-    };
-    window.addEventListener("focus", onFocus);
-
-    return () => {
-      clearInterval(interval);
-      window.removeEventListener("focus", onFocus);
-    };
-  }, [backendUrl]);
 
   // i can add this function even in the login page it will work the same
   useEffect(() => {

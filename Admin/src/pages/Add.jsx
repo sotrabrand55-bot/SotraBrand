@@ -102,10 +102,8 @@ const Add = ({ token }) => {
     };
 
     loadCategories();
-    const interval = setInterval(loadCategories, 8000);
     return () => {
       alive = false;
-      clearInterval(interval);
     };
   }, []);
 
