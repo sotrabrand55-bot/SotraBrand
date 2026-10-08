@@ -18,6 +18,7 @@ const LuxuryVideoCard = ({ item, index, registerVideo, requestPlay }) => {
   const hideTimerRef = useRef(null);
   const [shouldLoad, setShouldLoad] = useState(index < 2);
   const [loaded, setLoaded] = useState(false);
+  const [skeletonVisible, setSkeletonVisible] = useState(true);
   const [playing, setPlaying] = useState(false);
   const [showButton, setShowButton] = useState(true);
 
@@ -62,6 +63,12 @@ const LuxuryVideoCard = ({ item, index, registerVideo, requestPlay }) => {
   }, [registerVideo, item.id]);
 
   useEffect(() => {
+    if (!loaded) return undefined;
+    const timer = window.setTimeout(() => setSkeletonVisible(false), 220);
+    return () => window.clearTimeout(timer);
+  }, [loaded]);
+
+  useEffect(() => {
     if (hideTimerRef.current) {
       window.clearTimeout(hideTimerRef.current);
     }
@@ -93,19 +100,30 @@ const LuxuryVideoCard = ({ item, index, registerVideo, requestPlay }) => {
     pauseVideoElement(videoNode);
   };
 
+  const markVideoReady = (event) => {
+    const video = event.currentTarget;
+    if (typeof video.requestVideoFrameCallback === "function") {
+      video.requestVideoFrameCallback(() => setLoaded(true));
+      return;
+    }
+    window.requestAnimationFrame(() => setLoaded(true));
+  };
+
   return (
     <article
       ref={cardRef}
       onClick={togglePlayback}
-      className="sotra-video-card relative overflow-hidden bg-[#EAEAEA]"
+      className="sotra-video-card relative isolate overflow-hidden bg-[#EAEAEA]"
       data-gallery-card-id={item.id}
       data-video-card-id={item.id}
     >
-      {!loaded && <div className="sotra-video-skeleton absolute inset-0" />}
+      {skeletonVisible && (
+        <div className="sotra-video-skeleton pointer-events-none absolute inset-0 z-0" />
+      )}
 
       <video
         ref={videoRef}
-        className={`h-full w-full object-cover transition-opacity duration-300 ${
+        className={`relative z-10 h-full w-full object-cover transition-opacity duration-200 ${
           loaded ? "opacity-100" : "opacity-0"
         }`}
         src={shouldLoad ? item.src : undefined}
@@ -117,7 +135,7 @@ const LuxuryVideoCard = ({ item, index, registerVideo, requestPlay }) => {
         disablePictureInPicture
         disableRemotePlayback
         controlsList="nodownload noplaybackrate noremoteplayback"
-        onLoadedData={() => setLoaded(true)}
+        onLoadedData={markVideoReady}
         onTimeUpdate={(event) => enforceVideoClipWindow(event.currentTarget)}
       />
 
@@ -127,7 +145,7 @@ const LuxuryVideoCard = ({ item, index, registerVideo, requestPlay }) => {
           event.stopPropagation();
           togglePlayback();
         }}
-        className={`sotra-video-toggle absolute left-1/2 top-1/2 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-black transition duration-300 ${
+        className={`sotra-video-toggle absolute left-1/2 top-1/2 z-20 grid -translate-x-1/2 -translate-y-1/2 place-items-center rounded-full text-black transition duration-300 ${
           showButton ? "opacity-100" : "opacity-0"
         }`}
         aria-label={playing ? "Pause video" : "Play video"}

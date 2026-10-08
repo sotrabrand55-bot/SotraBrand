@@ -27,88 +27,69 @@ export const ShimmerImage = ({
   const sourcesKey = sources.join("|");
   const [sourceIndex, setSourceIndex] = useState(0);
   const imageSrc = sources[sourceIndex] || "";
-  const [loaded, setLoaded] = useState(false);
-  const [minimumShown, setMinimumShown] = useState(false);
-  const showSkeleton = !loaded || !minimumShown;
-
-  useEffect(() => {
-    setMinimumShown(false);
-    const timer = window.setTimeout(() => setMinimumShown(true), 950);
-    return () => window.clearTimeout(timer);
-  }, [imageSrc]);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoaded(false);
-
-    if (!imageSrc) return undefined;
-
-    const image = new Image();
-    image.src = imageSrc;
-
-    if (image.complete && image.naturalWidth > 0) {
-      setLoaded(true);
-    }
-
-    image.onload = () => {
-      if (!cancelled && image.naturalWidth > 0) setLoaded(true);
-    };
-    image.onerror = () => {
-      if (cancelled) return;
-      if (sourceIndex < sources.length - 1) {
-        setSourceIndex((index) => index + 1);
-      } else {
-        setLoaded(true);
-      }
-    };
-
-    const fallback = setTimeout(() => {
-      if (cancelled) return;
-      if (sourceIndex < sources.length - 1) {
-        setSourceIndex((index) => index + 1);
-      } else {
-        setLoaded(true);
-      }
-    }, 1400);
-
-    return () => {
-      cancelled = true;
-      clearTimeout(fallback);
-    };
-  }, [imageSrc, sourceIndex, sources.length]);
+  const [readySource, setReadySource] = useState("");
+  const [completedFadeSource, setCompletedFadeSource] = useState("");
+  const imageReady = Boolean(imageSrc) && readySource === imageSrc;
+  const showSkeleton = completedFadeSource !== imageSrc;
 
   useEffect(() => {
     setSourceIndex(0);
   }, [sourcesKey]);
 
+  useEffect(() => {
+    if (!imageReady) return undefined;
+    const timer = window.setTimeout(() => setCompletedFadeSource(imageSrc), 220);
+    return () => window.clearTimeout(timer);
+  }, [imageReady, imageSrc]);
+
+  const markImageReady = async (event) => {
+    const image = event.currentTarget;
+    const loadedSource = imageSrc;
+
+    try {
+      if (typeof image.decode === "function") await image.decode();
+    } catch {
+      // The load event still confirms a renderable image when decode is unavailable.
+    }
+
+    setReadySource(loadedSource);
+  };
+
   if (!imageSrc) {
     return (
-      <div className={`relative overflow-hidden ${wrapperClassName}`} onClick={onClick}>
+      <div
+        className={`relative isolate overflow-hidden ${wrapperClassName}`}
+        onClick={onClick}
+      >
         <SkeletonBlock className={`image-loading-shimmer h-full w-full ${skeletonClassName}`} />
       </div>
     );
   }
 
   return (
-    <div className={`relative overflow-hidden ${wrapperClassName}`} onClick={onClick}>
+    <div
+      className={`relative isolate overflow-hidden ${wrapperClassName}`}
+      onClick={onClick}
+    >
       {showSkeleton && (
         <SkeletonBlock
-          className={`image-loading-shimmer pointer-events-none absolute inset-0 z-10 h-full w-full rounded-none ${skeletonClassName}`}
+          className={`image-loading-shimmer pointer-events-none absolute inset-0 z-0 h-full w-full rounded-none ${skeletonClassName}`}
         />
       )}
       <img
         src={imageSrc}
         alt={alt}
-        className={`${className} duration-500 ${
-          !showSkeleton ? "opacity-100" : "opacity-0"
+        className={`relative z-10 ${className} transition-opacity duration-200 ${
+          imageReady ? "opacity-100" : "opacity-0"
         }`}
-        style={{ transitionProperty: "opacity, transform" }}
         loading={loading}
         decoding="async"
         draggable={draggable}
-        onLoad={() => setLoaded(true)}
+        onLoad={markImageReady}
         onError={() => {
-          if (sourceIndex >= sources.length - 1) setLoaded(true);
+          if (sourceIndex < sources.length - 1) {
+            setSourceIndex((index) => index + 1);
+          }
         }}
       />
     </div>
