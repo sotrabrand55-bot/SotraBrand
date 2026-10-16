@@ -52,7 +52,7 @@ const BrandLogo = ({ compact = false }) => (
 const AnnouncementBar = ({ items = [] }) => {
   const safeItems = items.length
     ? items
-    : ["Welcome to our store", "Cash On Delivery", "Tripoli Delivery Only $2"];
+    : ["Welcome to our store", "Cash On Delivery", "Tripoli Delivery Only $3"];
   const [current, setCurrent] = useState(0);
 
   useEffect(() => {

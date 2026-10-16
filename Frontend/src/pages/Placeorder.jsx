@@ -40,7 +40,7 @@ const formatPrice = (value, currency = "$") =>
   `${currency || "$"}${(Number(value) || 0).toFixed(2)}`;
 const WISH_MONEY_NUMBER = "71872919";
 const DEFAULT_LEBANON_DELIVERY = 5;
-const TRIPOLI_DELIVERY = 2;
+const TRIPOLI_DELIVERY = 3;
 
 const normalizeOptionText = (value) =>
   String(value || "").replace(/\s+/g, " ").trim().toLowerCase();
@@ -362,7 +362,7 @@ const Placeorder = () => {
       delivery: {
         zone: tripoliDeliverySelected ? "Tripoli" : "Lebanon",
         note: tripoliDeliverySelected
-          ? "Tripoli delivery applied at $2"
+          ? "Tripoli delivery applied at $3"
           : "Lebanon delivery applied at $5",
       },
     };
@@ -514,16 +514,16 @@ const Placeorder = () => {
                           Optional Delivery Choice
                         </span>
                         <span className="mt-1 block text-sm leading-6">
-                          Select if the address is inside Tripoli. Delivery becomes $2.
+                          Select if the address is inside Tripoli. Delivery becomes $3.
                         </span>
                       </span>
                     </span>
                     <span className="sotra-price ml-3 shrink-0 text-lg font-bold">
-                      {tripoliDeliverySelected ? "$2" : "$5"}
+                      {tripoliDeliverySelected ? "$3" : "$5"}
                     </span>
                   </button>
                   <p className="mt-2 text-[11px] leading-5 text-black/45">
-                    Delivery is $5 all over Lebanon. Tripoli only is $2.
+                    Delivery is $5 all over Lebanon. Tripoli only is $3.
                   </p>
                 </div>
                 <div className="md:col-span-2">

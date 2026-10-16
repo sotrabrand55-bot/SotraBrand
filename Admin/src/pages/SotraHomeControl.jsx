@@ -29,7 +29,7 @@ const perfumeTypeOptions = ["Eau de Parfum", "Eau de Toilette", "Parfum"];
 const emptySettings = {
   delivery_fee: 5,
   announcementEnabled: true,
-  announcementItems: ["Welcome to our store", "Cash On Delivery", "Tripoli Delivery Only $2"],
+  announcementItems: ["Welcome to our store", "Cash On Delivery", "Tripoli Delivery Only $3"],
   freeShippingEnabled: true,
   freeShippingText: "Delivery $5 All Over Lebanon",
   availableNowText: "AVAILABLE NOW",

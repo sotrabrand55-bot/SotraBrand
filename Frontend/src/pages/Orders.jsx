@@ -140,7 +140,7 @@ const Orders = () => {
               const orderNumber = order._id
                 ? `#${String(order._id).slice(-6).toUpperCase()}`
                 : `#SO-${String(index + 1).padStart(4, "0")}`;
-              const deliveryZone = order.delivery?.zone || (Number(order.shipping) === 2 ? "Tripoli" : "Lebanon");
+              const deliveryZone = order.delivery?.zone || ([2, 3].includes(Number(order.shipping)) ? "Tripoli" : "Lebanon");
               const deliveryNote = order.delivery?.note || "";
 
               return (

@@ -121,7 +121,7 @@ const getOrderTotals = (order) => {
 };
 
 const getDeliveryLabel = (order) => {
-  const zone = order?.delivery?.zone || (Number(order?.shipping) === 2 ? "Tripoli" : "Lebanon");
+  const zone = order?.delivery?.zone || ([2, 3].includes(Number(order?.shipping)) ? "Tripoli" : "Lebanon");
   const note = order?.delivery?.note || "";
   return note ? `${zone} / ${note}` : zone;
 };

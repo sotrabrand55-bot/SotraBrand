@@ -127,7 +127,7 @@ const buildHtml = ({
   const total = Number(totals.total || subtotal - discount + shipping);
   const safeNote = escapeHtml(text(customerNote, '')).replace(/\n/g, '<br />');
   const couponCode = escapeHtml(text(appliedCoupon?.code, 'None'));
-  const deliveryZone = escapeHtml(text(delivery.zone || meta.deliveryZone || (shipping === 2 ? 'Tripoli' : 'Lebanon'), 'Lebanon'));
+  const deliveryZone = escapeHtml(text(delivery.zone || meta.deliveryZone || ([2, 3].includes(shipping) ? 'Tripoli' : 'Lebanon'), 'Lebanon'));
   const deliveryNote = escapeHtml(text(delivery.note, ''));
 
   return `

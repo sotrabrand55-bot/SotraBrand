@@ -25,12 +25,23 @@ const parseStringList = (value, fallback = []) => {
     .filter(Boolean);
 };
 
-const getSettingsDoc = async () =>
-  siteSettingsModel.findOneAndUpdate(
+const getSettingsDoc = async () => {
+  const settings = await siteSettingsModel.findOneAndUpdate(
     { key: "main" },
     { $setOnInsert: { key: "main" } },
     { new: true, upsert: true, setDefaultsOnInsert: true }
   );
+
+  const oldTripoliMessage = "Tripoli Delivery Only $2";
+  if (settings.announcementItems?.includes(oldTripoliMessage)) {
+    settings.announcementItems = settings.announcementItems.map((item) =>
+      item === oldTripoliMessage ? "Tripoli Delivery Only $3" : item
+    );
+    await settings.save();
+  }
+
+  return settings;
+};
 
 export const getSiteSettings = async (_req, res) => {
   try {

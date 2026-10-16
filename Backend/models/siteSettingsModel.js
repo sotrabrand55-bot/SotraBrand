@@ -19,7 +19,7 @@ const siteSettingsSchema = new mongoose.Schema(
     announcementEnabled: { type: Boolean, default: true },
     announcementItems: {
       type: [String],
-      default: ["Welcome to our store", "Cash On Delivery", "Tripoli Delivery Only $2"],
+      default: ["Welcome to our store", "Cash On Delivery", "Tripoli Delivery Only $3"],
     },
     freeShippingEnabled: { type: Boolean, default: true },
     freeShippingText: { type: String, default: "Delivery $5 All Over Lebanon" },

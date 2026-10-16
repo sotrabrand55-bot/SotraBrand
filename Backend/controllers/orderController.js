@@ -383,11 +383,11 @@ const placeOrder = async (req, res) => {
     const discount = validCoupon ? Number(totals?.discount || 0) : 0;
     const shipping = Number(totals?.shipping || 0);
     const finalTotal = subtotal - discount + shipping;
-    const deliveryZone = String(delivery?.zone || (shipping === 2 ? 'Tripoli' : 'Lebanon')).trim();
+    const deliveryZone = String(delivery?.zone || ([2, 3].includes(shipping) ? 'Tripoli' : 'Lebanon')).trim();
     const deliveryNote =
       String(delivery?.note || '').trim() ||
       (deliveryZone.toLowerCase() === 'tripoli'
-        ? 'Tripoli delivery applied at $2'
+        ? `Tripoli delivery applied at $${shipping}`
         : 'Lebanon delivery applied at $5');
 
     const orderData = {

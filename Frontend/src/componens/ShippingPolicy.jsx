@@ -44,9 +44,9 @@ const ShippingPolicy = () => {
           <p className="text-[10px] font-black uppercase tracking-[0.2em] text-black/45">
             Inside Tripoli
           </p>
-          <h2 className="mt-3 font-serif text-4xl font-normal">$2</h2>
+          <h2 className="mt-3 font-serif text-4xl font-normal">$3</h2>
           <p className="mt-4 text-sm leading-7 text-black/60">
-            Delivery inside Tripoli is $2. Select the Tripoli delivery option
+            Delivery inside Tripoli is $3. Select the Tripoli delivery option
             at checkout and the total will update before placing the order.
           </p>
         </article>
