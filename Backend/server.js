@@ -21,7 +21,7 @@ import subcategoryPageRoute from "./routes/subcategoryPageRoute.js";
 // ------- APP Config ----------
 const app = express();
 const port = process.env.PORT || 4000;
-connectDB(); // Connect to MongoDB
+await connectDB(); // Do not accept requests until MongoDB is ready.
 //main();
 
 // --------middlewares------
