@@ -38,7 +38,7 @@ const BrandLogo = ({ compact = false }) => (
     aria-label="SotraBrand home"
   >
     <span
-      className={`sotra-navbar-logo-frame transition-[height,width] duration-300 ease-out ${
+      className={`sotra-navbar-logo-frame transition-[height,width] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] ${
         compact
           ? "h-[42px] w-[132px] sm:h-[50px] sm:w-[170px]"
           : "h-[48px] w-[154px] sm:h-[58px] sm:w-[198px]"
@@ -151,7 +151,6 @@ const SotraNavbar = () => {
   const [mobileShopOpen, setMobileShopOpen] = useState(false);
   const [searchAnimating, setSearchAnimating] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [navTop, setNavTop] = useState(0);
   const [navHeight, setNavHeight] = useState(0);
   const announcementRef = useRef(null);
   const navRef = useRef(null);
@@ -205,9 +204,21 @@ const SotraNavbar = () => {
         const announcementHeight = announcementRef.current?.offsetHeight || 0;
         const headerHeight = navRef.current?.offsetHeight || 0;
 
-        setScrolled(window.scrollY > 20);
-        setNavTop(Math.max(0, announcementHeight - window.scrollY));
-        setNavHeight(headerHeight);
+        const scrollPosition = Math.max(0, window.scrollY);
+        setScrolled((current) =>
+          current ? scrollPosition > 12 : scrollPosition > 30
+        );
+
+        if (navRef.current) {
+          navRef.current.style.top = `${Math.max(
+            0,
+            announcementHeight - scrollPosition
+          )}px`;
+        }
+
+        // Keep the document spacer stable while the navbar compacts so the
+        // page does not jump against the user's scroll direction.
+        setNavHeight((current) => Math.max(current, headerHeight));
       });
     };
 
@@ -260,10 +271,9 @@ const SotraNavbar = () => {
 
       <header
         ref={navRef}
-        className={`fixed left-0 right-0 z-50 border-b border-[#e5e5e5] bg-white px-5 text-[#121212] shadow-[0_1px_0_rgba(0,0,0,0.08)] transition-[padding] duration-300 ease-out sm:px-7 lg:px-12 ${
+        className={`storefront-scroll-header fixed left-0 right-0 z-50 border-b border-[#e5e5e5] bg-white px-5 text-[#121212] shadow-[0_1px_0_rgba(0,0,0,0.08)] transition-[padding,box-shadow] duration-[420ms] ease-[cubic-bezier(0.22,1,0.36,1)] sm:px-7 lg:px-12 ${
           scrolled ? "py-1.5 sm:py-4 lg:py-5" : "py-2.5 sm:py-6 lg:py-7"
         }`}
-        style={{ top: `${navTop}px` }}
       >
         <div className="mx-auto grid max-w-[1600px] grid-cols-[1fr_auto_1fr] items-center gap-3">
           <button

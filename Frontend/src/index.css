@@ -57,6 +57,13 @@ a.active hr { display: block; }
 
 html { scroll-behavior: smooth; }
 
+.storefront-scroll-header {
+  top: 0;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  will-change: top, padding;
+}
+
 html, body {
   overflow-x: hidden;
   overscroll-behavior-x: none;
